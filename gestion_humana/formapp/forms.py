@@ -62,7 +62,7 @@ class ExperienciaLaboralForm(forms.ModelForm):
             'certificado_laboral': forms.FileInput(attrs={'class': 'form-control'}),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
-            'dias_residual_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            'dias_residual_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'cargo': forms.TextInput(attrs={'class': 'form-control'}),
             'cargo_anexo_11': forms.TextInput(attrs={'class': 'form-control'}),
             'objeto_contractual': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
@@ -93,6 +93,7 @@ class PosgradoForm(forms.ModelForm):
             'nombre_posgrado': forms.TextInput(attrs={'class': 'form-control'}),
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'meses_de_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
         }
 
 ExperienciaLaboralFormSet = inlineformset_factory(

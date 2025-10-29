@@ -383,3 +383,13 @@ body {
 .info-value {
     color: #555;
 }
+
+/* Ocultar checkboxes DELETE de los formsets */
+input[name$="-DELETE"] {
+    display: none !important;
+}
+
+/* Ocultar también sus labels si existen */
+label[for$="-DELETE"] {
+    display: none !important;
+}

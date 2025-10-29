@@ -460,6 +460,15 @@
                                         <div class="text-danger">{{ form.fecha_terminacion.errors }}</div>
                                     {% endif %}
                                 </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">{{ form.meses_de_experiencia.label }}</label>
+                                    {{ form.meses_de_experiencia }}
+                                    <small class="form-text">Ingrese los meses de experiencia que aporta este posgrado</small>
+                                    {% if form.meses_de_experiencia.errors %}
+                                        <div class="text-danger">{{ form.meses_de_experiencia.errors }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     {% endfor %}
@@ -663,12 +672,16 @@
 
         // Función para calcular la diferencia entre fechas
         function calcularDiferencia(fechaInicio, fechaFin) {
-            if (!fechaInicio || !fechaFin) return { meses: 0, dias: 0 };
+            if (!fechaInicio || !fechaFin) return { meses: 0, dias: 0, totalDias: 0 };
 
             var inicio = new Date(fechaInicio);
             var fin = new Date(fechaFin);
 
-            if (fin < inicio) return { meses: 0, dias: 0 };
+            if (fin < inicio) return { meses: 0, dias: 0, totalDias: 0 };
+
+            // Calcular el total de días calendario entre las dos fechas
+            var unDiaEnMilisegundos = 1000 * 60 * 60 * 24;
+            var totalDias = Math.round((fin - inicio) / unDiaEnMilisegundos);
 
             var años = fin.getFullYear() - inicio.getFullYear();
             var meses = fin.getMonth() - inicio.getMonth();
@@ -689,10 +702,10 @@
 
             var totalMeses = (años * 12) + meses;
 
-            return { meses: totalMeses, dias: dias };
+            return { meses: totalMeses, dias: dias, totalDias: totalDias };
         }
 
-        // Calcular automáticamente meses y días de experiencia
+        // Calcular automáticamente meses, días y días residuales de experiencia
         function setupCalculoExperiencia() {
             $(document).on('change', 'input[id*="fecha_inicial"], input[id*="fecha_terminacion"]', function() {
                 var experienciaGroup = $(this).closest('.experiencia-group');
@@ -701,8 +714,16 @@
 
                 if (fechaInicial && fechaTerminacion) {
                     var resultado = calcularDiferencia(fechaInicial, fechaTerminacion);
+
+                    // meses_experiencia: Total de meses completos
                     experienciaGroup.find('input[id*="meses_experiencia"]').val(resultado.meses);
-                    experienciaGroup.find('input[id*="dias_experiencia"]').val(resultado.dias);
+
+                    // dias_experiencia: Total de días calendario (completos)
+                    experienciaGroup.find('input[id*="dias_experiencia"]').val(resultado.totalDias);
+
+                    // dias_residual_experiencia: Fórmula = dias_experiencia - (meses_experiencia * 30)
+                    var diasResiduales = resultado.totalDias - (resultado.meses * 30);
+                    experienciaGroup.find('input[id*="dias_residual_experiencia"]').val(diasResiduales);
                 }
             });
         }

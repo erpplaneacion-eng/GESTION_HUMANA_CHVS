@@ -91,7 +91,7 @@ class Posgrado(models.Model):
     nombre_posgrado = models.CharField(max_length=200, verbose_name='Nombre del Posgrado')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
-    meses_de_experiencia = models.IntegerField(default=0, validators=[MinValueValidator(0)])
+    meses_de_experiencia = models.IntegerField(verbose_name='Meses de Experiencia', validators=[MinValueValidator(0)])
     
 
     def __str__(self):
