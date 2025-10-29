@@ -236,27 +236,21 @@
                             </div>
 
                             <div class="row">
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ form.meses_experiencia.label }}</label>
                                     {{ form.meses_experiencia }}
+                                    <small class="form-text">Meses completos de experiencia</small>
                                     {% if form.meses_experiencia.errors %}
                                         <div class="text-danger">{{ form.meses_experiencia.errors }}</div>
                                     {% endif %}
                                 </div>
 
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-6 mb-3">
                                     <label class="form-label">{{ form.dias_experiencia.label }}</label>
                                     {{ form.dias_experiencia }}
+                                    <small class="form-text">Total de días calendario</small>
                                     {% if form.dias_experiencia.errors %}
                                         <div class="text-danger">{{ form.dias_experiencia.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">{{ form.dias_residual_experiencia.label }}</label>
-                                    {{ form.dias_residual_experiencia }}
-                                    {% if form.dias_residual_experiencia.errors %}
-                                        <div class="text-danger">{{ form.dias_residual_experiencia.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -705,7 +699,7 @@
             return { meses: totalMeses, dias: dias, totalDias: totalDias };
         }
 
-        // Calcular automáticamente meses, días y días residuales de experiencia
+        // Calcular automáticamente meses y días de experiencia
         function setupCalculoExperiencia() {
             $(document).on('change', 'input[id*="fecha_inicial"], input[id*="fecha_terminacion"]', function() {
                 var experienciaGroup = $(this).closest('.experiencia-group');
@@ -720,10 +714,6 @@
 
                     // dias_experiencia: Total de días calendario (completos)
                     experienciaGroup.find('input[id*="dias_experiencia"]').val(resultado.totalDias);
-
-                    // dias_residual_experiencia: Fórmula = dias_experiencia - (meses_experiencia * 30)
-                    var diasResiduales = resultado.totalDias - (resultado.meses * 30);
-                    experienciaGroup.find('input[id*="dias_residual_experiencia"]').val(diasResiduales);
                 }
             });
         }

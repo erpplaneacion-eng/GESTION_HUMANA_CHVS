@@ -62,7 +62,6 @@ class ExperienciaLaboralForm(forms.ModelForm):
             'certificado_laboral': forms.FileInput(attrs={'class': 'form-control'}),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
-            'dias_residual_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'cargo': forms.TextInput(attrs={'class': 'form-control'}),
             'cargo_anexo_11': forms.TextInput(attrs={'class': 'form-control'}),
             'objeto_contractual': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),

@@ -6,10 +6,10 @@ class ExperienciaLaboralInline(admin.TabularInline):
     extra = 1
     fields = (
         'fecha_inicial', 'fecha_terminacion', 'cargo', 'cargo_anexo_11',
-        'meses_experiencia', 'dias_experiencia', 'dias_residual_experiencia',
+        'meses_experiencia', 'dias_experiencia',
         'objeto_contractual', 'funciones', 'certificado_laboral'
     )
-    readonly_fields = ('meses_experiencia', 'dias_experiencia', 'dias_residual_experiencia')
+    readonly_fields = ('meses_experiencia', 'dias_experiencia')
 
 class InformacionAcademicaInline(admin.TabularInline):
     model = InformacionAcademica
@@ -29,8 +29,7 @@ class CalculoExperienciaInline(admin.StackedInline):
     can_delete = False
     readonly_fields = (
         'total_meses_experiencia', 'total_dias_experiencia',
-        'total_dias_residual_experiencia', 'total_experiencia_anos',
-        'anos_y_meses_experiencia'
+        'total_experiencia_anos', 'anos_y_meses_experiencia'
     )
     fields = readonly_fields
 
@@ -100,7 +99,7 @@ class ExperienciaLaboralAdmin(admin.ModelAdmin):
     )
     list_filter = ('cargo_anexo_11',)
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'cargo')
-    readonly_fields = ('meses_experiencia', 'dias_experiencia', 'dias_residual_experiencia')
+    readonly_fields = ('meses_experiencia', 'dias_experiencia')
 
 @admin.register(InformacionAcademica)
 class InformacionAcademicaAdmin(admin.ModelAdmin):
@@ -127,7 +126,6 @@ class CalculoExperienciaAdmin(admin.ModelAdmin):
     )
     readonly_fields = (
         'total_meses_experiencia', 'total_dias_experiencia',
-        'total_dias_residual_experiencia', 'total_experiencia_anos',
-        'anos_y_meses_experiencia'
+        'total_experiencia_anos', 'anos_y_meses_experiencia'
     )
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula')

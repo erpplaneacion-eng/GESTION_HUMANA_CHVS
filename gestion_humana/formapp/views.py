@@ -18,7 +18,6 @@ def calcular_experiencia_total(informacion_basica):
 
     total_meses = sum(exp.meses_experiencia for exp in experiencias)
     total_dias = sum(exp.dias_experiencia for exp in experiencias)
-    total_dias_residual = sum(exp.dias_residual_experiencia for exp in experiencias)
 
     # Convertir a años (considerando 12 meses por año)
     total_anos = round(total_meses / 12, 2)
@@ -34,7 +33,6 @@ def calcular_experiencia_total(informacion_basica):
         defaults={
             'total_meses_experiencia': total_meses,
             'total_dias_experiencia': total_dias,
-            'total_dias_residual_experiencia': total_dias_residual,
             'total_experiencia_anos': total_anos,
             'anos_y_meses_experiencia': anos_y_meses,
         }

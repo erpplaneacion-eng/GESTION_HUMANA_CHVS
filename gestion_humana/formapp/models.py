@@ -44,10 +44,9 @@ class ExperienciaLaboral(models.Model):
     fecha_inicial = models.DateField(verbose_name='Fecha Inicial')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
     
-    #campos calculados automaticamente.(estos campos desde el frontend no son editables)    
-    meses_experiencia = models.IntegerField(verbose_name='Meses de Experiencia')
-    dias_experiencia = models.IntegerField(verbose_name='Días de Experiencia')
-    dias_residual_experiencia = models.IntegerField(verbose_name='Días Residuales de Experiencia')# la formual para este campos es la siguiente(dias_experiencia-(meses_experiencia multiplicados por 30))
+    #campos calculados automaticamente.(estos campos desde el frontend no son editables)
+    meses_experiencia = models.IntegerField(verbose_name='Meses de Experiencia')  # Meses completos entre las fechas
+    dias_experiencia = models.IntegerField(verbose_name='Días de Experiencia')  # Total de días calendario
     
     cargo = models.CharField(max_length=200, verbose_name='Cargo')
     cargo_anexo_11 = models.CharField(max_length=200, verbose_name='Cargo Anexo 11')
@@ -101,7 +100,6 @@ class CalculoExperiencia(models.Model):
     informacion_basica = models.OneToOneField(InformacionBasica, on_delete=models.CASCADE, related_name='calculo_experiencia')
     total_meses_experiencia = models.IntegerField(verbose_name='Total Meses Experiencia Certificada')
     total_dias_experiencia = models.IntegerField(verbose_name='Total Días Experiencia Certificada')
-    total_dias_residual_experiencia = models.IntegerField(verbose_name='Total Días Residuales Experiencia Certificada')
     total_experiencia_anos = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Total Experiencia en Años')
     anos_y_meses_experiencia = models.CharField(max_length=100, verbose_name='Años y Meses de Experiencia')
 
