@@ -3,7 +3,8 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(python manage.py:*)",
-      "Bash(../venv/Scripts/python.exe:*)"
+      "Bash(../venv/Scripts/python.exe:*)",
+      "Bash(../venv/Scripts/pip install:*)"
     ],
     "deny": [],
     "ask": []
