@@ -1,1 +1,0 @@
-web: gunicorn gestion_humana.wsgi --log-file -
