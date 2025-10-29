@@ -1,12 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.contrib import messages
 from django.db.models import Q, Count
 from .models import InformacionBasica, CalculoExperiencia
 from .forms import (
     InformacionBasicaPublicForm,
+    InformacionBasicaForm,
     ExperienciaLaboralFormSet,
     InformacionAcademicaFormSet,
     PosgradoFormSet,
@@ -124,3 +126,68 @@ class ApplicantDetailView(LoginRequiredMixin, DetailView):
     model = InformacionBasica
     template_name = 'formapp/applicant_detail.html'
     context_object_name = 'applicant'
+
+@login_required
+def applicant_edit_view(request, pk):
+    """Vista para editar un registro existente"""
+    applicant = get_object_or_404(InformacionBasica, pk=pk)
+
+    if request.method == 'POST':
+        form = InformacionBasicaForm(request.POST, request.FILES, instance=applicant)
+        experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES, instance=applicant)
+        academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES, instance=applicant)
+        posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
+
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    informacion_basica = form.save()
+
+                    if experiencia_formset.is_valid():
+                        experiencia_formset.save()
+                        # Calcular experiencia automáticamente
+                        calcular_experiencia_total(informacion_basica)
+
+                    if academica_formset.is_valid():
+                        academica_formset.save()
+
+                    if posgrado_formset.is_valid():
+                        posgrado_formset.save()
+
+                    messages.success(request, f'Registro de {informacion_basica.nombre_completo} actualizado con éxito!')
+                    return redirect('formapp:applicant_detail', pk=informacion_basica.pk)
+            except Exception as e:
+                messages.error(request, f'Error al actualizar el registro: {str(e)}')
+        else:
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
+    else:
+        form = InformacionBasicaForm(instance=applicant)
+        experiencia_formset = ExperienciaLaboralFormSet(instance=applicant)
+        academica_formset = InformacionAcademicaFormSet(instance=applicant)
+        posgrado_formset = PosgradoFormSet(instance=applicant)
+
+    context = {
+        'form': form,
+        'experiencia_formset': experiencia_formset,
+        'academica_formset': academica_formset,
+        'posgrado_formset': posgrado_formset,
+        'applicant': applicant,
+    }
+    return render(request, 'formapp/applicant_edit.html', context)
+
+@login_required
+def applicant_delete_view(request, pk):
+    """Vista para eliminar un registro"""
+    applicant = get_object_or_404(InformacionBasica, pk=pk)
+
+    if request.method == 'POST':
+        nombre = applicant.nombre_completo
+        try:
+            applicant.delete()
+            messages.success(request, f'Registro de {nombre} eliminado exitosamente.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar el registro: {str(e)}')
+        return redirect('formapp:applicant_list')
+
+    # Si no es POST, redirigir a la lista
+    return redirect('formapp:applicant_list')

@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Registro - {{ applicant.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-warning text-white">
+            <h3 class="mb-0"><i class="fas fa-edit"></i> Editar Registro - {{ applicant.cedula }}</h3>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data" id="editForm">
+                {% csrf_token %}
+
+                <!-- Sección 1: Información Personal -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-user"></i> Información Personal</h4>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">{{ form.nombre_completo.label }}</label>
+                                {{ form.nombre_completo }}
+                                {% if form.nombre_completo.errors %}
+                                    <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.cedula.label }}</label>
+                                {{ form.cedula }}
+                                {% if form.cedula.errors %}
+                                    <div class="text-danger">{{ form.cedula.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.genero.label }}</label>
+                                {{ form.genero }}
+                                {% if form.genero.errors %}
+                                    <div class="text-danger">{{ form.genero.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.tipo_via.label }}</label>
+                                {{ form.tipo_via }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.numero_via.label }}</label>
+                                {{ form.numero_via }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.numero_casa.label }}</label>
+                                {{ form.numero_casa }}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.complemento_direccion.label }}</label>
+                                {{ form.complemento_direccion }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.barrio.label }}</label>
+                                {{ form.barrio }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.telefono.label }}</label>
+                                {{ form.telefono }}
+                                {% if form.telefono.errors %}
+                                    <div class="text-danger">{{ form.telefono.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">{{ form.correo.label }}</label>
+                                {{ form.correo }}
+                                {% if form.correo.errors %}
+                                    <div class="text-danger">{{ form.correo.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 2: Experiencia Laboral -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-briefcase"></i> Experiencia Laboral</h4>
+                    </div>
+                    <div class="section-body">
+                        {{ experiencia_formset.management_form }}
+                        <div id="experiencia-formset">
+                            {% for form_exp in experiencia_formset %}
+                                <div class="formset-form mb-4 p-3 border rounded">
+                                    <h5 class="mb-3">Experiencia #{{ forloop.counter }}</h5>
+                                    {{ form_exp.id }}
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Fecha Inicial</label>
+                                            {{ form_exp.fecha_inicial }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Fecha de Terminación</label>
+                                            {{ form_exp.fecha_terminacion }}
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label class="form-label">Meses</label>
+                                            {{ form_exp.meses_experiencia }}
+                                        </div>
+                                        <div class="col-md-2 mb-3">
+                                            <label class="form-label">Días</label>
+                                            {{ form_exp.dias_experiencia }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Cargo</label>
+                                            {{ form_exp.cargo }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Cargo Anexo 11</label>
+                                            {{ form_exp.cargo_anexo_11 }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Objeto Contractual</label>
+                                            {{ form_exp.objeto_contractual }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Funciones</label>
+                                            {{ form_exp.funciones }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Certificado Laboral</label>
+                                            {{ form_exp.certificado_laboral }}
+                                            {% if form_exp.instance.certificado_laboral %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_exp.instance.certificado_laboral.url }}" target="_blank">{{ form_exp.instance.certificado_laboral.name }}</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {{ form_exp.DELETE }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 3: Formación Académica -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-graduation-cap"></i> Formación Académica</h4>
+                    </div>
+                    <div class="section-body">
+                        {{ academica_formset.management_form }}
+                        <div id="academica-formset">
+                            {% for form_aca in academica_formset %}
+                                <div class="formset-form mb-4 p-3 border rounded">
+                                    <h5 class="mb-3">Formación #{{ forloop.counter }}</h5>
+                                    {{ form_aca.id }}
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Profesión</label>
+                                            {{ form_aca.profesion }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Universidad</label>
+                                            {{ form_aca.universidad }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Fecha de Grado</label>
+                                            {{ form_aca.fecha_grado }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Tipo de Tarjeta/Resolución</label>
+                                            {{ form_aca.tarjeta_profesional }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">N° Tarjeta o Resolución</label>
+                                            {{ form_aca.numero_tarjeta_resolucion }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Fecha de Expedición</label>
+                                            {{ form_aca.fecha_expedicion }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Meses de Experiencia por Profesión</label>
+                                            {{ form_aca.meses_experiencia_profesion }}
+                                        </div>
+                                    </div>
+                                    {{ form_aca.DELETE }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección 4: Posgrados -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-award"></i> Posgrados</h4>
+                    </div>
+                    <div class="section-body">
+                        {{ posgrado_formset.management_form }}
+                        <div id="posgrado-formset">
+                            {% for form_pos in posgrado_formset %}
+                                <div class="formset-form mb-4 p-3 border rounded">
+                                    <h5 class="mb-3">Posgrado #{{ forloop.counter }}</h5>
+                                    {{ form_pos.id }}
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Nombre del Posgrado</label>
+                                            {{ form_pos.nombre_posgrado }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Universidad</label>
+                                            {{ form_pos.universidad }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Fecha de Terminación</label>
+                                            {{ form_pos.fecha_terminacion }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Meses de Experiencia</label>
+                                            {{ form_pos.meses_de_experiencia }}
+                                        </div>
+                                    </div>
+                                    {{ form_pos.DELETE }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="text-center mb-4">
+                    <button type="submit" class="btn btn-warning btn-lg me-2">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <a href="{% url 'formapp:applicant_list' %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Cálculo automático de meses y días de experiencia
+document.addEventListener('DOMContentLoaded', function() {
+    const formset = document.getElementById('experiencia-formset');
+
+    if (formset) {
+        formset.addEventListener('change', function(e) {
+            const target = e.target;
+
+            if (target.name && (target.name.includes('fecha_inicial') || target.name.includes('fecha_terminacion'))) {
+                const formDiv = target.closest('.formset-form');
+                const fechaInicial = formDiv.querySelector('[name*="fecha_inicial"]').value;
+                const fechaTerminacion = formDiv.querySelector('[name*="fecha_terminacion"]').value;
+
+                if (fechaInicial && fechaTerminacion) {
+                    const resultado = calcularDiferencia(fechaInicial, fechaTerminacion);
+                    formDiv.querySelector('[name*="meses_experiencia"]').value = resultado.meses;
+                    formDiv.querySelector('[name*="dias_experiencia"]').value = resultado.totalDias;
+                }
+            }
+        });
+    }
+});
+
+function calcularDiferencia(fechaInicio, fechaFin) {
+    var inicio = new Date(fechaInicio);
+    var fin = new Date(fechaFin);
+
+    var unDiaEnMilisegundos = 1000 * 60 * 60 * 24;
+    var totalDias = Math.round((fin - inicio) / unDiaEnMilisegundos);
+
+    var años = fin.getFullYear() - inicio.getFullYear();
+    var meses = fin.getMonth() - inicio.getMonth();
+    var dias = fin.getDate() - inicio.getDate();
+
+    if (dias < 0) {
+        meses--;
+        var ultimoDiaMesAnterior = new Date(fin.getFullYear(), fin.getMonth(), 0).getDate();
+        dias += ultimoDiaMesAnterior;
+    }
+
+    if (meses < 0) {
+        años--;
+        meses += 12;
+    }
+
+    var totalMeses = (años * 12) + meses;
+
+    return {
+        meses: totalMeses,
+        dias: dias,
+        totalDias: totalDias
+    };
+}
+</script>
+{% endblock %}
