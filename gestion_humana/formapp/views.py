@@ -44,6 +44,10 @@ def calcular_experiencia_total(informacion_basica):
 def public_form_view(request):
     if request.method == 'POST':
         form = InformacionBasicaPublicForm(request.POST, request.FILES)
+        experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES)
+        academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES)
+        posgrado_formset = PosgradoFormSet(request.POST, request.FILES)
+
         if form.is_valid():
             try:
                 with transaction.atomic():

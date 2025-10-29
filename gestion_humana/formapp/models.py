@@ -23,16 +23,16 @@ class InformacionBasica(models.Model):
     correo = models.EmailField(verbose_name='Correo Electrónico')    
     
     #datos q se deben de cumplir de acuerdo al perfil, y se deben de diligenciar por el personal administrativo
-    perfil = models.CharField(max_length=200, verbose_name='Perfil Profesional')
-    area_conocimiento = models.CharField(max_length=200, verbose_name='Área de Conocimiento')
+    perfil = models.CharField(max_length=200, verbose_name='Perfil Profesional', blank=True, null=True)
+    area_conocimiento = models.CharField(max_length=200, verbose_name='Área de Conocimiento', blank=True, null=True)
     area_del_conocimiento = models.CharField(max_length=200, verbose_name='Área del Conocimiento', blank=True, null=True)
-    tipo_perfil = models.CharField(max_length=200, verbose_name='Tipo de Perfil')
-    profesion = models.CharField(max_length=200, verbose_name='Profesión')
-    experiencia = models.CharField(max_length=200, verbose_name='Tipo de Experiencia')
-    tiempo_experiencia = models.CharField(max_length=200, verbose_name='Tiempo de Experiencia')
-    cantidad = models.IntegerField(verbose_name='Cantidad')
-    descripcion = models.TextField(verbose_name='Descripción del Cargo')    
-    base_anexo_11 = models.CharField(max_length=200, verbose_name='Base Anexo 11')   
+    tipo_perfil = models.CharField(max_length=200, verbose_name='Tipo de Perfil', blank=True, null=True)
+    profesion = models.CharField(max_length=200, verbose_name='Profesión', blank=True, null=True)
+    experiencia = models.CharField(max_length=200, verbose_name='Tipo de Experiencia', blank=True, null=True)
+    tiempo_experiencia = models.CharField(max_length=200, verbose_name='Tiempo de Experiencia', blank=True, null=True)
+    cantidad = models.IntegerField(verbose_name='Cantidad', blank=True, null=True)
+    descripcion = models.TextField(verbose_name='Descripción del Cargo', blank=True, null=True)
+    base_anexo_11 = models.CharField(max_length=200, verbose_name='Base Anexo 11', blank=True, null=True)
     observacion = models.TextField(verbose_name='Observaciones', blank=True, null=True)
 
     def __str__(self):
