@@ -1,25 +1,17 @@
 from django.db import models
 
 class InformacionBasica(models.Model):
+    # campos datos personales
+    
+    # campos q son de selecccion multipple, respuestas cerradas    
     GENERO_CHOICES = [
         ('Femenino', 'Femenino'),
         ('Masculino', 'Masculino'),
     ]
-
     nombre_completo = models.CharField(max_length=200, verbose_name='Nombre Completo', blank=True, null=True)
-    perfil = models.CharField(max_length=200, verbose_name='Perfil Profesional')
-    area_conocimiento = models.CharField(max_length=200, verbose_name='Área de Conocimiento')
-    tipo_perfil = models.CharField(max_length=200, verbose_name='Tipo de Perfil')
-    profesion = models.CharField(max_length=200, verbose_name='Profesión')
-    experiencia = models.CharField(max_length=200, verbose_name='Tipo de Experiencia')
-    tiempo_experiencia = models.CharField(max_length=200, verbose_name='Tiempo de Experiencia')
-    cantidad = models.IntegerField(verbose_name='Cantidad')
     cedula = models.CharField(max_length=20, unique=True, verbose_name='Cédula')
-    descripcion = models.TextField(verbose_name='Descripción del Cargo')
     genero = models.CharField(max_length=50, verbose_name='Género', choices=GENERO_CHOICES)
-    base_anexo_11 = models.CharField(max_length=200, verbose_name='Base Anexo 11')
-
-    # Campos de dirección subdivididos
+     # Campos de dirección subdivididos
     tipo_via = models.CharField(max_length=50, verbose_name='Tipo de Vía (Calle/Avenida/Carrera)', default='Calle')
     numero_via = models.CharField(max_length=20, verbose_name='Número de Vía', default='')
     numero_casa = models.CharField(max_length=20, verbose_name='Número de Casa/Edificio', default='')
@@ -27,24 +19,43 @@ class InformacionBasica(models.Model):
     barrio = models.CharField(max_length=100, verbose_name='Barrio', blank=True, null=True)
 
     telefono = models.CharField(max_length=20, verbose_name='Teléfono')
-    correo = models.EmailField(verbose_name='Correo Electrónico')
+    correo = models.EmailField(verbose_name='Correo Electrónico')    
+    
+    #datos q se deben de cumplir de acuerdo al perfil, y se deben de diligenciar por el personal administrativo
+    perfil = models.CharField(max_length=200, verbose_name='Perfil Profesional')
+    area_conocimiento = models.CharField(max_length=200, verbose_name='Área de Conocimiento')
+    area_del_conocimiento = models.CharField(max_length=200, verbose_name='Área del Conocimiento', blank=True, null=True)
+    tipo_perfil = models.CharField(max_length=200, verbose_name='Tipo de Perfil')
+    profesion = models.CharField(max_length=200, verbose_name='Profesión')
+    experiencia = models.CharField(max_length=200, verbose_name='Tipo de Experiencia')
+    tiempo_experiencia = models.CharField(max_length=200, verbose_name='Tiempo de Experiencia')
+    cantidad = models.IntegerField(verbose_name='Cantidad')
+    descripcion = models.TextField(verbose_name='Descripción del Cargo')    
+    base_anexo_11 = models.CharField(max_length=200, verbose_name='Base Anexo 11')   
     observacion = models.TextField(verbose_name='Observaciones', blank=True, null=True)
 
     def __str__(self):
         return self.nombre_completo
-
+    
+    
+    #campos de experiencia laboral
 class ExperienciaLaboral(models.Model):
-    informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='experiencias_laborales')
-    certificado_laboral = models.FileField(upload_to='certificados_laborales/', verbose_name='Certificado Laboral o Contractual')
+    fecha_inicial = models.DateField(verbose_name='Fecha Inicial')
+    fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
+    
+    #campos calculados automaticamente.(estos campos desde el frontend no son editables)    
     meses_experiencia = models.IntegerField(verbose_name='Meses de Experiencia')
     dias_experiencia = models.IntegerField(verbose_name='Días de Experiencia')
-    dias_residual_experiencia = models.IntegerField(verbose_name='Días Residuales de Experiencia')
+    dias_residual_experiencia = models.IntegerField(verbose_name='Días Residuales de Experiencia')# la formual para este campos es la siguiente(dias_experiencia-(meses_experiencia multiplicados por 30))
+    
     cargo = models.CharField(max_length=200, verbose_name='Cargo')
     cargo_anexo_11 = models.CharField(max_length=200, verbose_name='Cargo Anexo 11')
     objeto_contractual = models.TextField(verbose_name='Objeto Contractual')
-    funciones = models.TextField(verbose_name='Funciones')
-    fecha_inicial = models.DateField(verbose_name='Fecha Inicial')
-    fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
+    funciones = models.TextField(verbose_name='Funciones')     
+    
+    informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='experiencias_laborales')
+    certificado_laboral = models.FileField(upload_to='certificados_laborales/', verbose_name='Certificado Laboral o Contractual')     
+    
 
     def __str__(self):
         return f'{self.cargo} en {self.informacion_basica.cedula}'
@@ -78,6 +89,7 @@ class Posgrado(models.Model):
     nombre_posgrado = models.CharField(max_length=200, verbose_name='Nombre del Posgrado')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
+    
 
     def __str__(self):
         return f'{self.nombre_posgrado} de {self.informacion_basica.cedula}'
