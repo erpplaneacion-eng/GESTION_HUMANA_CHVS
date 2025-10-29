@@ -166,120 +166,9 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 2: PERFIL PROFESIONAL -->
-            <div class="form-section">
-                <h2 class="section-title">
-                    <i class="fas fa-briefcase"></i> Perfil Profesional
-                </h2>
-                <p class="text-muted mb-4">
-                    <i class="fas fa-info-circle"></i>
-                    Información sobre su experiencia y área de conocimiento
-                </p>
+            <!-- NOTA: La sección de perfil profesional será completada por el personal administrativo -->
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.perfil.id_for_label }}" class="form-label required-field">
-                            {{ form.perfil.label }}
-                        </label>
-                        {{ form.perfil }}
-                        {% if form.perfil.errors %}
-                            <div class="text-danger">{{ form.perfil.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.area_conocimiento.id_for_label }}" class="form-label required-field">
-                            {{ form.area_conocimiento.label }}
-                        </label>
-                        {{ form.area_conocimiento }}
-                        {% if form.area_conocimiento.errors %}
-                            <div class="text-danger">{{ form.area_conocimiento.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label for="{{ form.tipo_perfil.id_for_label }}" class="form-label required-field">
-                            {{ form.tipo_perfil.label }}
-                        </label>
-                        {{ form.tipo_perfil }}
-                        {% if form.tipo_perfil.errors %}
-                            <div class="text-danger">{{ form.tipo_perfil.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="{{ form.profesion.id_for_label }}" class="form-label required-field">
-                            {{ form.profesion.label }}
-                        </label>
-                        {{ form.profesion }}
-                        {% if form.profesion.errors %}
-                            <div class="text-danger">{{ form.profesion.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label for="{{ form.base_anexo_11.id_for_label }}" class="form-label required-field">
-                            {{ form.base_anexo_11.label }}
-                        </label>
-                        {{ form.base_anexo_11 }}
-                        {% if form.base_anexo_11.errors %}
-                            <div class="text-danger">{{ form.base_anexo_11.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.experiencia.id_for_label }}" class="form-label required-field">
-                            {{ form.experiencia.label }}
-                        </label>
-                        {{ form.experiencia }}
-                        {% if form.experiencia.errors %}
-                            <div class="text-danger">{{ form.experiencia.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.tiempo_experiencia.id_for_label }}" class="form-label required-field">
-                            {{ form.tiempo_experiencia.label }}
-                        </label>
-                        {{ form.tiempo_experiencia }}
-                        {% if form.tiempo_experiencia.errors %}
-                            <div class="text-danger">{{ form.tiempo_experiencia.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="{{ form.descripcion.id_for_label }}" class="form-label required-field">
-                            {{ form.descripcion.label }}
-                        </label>
-                        {{ form.descripcion }}
-                        <small class="form-text">Describa detalladamente su experiencia y habilidades</small>
-                        {% if form.descripcion.errors %}
-                            <div class="text-danger">{{ form.descripcion.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <label for="{{ form.observacion.id_for_label }}" class="form-label">
-                            {{ form.observacion.label }}
-                        </label>
-                        {{ form.observacion }}
-                        <small class="form-text">Información adicional relevante (opcional)</small>
-                        {% if form.observacion.errors %}
-                            <div class="text-danger">{{ form.observacion.errors }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- SECCIÓN 3: EXPERIENCIA LABORAL -->
+            <!-- SECCIÓN 2: EXPERIENCIA LABORAL -->
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-history"></i> Experiencia Laboral
@@ -413,7 +302,7 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 4: INFORMACIÓN ACADÉMICA -->
+            <!-- SECCIÓN 3: INFORMACIÓN ACADÉMICA -->
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-graduation-cap"></i> Información Académica
@@ -515,7 +404,7 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 5: POSGRADOS -->
+            <!-- SECCIÓN 4: POSGRADOS -->
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-award"></i> Posgrados y Especializaciones

@@ -29,7 +29,7 @@
                             <h5 class="card-title">
                                 <i class="fas fa-users"></i> Total Personal
                             </h5>
-                            <h2>{{ applicants|length }}</h2>
+                            <h2>{{ total_personal }}</h2>
                         </div>
                     </div>
                 </div>
@@ -39,7 +39,7 @@
                             <h5 class="card-title">
                                 <i class="fas fa-briefcase"></i> Con Experiencia
                             </h5>
-                            <h2>{{ applicants|length }}</h2>
+                            <h2>{{ con_experiencia }}</h2>
                         </div>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                             <h5 class="card-title">
                                 <i class="fas fa-graduation-cap"></i> Profesionales
                             </h5>
-                            <h2>{{ applicants|length }}</h2>
+                            <h2>{{ profesionales }}</h2>
                         </div>
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                             <h5 class="card-title">
                                 <i class="fas fa-award"></i> Con Posgrados
                             </h5>
-                            <h2>{{ applicants|length }}</h2>
+                            <h2>{{ con_posgrado }}</h2>
                         </div>
                     </div>
                 </div>
@@ -68,9 +68,29 @@
             <!-- Tabla de Personal -->
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-list"></i> Listado Completo de Personal
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list"></i> Listado Completo de Personal
+                        </h5>
+                        <!-- Campo de búsqueda -->
+                        <form method="get" class="d-flex" style="max-width: 400px;">
+                            <input
+                                type="text"
+                                name="search"
+                                class="form-control me-2"
+                                placeholder="Buscar por cédula o nombre..."
+                                value="{{ search_query }}"
+                            >
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            {% if search_query %}
+                            <a href="{% url 'formapp:applicant_list' %}" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
                 </div>
                 <div class="card-body">
                     {% if applicants %}

@@ -2,6 +2,30 @@ from django import forms
 from django.forms import inlineformset_factory
 from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado
 
+# Formulario público - solo campos que el usuario puede llenar
+class InformacionBasicaPublicForm(forms.ModelForm):
+    class Meta:
+        model = InformacionBasica
+        # Excluir campos administrativos que solo el personal administrativo debe llenar
+        fields = [
+            'nombre_completo', 'cedula', 'genero',
+            'tipo_via', 'numero_via', 'numero_casa', 'complemento_direccion', 'barrio',
+            'telefono', 'correo'
+        ]
+        widgets = {
+            'nombre_completo': forms.TextInput(attrs={'class': 'form-control'}),
+            'cedula': forms.TextInput(attrs={'class': 'form-control'}),
+            'genero': forms.Select(attrs={'class': 'form-control'}),
+            'tipo_via': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Calle, Avenida, Carrera'}),
+            'numero_via': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 45'}),
+            'numero_casa': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 23-15'}),
+            'complemento_direccion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Apto 301'}),
+            'barrio': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Centro'}),
+            'telefono': forms.TextInput(attrs={'class': 'form-control'}),
+            'correo': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+# Formulario completo para el admin - incluye todos los campos
 class InformacionBasicaForm(forms.ModelForm):
     class Meta:
         model = InformacionBasica
@@ -10,6 +34,7 @@ class InformacionBasicaForm(forms.ModelForm):
             'nombre_completo': forms.TextInput(attrs={'class': 'form-control'}),
             'perfil': forms.TextInput(attrs={'class': 'form-control'}),
             'area_conocimiento': forms.TextInput(attrs={'class': 'form-control'}),
+            'area_del_conocimiento': forms.TextInput(attrs={'class': 'form-control'}),
             'tipo_perfil': forms.TextInput(attrs={'class': 'form-control'}),
             'profesion': forms.TextInput(attrs={'class': 'form-control'}),
             'experiencia': forms.TextInput(attrs={'class': 'form-control'}),
