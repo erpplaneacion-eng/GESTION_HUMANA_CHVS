@@ -94,6 +94,73 @@
                     </div>
                 </div>
 
+                <!-- Sección Administrativa (Solo para personal administrativo) -->
+                <div class="admin-section">
+                    <div class="admin-section-header">
+                        <h4><i class="fas fa-user-shield"></i> Información Administrativa (Solo Personal Autorizado)</h4>
+                    </div>
+                    <div class="admin-note">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Nota:</strong> Los campos resaltados en amarillo son exclusivos para ser completados por el personal administrativo.
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.perfil.label }}</label>
+                            <input type="text" name="perfil" value="{{ form.perfil.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.area_conocimiento.label }}</label>
+                            <input type="text" name="area_conocimiento" value="{{ form.area_conocimiento.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.area_del_conocimiento.label }}</label>
+                            <input type="text" name="area_del_conocimiento" value="{{ form.area_del_conocimiento.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.tipo_perfil.label }}</label>
+                            <input type="text" name="tipo_perfil" value="{{ form.tipo_perfil.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.profesion.label }}</label>
+                            <input type="text" name="profesion" value="{{ form.profesion.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.experiencia.label }}</label>
+                            <input type="text" name="experiencia" value="{{ form.experiencia.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.tiempo_experiencia.label }}</label>
+                            <input type="text" name="tiempo_experiencia" value="{{ form.tiempo_experiencia.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.cantidad.label }}</label>
+                            <input type="number" name="cantidad" value="{{ form.cantidad.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.base_anexo_11.label }}</label>
+                            <input type="text" name="base_anexo_11" value="{{ form.base_anexo_11.value|default:'' }}" class="form-control admin-field">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ form.descripcion.label }}</label>
+                            <textarea name="descripcion" class="form-control admin-field" rows="3">{{ form.descripcion.value|default:'' }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">{{ form.observacion.label }}</label>
+                            <textarea name="observacion" class="form-control admin-field" rows="3">{{ form.observacion.value|default:'' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Sección 2: Experiencia Laboral -->
                 <div class="section-card mb-4">
                     <div class="section-header">

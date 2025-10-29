@@ -36,28 +36,59 @@
                 <p class="text-muted mb-4">Por favor ingrese sus datos personales y perfil profesional</p>
 
                 <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.nombre_completo.id_for_label }}" class="form-label required-field">
-                            {{ form.nombre_completo.label }}
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.primer_apellido.id_for_label }}" class="form-label required-field">
+                            Primer Apellido
                         </label>
-                        {{ form.nombre_completo }}
-                        {% if form.nombre_completo.errors %}
-                            <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                        {{ form.primer_apellido }}
+                        {% if form.primer_apellido.errors %}
+                            <div class="text-danger">{{ form.primer_apellido.errors }}</div>
                         {% endif %}
                     </div>
 
-                    <div class="col-md-6 mb-3">
-                        <label for="{{ form.cedula.id_for_label }}" class="form-label required-field">
-                            {{ form.cedula.label }}
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.segundo_apellido.id_for_label }}" class="form-label required-field">
+                            Segundo Apellido
                         </label>
-                        {{ form.cedula }}
-                        {% if form.cedula.errors %}
-                            <div class="text-danger">{{ form.cedula.errors }}</div>
+                        {{ form.segundo_apellido }}
+                        {% if form.segundo_apellido.errors %}
+                            <div class="text-danger">{{ form.segundo_apellido.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.primer_nombre.id_for_label }}" class="form-label required-field">
+                            Primer Nombre
+                        </label>
+                        {{ form.primer_nombre }}
+                        {% if form.primer_nombre.errors %}
+                            <div class="text-danger">{{ form.primer_nombre.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.segundo_nombre.id_for_label }}" class="form-label">
+                            Segundo Nombre (Opcional)
+                        </label>
+                        {{ form.segundo_nombre }}
+                        {% if form.segundo_nombre.errors %}
+                            <div class="text-danger">{{ form.segundo_nombre.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
 
                 <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.cedula.id_for_label }}" class="form-label required-field">
+                            {{ form.cedula.label }}
+                        </label>
+                        {{ form.cedula }}
+                        <small class="form-text text-muted">Entre 5 y 10 dígitos</small>
+                        {% if form.cedula.errors %}
+                            <div class="text-danger">{{ form.cedula.errors }}</div>
+                        {% endif %}
+                    </div>
+
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.genero.id_for_label }}" class="form-label required-field">
                             {{ form.genero.label }}
@@ -67,28 +98,33 @@
                             <div class="text-danger">{{ form.genero.errors }}</div>
                         {% endif %}
                     </div>
+                </div>
 
+                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.telefono.id_for_label }}" class="form-label required-field">
                             {{ form.telefono.label }}
                         </label>
                         {{ form.telefono }}
+                        <small class="form-text text-muted">Exactamente 10 dígitos</small>
                         {% if form.telefono.errors %}
                             <div class="text-danger">{{ form.telefono.errors }}</div>
                         {% endif %}
                     </div>
-                </div>
 
-                <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.correo.id_for_label }}" class="form-label required-field">
                             {{ form.correo.label }}
                         </label>
                         {{ form.correo }}
+                        <small class="form-text text-muted">Debe contener @</small>
                         {% if form.correo.errors %}
                             <div class="text-danger">{{ form.correo.errors }}</div>
                         {% endif %}
                     </div>
+                </div>
+
+                <div class="row">
 
                     <div class="col-md-6 mb-3">
                         <label for="{{ form.cantidad.id_for_label }}" class="form-label required-field">
