@@ -1,1 +1,1 @@
-web: cd gestion_humana && gunicorn gestion_humana.wsgi --log-file -
+web: gunicorn --chdir gestion_humana gestion_humana.wsgi --log-file - --bind 0.0.0.0:$PORT
