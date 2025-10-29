@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.validators import MinValueValidator
 
 class InformacionBasica(models.Model):
     # campos datos personales
@@ -84,11 +85,13 @@ class InformacionAcademica(models.Model):
     def __str__(self):
         return f'{self.profesion} de {self.informacion_basica.cedula}'
 
+from django.core.validators import MinValueValidator
 class Posgrado(models.Model):
     informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='posgrados')
     nombre_posgrado = models.CharField(max_length=200, verbose_name='Nombre del Posgrado')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
+    meses_de_experiencia = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     
 
     def __str__(self):
