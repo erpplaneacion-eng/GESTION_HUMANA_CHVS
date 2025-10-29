@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle de {{ applicant.nombre_completo }}{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+    <!-- Header con información principal -->
+    <div class="detail-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="mb-2">
+                    <i class="fas fa-user-circle"></i> {{ applicant.nombre_completo }}
+                </h1>
+                <p class="mb-1"><i class="fas fa-id-card"></i> <strong>Cédula:</strong> {{ applicant.cedula }}</p>
+                <p class="mb-1"><i class="fas fa-briefcase"></i> <strong>Profesión:</strong> {{ applicant.profesion }}</p>
+                <p class="mb-0"><i class="fas fa-graduation-cap"></i> <strong>Área:</strong> {{ applicant.area_conocimiento }}</p>
+            </div>
+            <div class="text-end">
+                <a href="{% url 'formapp:applicant_list' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+                {% if user.is_staff %}
+                <a href="/admin/formapp/informacionbasica/{{ applicant.pk }}/change/" class="btn btn-warning btn-lg">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Básica -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-info-circle"></i> Información Personal y de Contacto
+        </h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-envelope"></i> Correo Electrónico:</span>
+                    <span class="info-value">{{ applicant.correo }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-phone"></i> Teléfono:</span>
+                    <span class="info-value">{{ applicant.telefono }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-map-marker-alt"></i> Dirección:</span>
+                    <span class="info-value">
+                        {{ applicant.tipo_via }} {{ applicant.numero_via }} # {{ applicant.numero_casa }}
+                        {% if applicant.complemento_direccion %}, {{ applicant.complemento_direccion }}{% endif %}
+                        {% if applicant.barrio %}, Barrio {{ applicant.barrio }}{% endif %}
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-venus-mars"></i> Género:</span>
+                    <span class="info-value">{{ applicant.genero }}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-user-tag"></i> Perfil:</span>
+                    <span class="info-value">{{ applicant.perfil }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-chart-line"></i> Tipo de Perfil:</span>
+                    <span class="info-value">{{ applicant.tipo_perfil }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-briefcase"></i> Tipo de Experiencia:</span>
+                    <span class="info-value">{{ applicant.experiencia }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-clock"></i> Tiempo de Experiencia:</span>
+                    <span class="info-value">{{ applicant.tiempo_experiencia }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-row mt-3">
+            <span class="info-label"><i class="fas fa-file-alt"></i> Descripción del Cargo:</span>
+        </div>
+        <div class="alert alert-light mt-2">
+            {{ applicant.descripcion }}
+        </div>
+
+        {% if applicant.observacion %}
+        <div class="info-row mt-3">
+            <span class="info-label"><i class="fas fa-comment"></i> Observaciones:</span>
+        </div>
+        <div class="alert alert-light mt-2">
+            {{ applicant.observacion }}
+        </div>
+        {% endif %}
+
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-book"></i> Base Anexo 11:</span>
+            <span class="info-value">{{ applicant.base_anexo_11 }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-users"></i> Cantidad:</span>
+            <span class="info-value">{{ applicant.cantidad }}</span>
+        </div>
+    </div>
+
+    <!-- Experiencia Laboral -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-history"></i> Experiencia Laboral
+        </h3>
+        {% if applicant.experiencias_laborales.all %}
+            <div class="row">
+                {% for experiencia in applicant.experiencias_laborales.all %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100" style="border-left: 4px solid #3498db;">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">
+                                <i class="fas fa-briefcase"></i> {{ experiencia.cargo }}
+                            </h5>
+                            <p class="mb-2">
+                                <span class="badge bg-secondary">{{ experiencia.cargo_anexo_11 }}</span>
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar-alt"></i>
+                                <strong>Período:</strong> {{ experiencia.fecha_inicial|date:"d/m/Y" }} - {{ experiencia.fecha_terminacion|date:"d/m/Y" }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-clock"></i>
+                                <strong>Duración:</strong> {{ experiencia.meses_experiencia }} meses, {{ experiencia.dias_experiencia }} días
+                                {% if experiencia.dias_residual_experiencia %}
+                                    ({{ experiencia.dias_residual_experiencia }} días residuales)
+                                {% endif %}
+                            </p>
+                            <p class="mb-2">
+                                <strong>Objeto Contractual:</strong><br>
+                                {{ experiencia.objeto_contractual }}
+                            </p>
+                            <p class="mb-2">
+                                <strong>Funciones:</strong><br>
+                                {{ experiencia.funciones }}
+                            </p>
+                            {% if experiencia.certificado_laboral %}
+                                <a href="{{ experiencia.certificado_laboral.url }}" target="_blank" class="btn btn-sm btn-success">
+                                    <i class="fas fa-file-pdf"></i> Ver Certificado
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay experiencia laboral registrada.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Información Académica -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-graduation-cap"></i> Formación Académica
+        </h3>
+        {% if applicant.formacion_academica.all %}
+            <div class="row">
+                {% for formacion in applicant.formacion_academica.all %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100" style="border-left: 4px solid #27ae60;">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">
+                                <i class="fas fa-graduation-cap"></i> {{ formacion.profesion }}
+                            </h5>
+                            <p class="mb-2">
+                                <i class="fas fa-university"></i>
+                                <strong>Universidad:</strong> {{ formacion.universidad }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-id-card"></i>
+                                <strong>Tarjeta Profesional:</strong> {{ formacion.tarjeta_profesional }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-hashtag"></i>
+                                <strong>Número:</strong> {{ formacion.numero_tarjeta_resolucion }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar"></i>
+                                <strong>Fecha Expedición:</strong> {{ formacion.fecha_expedicion|date:"d/m/Y" }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar-check"></i>
+                                <strong>Fecha Grado:</strong> {{ formacion.fecha_grado|date:"d/m/Y" }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-clock"></i>
+                                <strong>Experiencia en la profesión:</strong> {{ formacion.meses_experiencia_profesion }} meses
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay formación académica registrada.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Posgrados -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-award"></i> Posgrados y Especializaciones
+        </h3>
+        {% if applicant.posgrados.all %}
+            <div class="row">
+                {% for posgrado in applicant.posgrados.all %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100" style="border-left: 4px solid #9b59b6;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #9b59b6;">
+                                <i class="fas fa-award"></i> {{ posgrado.nombre_posgrado }}
+                            </h5>
+                            <p class="mb-2">
+                                <i class="fas fa-university"></i>
+                                <strong>Universidad:</strong> {{ posgrado.universidad }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-calendar-check"></i>
+                                <strong>Terminación:</strong> {{ posgrado.fecha_terminacion|date:"d/m/Y" }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay posgrados registrados.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Cálculo de Experiencia -->
+    {% if applicant.calculo_experiencia %}
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-calculator"></i> Cálculo de Experiencia Total
+        </h3>
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-center" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">
+                    <div class="card-body">
+                        <h6>Total Meses</h6>
+                        <h2>{{ applicant.calculo_experiencia.total_meses_experiencia }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center" style="background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white;">
+                    <div class="card-body">
+                        <h6>Total Días</h6>
+                        <h2>{{ applicant.calculo_experiencia.total_dias_experiencia }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); color: white;">
+                    <div class="card-body">
+                        <h6>Total Años</h6>
+                        <h2>{{ applicant.calculo_experiencia.total_experiencia_anos }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white;">
+                    <div class="card-body">
+                        <h6>Años y Meses</h6>
+                        <h3>{{ applicant.calculo_experiencia.anos_y_meses_experiencia }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Botón de retorno -->
+    <div class="text-center mt-4 mb-5">
+        <a href="{% url 'formapp:applicant_list' %}" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-arrow-left"></i> Volver a la Lista
+        </a>
+    </div>
+</div>
+{% endblock %}

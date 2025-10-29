@@ -1,0 +1,851 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Formulario de Registro de Personal{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="form-header">
+        <h1>
+            <i class="fas fa-users"></i>
+            Registro de Personal - Gestión Humana
+        </h1>
+        <p>
+            Complete la siguiente información para registrarse en nuestra base de datos de personal (*campos obligatorios)
+        </p>
+    </div>
+
+    <div class="form-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" id="personalForm">
+            {% csrf_token %}
+
+            <!-- SECCIÓN 1: INFORMACIÓN BÁSICA -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-user-circle"></i> Información Personal y Profesional
+                </h2>
+                <p class="text-muted mb-4">Por favor ingrese sus datos personales y perfil profesional</p>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.nombre_completo.id_for_label }}" class="form-label required-field">
+                            {{ form.nombre_completo.label }}
+                        </label>
+                        {{ form.nombre_completo }}
+                        {% if form.nombre_completo.errors %}
+                            <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.cedula.id_for_label }}" class="form-label required-field">
+                            {{ form.cedula.label }}
+                        </label>
+                        {{ form.cedula }}
+                        {% if form.cedula.errors %}
+                            <div class="text-danger">{{ form.cedula.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.genero.id_for_label }}" class="form-label required-field">
+                            {{ form.genero.label }}
+                        </label>
+                        {{ form.genero }}
+                        {% if form.genero.errors %}
+                            <div class="text-danger">{{ form.genero.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.telefono.id_for_label }}" class="form-label required-field">
+                            {{ form.telefono.label }}
+                        </label>
+                        {{ form.telefono }}
+                        {% if form.telefono.errors %}
+                            <div class="text-danger">{{ form.telefono.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.correo.id_for_label }}" class="form-label required-field">
+                            {{ form.correo.label }}
+                        </label>
+                        {{ form.correo }}
+                        {% if form.correo.errors %}
+                            <div class="text-danger">{{ form.correo.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.cantidad.id_for_label }}" class="form-label required-field">
+                            {{ form.cantidad.label }}
+                        </label>
+                        {{ form.cantidad }}
+                        {% if form.cantidad.errors %}
+                            <div class="text-danger">{{ form.cantidad.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label required-field">
+                            <i class="fas fa-map-marker-alt"></i> Dirección Completa
+                        </label>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.tipo_via.id_for_label }}" class="form-label required-field">
+                            {{ form.tipo_via.label }}
+                        </label>
+                        {{ form.tipo_via }}
+                        {% if form.tipo_via.errors %}
+                            <div class="text-danger">{{ form.tipo_via.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.numero_via.id_for_label }}" class="form-label required-field">
+                            {{ form.numero_via.label }}
+                        </label>
+                        {{ form.numero_via }}
+                        {% if form.numero_via.errors %}
+                            <div class="text-danger">{{ form.numero_via.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.numero_casa.id_for_label }}" class="form-label required-field">
+                            {{ form.numero_casa.label }}
+                        </label>
+                        {{ form.numero_casa }}
+                        {% if form.numero_casa.errors %}
+                            <div class="text-danger">{{ form.numero_casa.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label for="{{ form.complemento_direccion.id_for_label }}" class="form-label">
+                            {{ form.complemento_direccion.label }}
+                        </label>
+                        {{ form.complemento_direccion }}
+                        <small class="form-text">Opcional</small>
+                        {% if form.complemento_direccion.errors %}
+                            <div class="text-danger">{{ form.complemento_direccion.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.barrio.id_for_label }}" class="form-label">
+                            {{ form.barrio.label }}
+                        </label>
+                        {{ form.barrio }}
+                        <small class="form-text">Opcional</small>
+                        {% if form.barrio.errors %}
+                            <div class="text-danger">{{ form.barrio.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: PERFIL PROFESIONAL -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-briefcase"></i> Perfil Profesional
+                </h2>
+                <p class="text-muted mb-4">
+                    <i class="fas fa-info-circle"></i>
+                    Información sobre su experiencia y área de conocimiento
+                </p>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.perfil.id_for_label }}" class="form-label required-field">
+                            {{ form.perfil.label }}
+                        </label>
+                        {{ form.perfil }}
+                        {% if form.perfil.errors %}
+                            <div class="text-danger">{{ form.perfil.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.area_conocimiento.id_for_label }}" class="form-label required-field">
+                            {{ form.area_conocimiento.label }}
+                        </label>
+                        {{ form.area_conocimiento }}
+                        {% if form.area_conocimiento.errors %}
+                            <div class="text-danger">{{ form.area_conocimiento.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.tipo_perfil.id_for_label }}" class="form-label required-field">
+                            {{ form.tipo_perfil.label }}
+                        </label>
+                        {{ form.tipo_perfil }}
+                        {% if form.tipo_perfil.errors %}
+                            <div class="text-danger">{{ form.tipo_perfil.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.profesion.id_for_label }}" class="form-label required-field">
+                            {{ form.profesion.label }}
+                        </label>
+                        {{ form.profesion }}
+                        {% if form.profesion.errors %}
+                            <div class="text-danger">{{ form.profesion.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ form.base_anexo_11.id_for_label }}" class="form-label required-field">
+                            {{ form.base_anexo_11.label }}
+                        </label>
+                        {{ form.base_anexo_11 }}
+                        {% if form.base_anexo_11.errors %}
+                            <div class="text-danger">{{ form.base_anexo_11.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.experiencia.id_for_label }}" class="form-label required-field">
+                            {{ form.experiencia.label }}
+                        </label>
+                        {{ form.experiencia }}
+                        {% if form.experiencia.errors %}
+                            <div class="text-danger">{{ form.experiencia.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.tiempo_experiencia.id_for_label }}" class="form-label required-field">
+                            {{ form.tiempo_experiencia.label }}
+                        </label>
+                        {{ form.tiempo_experiencia }}
+                        {% if form.tiempo_experiencia.errors %}
+                            <div class="text-danger">{{ form.tiempo_experiencia.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label required-field">
+                            {{ form.descripcion.label }}
+                        </label>
+                        {{ form.descripcion }}
+                        <small class="form-text">Describa detalladamente su experiencia y habilidades</small>
+                        {% if form.descripcion.errors %}
+                            <div class="text-danger">{{ form.descripcion.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="{{ form.observacion.id_for_label }}" class="form-label">
+                            {{ form.observacion.label }}
+                        </label>
+                        {{ form.observacion }}
+                        <small class="form-text">Información adicional relevante (opcional)</small>
+                        {% if form.observacion.errors %}
+                            <div class="text-danger">{{ form.observacion.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: EXPERIENCIA LABORAL -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-history"></i> Experiencia Laboral
+                </h2>
+                <p class="text-muted mb-3">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Agregue toda su experiencia laboral relevante.</strong>
+                    Por favor incluya certificados laborales o contractuales que respalden su experiencia.
+                </p>
+
+                <div id="experiencia-container">
+                    {{ experiencia_formset.management_form }}
+                    {% for form in experiencia_formset %}
+                        <div class="experiencia-group">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-briefcase"></i> Experiencia {{ forloop.counter }}
+                                </h5>
+                                {% if not forloop.first %}
+                                    <button type="button" class="remove-btn remove-experiencia">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                            {{ form.id }}
+                            {% if form.DELETE %}
+                                {{ form.DELETE }}
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.cargo.label }}</label>
+                                    {{ form.cargo }}
+                                    {% if form.cargo.errors %}
+                                        <div class="text-danger">{{ form.cargo.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.cargo_anexo_11.label }}</label>
+                                    {{ form.cargo_anexo_11 }}
+                                    {% if form.cargo_anexo_11.errors %}
+                                        <div class="text-danger">{{ form.cargo_anexo_11.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.fecha_inicial.label }}</label>
+                                    {{ form.fecha_inicial }}
+                                    {% if form.fecha_inicial.errors %}
+                                        <div class="text-danger">{{ form.fecha_inicial.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
+                                    {{ form.fecha_terminacion }}
+                                    {% if form.fecha_terminacion.errors %}
+                                        <div class="text-danger">{{ form.fecha_terminacion.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ form.meses_experiencia.label }}</label>
+                                    {{ form.meses_experiencia }}
+                                    {% if form.meses_experiencia.errors %}
+                                        <div class="text-danger">{{ form.meses_experiencia.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ form.dias_experiencia.label }}</label>
+                                    {{ form.dias_experiencia }}
+                                    {% if form.dias_experiencia.errors %}
+                                        <div class="text-danger">{{ form.dias_experiencia.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ form.dias_residual_experiencia.label }}</label>
+                                    {{ form.dias_residual_experiencia }}
+                                    {% if form.dias_residual_experiencia.errors %}
+                                        <div class="text-danger">{{ form.dias_residual_experiencia.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">{{ form.objeto_contractual.label }}</label>
+                                    {{ form.objeto_contractual }}
+                                    {% if form.objeto_contractual.errors %}
+                                        <div class="text-danger">{{ form.objeto_contractual.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">{{ form.funciones.label }}</label>
+                                    {{ form.funciones }}
+                                    {% if form.funciones.errors %}
+                                        <div class="text-danger">{{ form.funciones.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">{{ form.certificado_laboral.label }}</label>
+                                    {{ form.certificado_laboral }}
+                                    <small class="form-text">Adjunte certificado laboral o contractual (PDF, máx. 10MB)</small>
+                                    {% if form.certificado_laboral.errors %}
+                                        <div class="text-danger">{{ form.certificado_laboral.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="add-btn" id="add-experiencia">
+                        <i class="fas fa-plus-circle"></i> Agregar Más Experiencia Laboral
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 4: INFORMACIÓN ACADÉMICA -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-graduation-cap"></i> Información Académica
+                </h2>
+                <p class="text-muted mb-4">
+                    <i class="fas fa-university"></i>
+                    Incluya información sobre sus títulos profesionales y tarjetas profesionales
+                </p>
+
+                <div id="academica-container">
+                    {{ academica_formset.management_form }}
+                    {% for form in academica_formset %}
+                        <div class="academica-group">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-graduation-cap"></i> Formación {{ forloop.counter }}
+                                </h5>
+                                {% if not forloop.first %}
+                                    <button type="button" class="remove-btn remove-academica">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                            {{ form.id }}
+                            {% if form.DELETE %}
+                                {{ form.DELETE }}
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.profesion.label }}</label>
+                                    {{ form.profesion }}
+                                    {% if form.profesion.errors %}
+                                        <div class="text-danger">{{ form.profesion.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.universidad.label }}</label>
+                                    {{ form.universidad }}
+                                    {% if form.universidad.errors %}
+                                        <div class="text-danger">{{ form.universidad.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ form.tarjeta_profesional.label }}</label>
+                                    {{ form.tarjeta_profesional }}
+                                    {% if form.tarjeta_profesional.errors %}
+                                        <div class="text-danger">{{ form.tarjeta_profesional.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ form.numero_tarjeta_resolucion.label }}</label>
+                                    {{ form.numero_tarjeta_resolucion }}
+                                    {% if form.numero_tarjeta_resolucion.errors %}
+                                        <div class="text-danger">{{ form.numero_tarjeta_resolucion.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">{{ form.fecha_expedicion.label }}</label>
+                                    {{ form.fecha_expedicion }}
+                                    {% if form.fecha_expedicion.errors %}
+                                        <div class="text-danger">{{ form.fecha_expedicion.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.fecha_grado.label }}</label>
+                                    {{ form.fecha_grado }}
+                                    {% if form.fecha_grado.errors %}
+                                        <div class="text-danger">{{ form.fecha_grado.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.meses_experiencia_profesion.label }}</label>
+                                    {{ form.meses_experiencia_profesion }}
+                                    {% if form.meses_experiencia_profesion.errors %}
+                                        <div class="text-danger">{{ form.meses_experiencia_profesion.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="add-btn" id="add-academica">
+                        <i class="fas fa-plus-circle"></i> Agregar Más Información Académica
+                    </button>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 5: POSGRADOS -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-award"></i> Posgrados y Especializaciones
+                </h2>
+                <p class="text-muted mb-3">
+                    <i class="fas fa-star"></i>
+                    <strong>Opcional:</strong> Agregue información sobre maestrías, especializaciones, doctorados, etc.
+                </p>
+
+                <div id="posgrado-container">
+                    {{ posgrado_formset.management_form }}
+                    {% for form in posgrado_formset %}
+                        <div class="posgrado-group">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-award"></i> Posgrado {{ forloop.counter }}
+                                </h5>
+                                {% if not forloop.first %}
+                                    <button type="button" class="remove-btn remove-posgrado">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                            {{ form.id }}
+                            {% if form.DELETE %}
+                                {{ form.DELETE }}
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.nombre_posgrado.label }}</label>
+                                    {{ form.nombre_posgrado }}
+                                    {% if form.nombre_posgrado.errors %}
+                                        <div class="text-danger">{{ form.nombre_posgrado.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.universidad.label }}</label>
+                                    {{ form.universidad }}
+                                    {% if form.universidad.errors %}
+                                        <div class="text-danger">{{ form.universidad.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
+                                    {{ form.fecha_terminacion }}
+                                    {% if form.fecha_terminacion.errors %}
+                                        <div class="text-danger">{{ form.fecha_terminacion.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="add-btn" id="add-posgrado">
+                        <i class="fas fa-plus-circle"></i> Agregar Más Posgrados
+                    </button>
+                </div>
+            </div>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="text-center mt-5">
+                <div class="alert alert-success mb-4">
+                    <i class="fas fa-check-circle"></i>
+                    <strong>Al hacer clic en "Completar Registro", su información será guardada en nuestro sistema.</strong>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg px-5">
+                    <i class="fas fa-check-circle"></i> Completar Registro
+                </button>
+                <button type="reset" class="btn btn-secondary btn-lg ms-3 px-5">
+                    <i class="fas fa-undo"></i> Limpiar Formulario
+                </button>
+            </div>
+
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="fas fa-lock"></i> Sus datos están protegidos y serán utilizados únicamente para procesos de gestión humana.
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Script para manejar los formsets dinámicos
+    $(document).ready(function() {
+        // Manejar eliminación de experiencia
+        $('.remove-experiencia').on('click', function() {
+            var experienciaGroup = $(this).closest('.experiencia-group');
+            var deleteCheckbox = experienciaGroup.find('input[name$="-DELETE"]');
+            if (deleteCheckbox.length) {
+                deleteCheckbox.prop('checked', true);
+                experienciaGroup.hide();
+            } else {
+                experienciaGroup.remove();
+            }
+        });
+
+        // Manejar eliminación de académica
+        $('.remove-academica').on('click', function() {
+            var academicaGroup = $(this).closest('.academica-group');
+            var deleteCheckbox = academicaGroup.find('input[name$="-DELETE"]');
+            if (deleteCheckbox.length) {
+                deleteCheckbox.prop('checked', true);
+                academicaGroup.hide();
+            } else {
+                academicaGroup.remove();
+            }
+        });
+
+        // Manejar eliminación de posgrado
+        $('.remove-posgrado').on('click', function() {
+            var posgradoGroup = $(this).closest('.posgrado-group');
+            var deleteCheckbox = posgradoGroup.find('input[name$="-DELETE"]');
+            if (deleteCheckbox.length) {
+                deleteCheckbox.prop('checked', true);
+                posgradoGroup.hide();
+            } else {
+                posgradoGroup.remove();
+            }
+        });
+
+        // Función para agregar más experiencias laborales
+        $('#add-experiencia').on('click', function(e) {
+            e.preventDefault();
+            var formsetContainer = $('#experiencia-container');
+            var totalForms = $('#id_experiencias_laborales-TOTAL_FORMS');
+            var formNum = parseInt(totalForms.val());
+
+            // Clonar el último formulario
+            var lastForm = $('.experiencia-group').last();
+            var newForm = lastForm.clone();
+
+            // Actualizar los índices en el nuevo formulario
+            newForm.html(newForm.html().replace(/experiencias_laborales-\d+-/g, 'experiencias_laborales-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+
+            // Agregar botón de eliminar si no existe
+            if (formNum > 0) {
+                newForm.find('.d-flex h5').parent().html(
+                    '<h5 class="mb-0"><i class="fas fa-briefcase"></i> Experiencia ' + (formNum + 1) + '</h5>' +
+                    '<button type="button" class="remove-btn remove-experiencia"><i class="fas fa-trash"></i> Eliminar</button>'
+                );
+            }
+
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+
+            // Re-aplicar event listeners
+            setupRemoveButtons();
+        });
+
+        // Función para agregar más información académica
+        $('#add-academica').on('click', function(e) {
+            e.preventDefault();
+            var formsetContainer = $('#academica-container');
+            var totalForms = $('#id_formacion_academica-TOTAL_FORMS');
+            var formNum = parseInt(totalForms.val());
+
+            var lastForm = $('.academica-group').last();
+            var newForm = lastForm.clone();
+
+            newForm.html(newForm.html().replace(/formacion_academica-\d+-/g, 'formacion_academica-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+
+            if (formNum > 0) {
+                newForm.find('.d-flex h5').parent().html(
+                    '<h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Formación ' + (formNum + 1) + '</h5>' +
+                    '<button type="button" class="remove-btn remove-academica"><i class="fas fa-trash"></i> Eliminar</button>'
+                );
+            }
+
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+            setupRemoveButtons();
+        });
+
+        // Función para agregar más posgrados
+        $('#add-posgrado').on('click', function(e) {
+            e.preventDefault();
+            var formsetContainer = $('#posgrado-container');
+            var totalForms = $('#id_posgrados-TOTAL_FORMS');
+            var formNum = parseInt(totalForms.val());
+
+            var lastForm = $('.posgrado-group').last();
+            var newForm = lastForm.clone();
+
+            newForm.html(newForm.html().replace(/posgrados-\d+-/g, 'posgrados-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+
+            if (formNum > 0) {
+                newForm.find('.d-flex h5').parent().html(
+                    '<h5 class="mb-0"><i class="fas fa-award"></i> Posgrado ' + (formNum + 1) + '</h5>' +
+                    '<button type="button" class="remove-btn remove-posgrado"><i class="fas fa-trash"></i> Eliminar</button>'
+                );
+            }
+
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+            setupRemoveButtons();
+        });
+
+        // Función para configurar los botones de eliminar
+        function setupRemoveButtons() {
+            $(document).off('click', '.remove-experiencia, .remove-academica, .remove-posgrado');
+
+            $(document).on('click', '.remove-experiencia', function() {
+                var experienciaGroup = $(this).closest('.experiencia-group');
+                var deleteCheckbox = experienciaGroup.find('input[name$="-DELETE"]');
+                if (deleteCheckbox.length) {
+                    deleteCheckbox.prop('checked', true);
+                    experienciaGroup.hide();
+                } else {
+                    experienciaGroup.remove();
+                }
+            });
+
+            $(document).on('click', '.remove-academica', function() {
+                var academicaGroup = $(this).closest('.academica-group');
+                var deleteCheckbox = academicaGroup.find('input[name$="-DELETE"]');
+                if (deleteCheckbox.length) {
+                    deleteCheckbox.prop('checked', true);
+                    academicaGroup.hide();
+                } else {
+                    academicaGroup.remove();
+                }
+            });
+
+            $(document).on('click', '.remove-posgrado', function() {
+                var posgradoGroup = $(this).closest('.posgrado-group');
+                var deleteCheckbox = posgradoGroup.find('input[name$="-DELETE"]');
+                if (deleteCheckbox.length) {
+                    deleteCheckbox.prop('checked', true);
+                    posgradoGroup.hide();
+                } else {
+                    posgradoGroup.remove();
+                }
+            });
+        }
+
+        // Inicializar botones de eliminar
+        setupRemoveButtons();
+
+        // Función para calcular la diferencia entre fechas
+        function calcularDiferencia(fechaInicio, fechaFin) {
+            if (!fechaInicio || !fechaFin) return { meses: 0, dias: 0 };
+
+            var inicio = new Date(fechaInicio);
+            var fin = new Date(fechaFin);
+
+            if (fin < inicio) return { meses: 0, dias: 0 };
+
+            var años = fin.getFullYear() - inicio.getFullYear();
+            var meses = fin.getMonth() - inicio.getMonth();
+            var dias = fin.getDate() - inicio.getDate();
+
+            // Ajustar si los días son negativos
+            if (dias < 0) {
+                meses--;
+                var ultimoDiaMesAnterior = new Date(fin.getFullYear(), fin.getMonth(), 0).getDate();
+                dias += ultimoDiaMesAnterior;
+            }
+
+            // Ajustar si los meses son negativos
+            if (meses < 0) {
+                años--;
+                meses += 12;
+            }
+
+            var totalMeses = (años * 12) + meses;
+
+            return { meses: totalMeses, dias: dias };
+        }
+
+        // Calcular automáticamente meses y días de experiencia
+        function setupCalculoExperiencia() {
+            $(document).on('change', 'input[id*="fecha_inicial"], input[id*="fecha_terminacion"]', function() {
+                var experienciaGroup = $(this).closest('.experiencia-group');
+                var fechaInicial = experienciaGroup.find('input[id*="fecha_inicial"]').val();
+                var fechaTerminacion = experienciaGroup.find('input[id*="fecha_terminacion"]').val();
+
+                if (fechaInicial && fechaTerminacion) {
+                    var resultado = calcularDiferencia(fechaInicial, fechaTerminacion);
+                    experienciaGroup.find('input[id*="meses_experiencia"]').val(resultado.meses);
+                    experienciaGroup.find('input[id*="dias_experiencia"]').val(resultado.dias);
+                }
+            });
+        }
+
+        // Inicializar cálculo de experiencia
+        setupCalculoExperiencia();
+
+        // Mostrar/ocultar campo de número de tarjeta según selección
+        $(document).on('change', 'select[id*="tarjeta_profesional"]', function() {
+            var academicaGroup = $(this).closest('.academica-group');
+            var numeroField = academicaGroup.find('input[id*="numero_tarjeta_resolucion"]').closest('.col-md-4');
+            var fechaField = academicaGroup.find('input[id*="fecha_expedicion"]').closest('.col-md-4');
+
+            if ($(this).val() === 'No Aplica') {
+                numeroField.hide();
+                fechaField.hide();
+                numeroField.find('input').removeAttr('required');
+                fechaField.find('input').removeAttr('required');
+            } else {
+                numeroField.show();
+                fechaField.show();
+            }
+        });
+
+        // Inicializar visibilidad de campos de tarjeta
+        $('select[id*="tarjeta_profesional"]').each(function() {
+            $(this).trigger('change');
+        });
+
+        // Agregar estilos de bootstrap a los campos del formulario
+        $('input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="file"], select, textarea').addClass('form-control');
+        $('input[type="checkbox"]').addClass('form-check-input');
+    });
+</script>
+{% endblock %}
