@@ -214,6 +214,10 @@
                     <strong>Agregue toda su experiencia laboral relevante.</strong>
                     Por favor incluya certificados laborales o contractuales que respalden su experiencia.
                 </p>
+                <div class="alert alert-info mb-3" role="alert">
+                    <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Todos los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                    Si hay un error de validación, deberá volver a adjuntar el archivo del certificado laboral.
+                </div>
 
                 <div id="experiencia-container">
                     {{ experiencia_formset.management_form }}
@@ -230,6 +234,13 @@
                                 {% endif %}
                             </div>
 
+                            <!-- Errores no relacionados a campos específicos -->
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-circle"></i> {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
+
                             {{ form.id }}
                             {% if form.DELETE %}
                                 {{ form.DELETE }}
@@ -237,87 +248,87 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.cargo.label }}</label>
+                                    <label class="form-label required-field">{{ form.cargo.label }} *</label>
                                     {{ form.cargo }}
                                     {% if form.cargo.errors %}
-                                        <div class="text-danger">{{ form.cargo.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.cargo.errors }}</div>
                                     {% endif %}
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.cargo_anexo_11.label }}</label>
+                                    <label class="form-label required-field">{{ form.cargo_anexo_11.label }} *</label>
                                     {{ form.cargo_anexo_11 }}
                                     {% if form.cargo_anexo_11.errors %}
-                                        <div class="text-danger">{{ form.cargo_anexo_11.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.cargo_anexo_11.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fecha_inicial.label }}</label>
+                                    <label class="form-label required-field">{{ form.fecha_inicial.label }} *</label>
                                     {{ form.fecha_inicial }}
                                     {% if form.fecha_inicial.errors %}
-                                        <div class="text-danger">{{ form.fecha_inicial.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_inicial.errors }}</div>
                                     {% endif %}
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
+                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
                                     {{ form.fecha_terminacion }}
                                     {% if form.fecha_terminacion.errors %}
-                                        <div class="text-danger">{{ form.fecha_terminacion.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.meses_experiencia.label }}</label>
+                                    <label class="form-label required-field">{{ form.meses_experiencia.label }} *</label>
                                     {{ form.meses_experiencia }}
-                                    <small class="form-text">Meses completos de experiencia</small>
+                                    <small class="form-text text-muted">Meses completos de experiencia</small>
                                     {% if form.meses_experiencia.errors %}
-                                        <div class="text-danger">{{ form.meses_experiencia.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.meses_experiencia.errors }}</div>
                                     {% endif %}
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.dias_experiencia.label }}</label>
+                                    <label class="form-label required-field">{{ form.dias_experiencia.label }} *</label>
                                     {{ form.dias_experiencia }}
-                                    <small class="form-text">Total de días calendario</small>
+                                    <small class="form-text text-muted">Total de días calendario</small>
                                     {% if form.dias_experiencia.errors %}
-                                        <div class="text-danger">{{ form.dias_experiencia.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.dias_experiencia.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label">{{ form.objeto_contractual.label }}</label>
+                                    <label class="form-label required-field">{{ form.objeto_contractual.label }} *</label>
                                     {{ form.objeto_contractual }}
                                     {% if form.objeto_contractual.errors %}
-                                        <div class="text-danger">{{ form.objeto_contractual.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.objeto_contractual.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label">{{ form.funciones.label }}</label>
+                                    <label class="form-label required-field">{{ form.funciones.label }} *</label>
                                     {{ form.funciones }}
                                     {% if form.funciones.errors %}
-                                        <div class="text-danger">{{ form.funciones.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.funciones.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label">{{ form.certificado_laboral.label }}</label>
+                                    <label class="form-label required-field">{{ form.certificado_laboral.label }} *</label>
                                     {{ form.certificado_laboral }}
                                     <small class="form-text text-muted">Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB</small>
                                     {% if form.certificado_laboral.errors %}
-                                        <div class="text-danger">{{ form.certificado_laboral.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.certificado_laboral.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>

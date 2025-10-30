@@ -160,13 +160,54 @@ class ExperienciaLaboralForm(forms.ModelForm):
             }),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
-            'cargo': forms.TextInput(attrs={'class': 'form-control'}),
-            'cargo_anexo_11': forms.TextInput(attrs={'class': 'form-control'}),
-            'objeto_contractual': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'funciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'cargo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Ingeniero de Sistemas'}),
+            'cargo_anexo_11': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Profesional'}),
+            'objeto_contractual': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Describa el objeto contractual'}),
+            'funciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Describa las funciones realizadas'}),
             'fecha_inicial': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+        error_messages = {
+            'fecha_inicial': {
+                'required': 'La fecha inicial es obligatoria.',
+            },
+            'fecha_terminacion': {
+                'required': 'La fecha de terminación es obligatoria.',
+            },
+            'cargo': {
+                'required': 'El cargo es obligatorio.',
+            },
+            'cargo_anexo_11': {
+                'required': 'El cargo anexo 11 es obligatorio.',
+            },
+            'objeto_contractual': {
+                'required': 'El objeto contractual es obligatorio.',
+            },
+            'funciones': {
+                'required': 'Las funciones son obligatorias.',
+            },
+            'certificado_laboral': {
+                'required': 'Debe adjuntar el certificado laboral o contractual.',
+            },
+            'meses_experiencia': {
+                'required': 'Los meses de experiencia son obligatorios.',
+            },
+            'dias_experiencia': {
+                'required': 'Los días de experiencia son obligatorios.',
+            },
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fecha_inicial = cleaned_data.get('fecha_inicial')
+        fecha_terminacion = cleaned_data.get('fecha_terminacion')
+
+        # Validar que la fecha inicial sea menor que la fecha de terminación
+        if fecha_inicial and fecha_terminacion:
+            if fecha_inicial >= fecha_terminacion:
+                raise forms.ValidationError('La fecha inicial debe ser anterior a la fecha de terminación.')
+
+        return cleaned_data
 
 class InformacionAcademicaForm(forms.ModelForm):
     class Meta:
