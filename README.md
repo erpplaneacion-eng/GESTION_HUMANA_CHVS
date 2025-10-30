@@ -100,7 +100,14 @@ Ver [DEPLOYMENT.md](gestion_humana/DEPLOYMENT.md) para instrucciones detalladas.
    SECRET_KEY=tu-clave-secreta-produccion
    DEBUG=False
    ALLOWED_HOSTS=*.railway.app
+   CLOUDINARY_CLOUD_NAME=tu-cloud-name
+   CLOUDINARY_API_KEY=tu-api-key
+   CLOUDINARY_API_SECRET=tu-api-secret
    ```
+
+**📖 Para configuración detallada de Cloudinary, ver:**
+- `GUIA_CLOUDINARY.md` - Guía completa paso a paso
+- `RESUMEN_CLOUDINARY.md` - Resumen rápido
 
 ## 📁 Estructura del Proyecto
 

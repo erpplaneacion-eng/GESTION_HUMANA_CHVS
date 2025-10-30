@@ -58,6 +58,24 @@ ALLOWED_HOSTS=*.railway.app
 
 **IMPORTANTE**: Railway automáticamente inyecta `DATABASE_URL` desde PostgreSQL, no necesitas configurarla manualmente.
 
+#### 2.3.1 Configurar Cloudinary (Para Certificados y Archivos)
+
+Para que los certificados laborales y archivos se suban a Cloudinary, agrega estas tres variables:
+
+```
+CLOUDINARY_CLOUD_NAME=tu-cloud-name
+CLOUDINARY_API_KEY=tu-api-key
+CLOUDINARY_API_SECRET=tu-api-secret
+```
+
+**¿Dónde obtener estas credenciales?**
+1. Ve a [https://cloudinary.com](https://cloudinary.com)
+2. Inicia sesión o crea una cuenta gratuita
+3. En el Dashboard, verás tu **Cloud Name**, **API Key** y **API Secret**
+4. Cópialos exactamente como aparecen
+
+**Nota:** No incluyas espacios ni comillas alrededor de los valores.
+
 ### 2.4 Generar una SECRET_KEY Segura
 
 Puedes generar una clave secreta segura con Python:
@@ -157,6 +175,20 @@ python manage.py migrate
 ### Base de Datos No Conecta
 - Verifica que el servicio PostgreSQL esté corriendo
 - Railway debe inyectar automáticamente `DATABASE_URL`
+
+### Errores con Cloudinary / Archivos No Se Suben
+- Verifica que las tres variables de Cloudinary estén configuradas:
+  - `CLOUDINARY_CLOUD_NAME`
+  - `CLOUDINARY_API_KEY`
+  - `CLOUDINARY_API_SECRET`
+- Revisa que los valores NO tengan espacios ni comillas
+- Si los archivos no se suben, revisa los logs en Railway
+- Verifica que tu cuenta de Cloudinary esté activa (cuenta gratuita funciona)
+
+### Archivos No Se Visualizan después de Subirlos
+- Los archivos se almacenan en Cloudinary con prefijo `/media/`
+- Verifica que `MEDIA_URL = '/media/'` esté en settings.py
+- Revisa la URL del archivo en Cloudinary Dashboard
 
 ## 📊 Monitoreo
 
