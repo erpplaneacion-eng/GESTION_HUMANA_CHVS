@@ -1,0 +1,40 @@
+VARIABLES PARA RAILWAY - CLOUDINARY
+=====================================
+
+Configura estas 3 variables en Railway:
+
+Variable 1:
+-----------
+Nombre: CLOUDINARY_CLOUD_NAME
+Valor: dk7nufqc4
+
+Variable 2:
+-----------
+Nombre: CLOUDINARY_API_KEY
+Valor: 862119278775475
+
+Variable 3:
+-----------
+Nombre: CLOUDINARY_API_SECRET
+Valor: H29cbSnPJd_SYlFxOv039mc_wZE
+
+
+INSTRUCCIONES:
+==============
+
+1. Ve a https://railway.app
+2. Selecciona tu proyecto gestionhumanachvs-production
+3. Click en el servicio web (no la base de datos)
+4. Ve a la pestaña "Variables"
+5. Agrega las 3 variables anteriores UNA POR UNA
+6. Railway reiniciará automáticamente el servicio
+7. Espera a que termine el despliegue
+8. Prueba subir un certificado nuevamente
+
+
+IMPORTANTE:
+===========
+- NO agregues espacios antes o después de los valores
+- NO uses comillas
+- Copia EXACTAMENTE como aparece arriba
+
