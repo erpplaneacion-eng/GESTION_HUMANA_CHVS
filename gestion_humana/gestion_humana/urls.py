@@ -8,7 +8,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', auth_views.LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='/login/'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),  # Usa LOGOUT_REDIRECT_URL de settings.py
     path('formapp/', include('formapp.urls')),
     path('', RedirectView.as_view(url='/formapp/registro/', permanent=False)),
 ]
