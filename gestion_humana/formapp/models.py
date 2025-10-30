@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
+from .validators import validate_file_size, validate_file_extension
 
 class InformacionBasica(models.Model):
     # campos datos personales
@@ -10,7 +11,14 @@ class InformacionBasica(models.Model):
         ('Masculino', 'Masculino'),
     ]
     nombre_completo = models.CharField(max_length=200, verbose_name='Nombre Completo', blank=True, null=True)
-    cedula = models.CharField(max_length=20, unique=True, verbose_name='Cédula')
+    cedula = models.CharField(
+        max_length=20,
+        unique=True,
+        verbose_name='Cédula',
+        error_messages={
+            'unique': 'Ya existe un registro con esta cédula. Por favor, verifica el número de cédula.'
+        }
+    )
     genero = models.CharField(max_length=50, verbose_name='Género', choices=GENERO_CHOICES)
      # Campos de dirección subdivididos
     tipo_via = models.CharField(max_length=50, verbose_name='Tipo de Vía (Calle/Avenida/Carrera)', default='Calle')
@@ -54,7 +62,12 @@ class ExperienciaLaboral(models.Model):
     funciones = models.TextField(verbose_name='Funciones')     
     
     informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='experiencias_laborales')
-    certificado_laboral = models.FileField(upload_to='certificados_laborales/', verbose_name='Certificado Laboral o Contractual')     
+    certificado_laboral = models.FileField(
+        upload_to='certificados_laborales/',
+        verbose_name='Certificado Laboral o Contractual',
+        validators=[validate_file_size, validate_file_extension],
+        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB'
+    )     
     
 
     def __str__(self):

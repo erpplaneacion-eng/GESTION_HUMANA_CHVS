@@ -79,6 +79,12 @@ class InformacionBasicaPublicForm(forms.ModelForm):
             raise forms.ValidationError('La cédula debe contener solo números')
         if len(cedula) < 5 or len(cedula) > 10:
             raise forms.ValidationError('La cédula debe tener entre 5 y 10 dígitos')
+
+        # Validar que la cédula no esté duplicada (solo al crear, no al editar)
+        if not self.instance.pk:  # Solo validar si es un nuevo registro
+            if InformacionBasica.objects.filter(cedula=cedula).exists():
+                raise forms.ValidationError(f'Ya existe un registro con la cédula {cedula}. Por favor, verifica el número de cédula.')
+
         return cedula
 
     def clean_telefono(self):
@@ -148,7 +154,10 @@ class ExperienciaLaboralForm(forms.ModelForm):
         model = ExperienciaLaboral
         exclude = ['informacion_basica']
         widgets = {
-            'certificado_laboral': forms.FileInput(attrs={'class': 'form-control'}),
+            'certificado_laboral': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png'
+            }),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'cargo': forms.TextInput(attrs={'class': 'form-control'}),
