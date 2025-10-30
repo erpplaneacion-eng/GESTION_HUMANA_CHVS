@@ -163,6 +163,9 @@ STORAGES = {
     },
 }
 
+# Mantener compatibilidad con versiones antiguas de Django
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 # Media files (User uploaded files) - Ahora manejados por Cloudinary
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
