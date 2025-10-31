@@ -439,3 +439,18 @@ label[for$="-DELETE"] {
     color: #ffc107;
     margin-right: 8px;
 }
+
+/* Estilos para campos con error */
+.form-control.is-invalid,
+.form-select.is-invalid,
+input[type="file"].is-invalid {
+    border-color: var(--danger-color) !important;
+    border-width: 2px !important;
+    background-color: #ffe6e6 !important;
+}
+
+.form-control.is-invalid:focus,
+.form-select.is-invalid:focus,
+input[type="file"].is-invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(231, 76, 60, 0.25) !important;
+}

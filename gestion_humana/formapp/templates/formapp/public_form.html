@@ -793,6 +793,47 @@
         // Agregar estilos de bootstrap a los campos del formulario
         $('input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="file"], select, textarea').addClass('form-control');
         $('input[type="checkbox"]').addClass('form-check-input');
+
+        // Validación personalizada del formulario
+        $('#personalForm').on('submit', function(e) {
+            var isValid = true;
+            var errorMessages = [];
+
+            // Validar que todas las experiencias laborales tengan certificado
+            $('.experiencia-group:visible').each(function(index) {
+                var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                // Solo validar si el formulario no está marcado para eliminar
+                if (!deleteCheckbox.prop('checked')) {
+                    var fileInput = $(this).find('input[type="file"][id*="certificado_laboral"]');
+                    var hasExistingFile = $(this).find('a[href*="certificado"]').length > 0;
+
+                    if (fileInput.length > 0 && !fileInput.val() && !hasExistingFile) {
+                        isValid = false;
+                        fileInput.addClass('is-invalid');
+                        errorMessages.push('La Experiencia ' + (index + 1) + ' requiere un certificado laboral.');
+                    } else {
+                        fileInput.removeClass('is-invalid');
+                    }
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                alert('Por favor complete todos los campos obligatorios:\n\n' + errorMessages.join('\n'));
+
+                // Hacer scroll al primer error
+                $('html, body').animate({
+                    scrollTop: $('.is-invalid').first().offset().top - 100
+                }, 500);
+            }
+        });
+
+        // Quitar el borde rojo cuando el usuario seleccione un archivo
+        $(document).on('change', 'input[type="file"][id*="certificado_laboral"]', function() {
+            if ($(this).val()) {
+                $(this).removeClass('is-invalid');
+            }
+        });
     });
 </script>
 {% endblock %}

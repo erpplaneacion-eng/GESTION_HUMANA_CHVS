@@ -156,7 +156,8 @@ class ExperienciaLaboralForm(forms.ModelForm):
         widgets = {
             'certificado_laboral': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png'
+                'accept': '.pdf,.jpg,.jpeg,.png',
+                'required': 'required'
             }),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
