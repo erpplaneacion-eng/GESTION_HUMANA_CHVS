@@ -10,7 +10,8 @@
       "Bash(cat:*)",
       "Bash(python3:*)",
       "Bash(venv/Scripts/pip install:*)",
-      "Bash(python -m pip:*)"
+      "Bash(python -m pip:*)",
+      "Read(//mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/**)"
     ],
     "deny": [],
     "ask": []
