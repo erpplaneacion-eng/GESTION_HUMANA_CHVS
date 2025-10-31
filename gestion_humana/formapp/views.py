@@ -25,6 +25,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from datetime import datetime
 import logging
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -72,14 +73,14 @@ def enviar_correo_confirmacion(informacion_basica):
         # Crear versión texto plano
         plain_message = strip_tags(html_message)
 
-        # Enviar correo
+        # Enviar correo con timeout y fail_silently=True para no bloquear
         send_mail(
             subject=f'Confirmación de Registro - Gestión Humana CHVS',
             message=plain_message,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[informacion_basica.correo],
             html_message=html_message,
-            fail_silently=False,
+            fail_silently=True,  # No bloquear si falla
         )
         logger.info(f'Correo enviado exitosamente a {informacion_basica.correo}')
         return True
@@ -113,14 +114,19 @@ def public_form_view(request):
                     if posgrado_formset.is_valid():
                         posgrado_formset.save()
 
-                    # Enviar correo de confirmación al usuario
-                    correo_enviado = enviar_correo_confirmacion(informacion_basica)
+                    # Enviar correo de confirmación al usuario en un thread separado
+                    # para no bloquear la respuesta del formulario
+                    def enviar_correo_async():
+                        try:
+                            enviar_correo_confirmacion(informacion_basica)
+                        except Exception as e:
+                            logger.error(f'Error en thread de correo: {str(e)}')
 
-                    if correo_enviado:
-                        messages.success(request, '¡Formulario enviado con éxito! Hemos enviado un correo de confirmación a tu dirección de email.')
-                    else:
-                        messages.success(request, '¡Formulario enviado con éxito! (Nota: No se pudo enviar el correo de confirmación)')
+                    thread = threading.Thread(target=enviar_correo_async)
+                    thread.daemon = True
+                    thread.start()
 
+                    messages.success(request, '¡Formulario enviado con éxito! Recibirás un correo de confirmación en los próximos minutos.')
                     return redirect('formapp:public_form')
             except Exception as e:
                 messages.error(request, f'Error al guardar el formulario: {str(e)}')
