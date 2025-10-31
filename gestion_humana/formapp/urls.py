@@ -10,4 +10,6 @@ urlpatterns = [
     path('detalle/<int:pk>/', views.ApplicantDetailView.as_view(), name='applicant_detail'),
     path('editar/<int:pk>/', views.applicant_edit_view, name='applicant_edit'),
     path('eliminar/<int:pk>/', views.applicant_delete_view, name='applicant_delete'),
+    path('descargar/<int:pk>/', views.download_individual_zip, name='download_individual'),
+    path('descargar-todo/', views.download_all_zip, name='download_all'),
 ]

@@ -8,7 +8,9 @@
       "Bash(git add:*)",
       "Bash(tree:*)",
       "Bash(cat:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(python -m pip:*)"
     ],
     "deny": [],
     "ask": []
