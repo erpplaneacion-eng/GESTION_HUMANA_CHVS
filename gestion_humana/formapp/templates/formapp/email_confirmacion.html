@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Registro</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .email-header p {
+            margin: 10px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .email-body {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .message {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 30px;
+        }
+        .data-section {
+            background-color: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 5px;
+        }
+        .data-section h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .data-row {
+            display: flex;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .data-row:last-child {
+            border-bottom: none;
+        }
+        .data-label {
+            font-weight: 600;
+            color: #2c3e50;
+            min-width: 150px;
+        }
+        .data-value {
+            color: #555;
+        }
+        .important-box {
+            background-color: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .important-box h3 {
+            margin: 0 0 10px 0;
+            color: #856404;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .important-box h3::before {
+            content: "⚠️";
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        .important-box p {
+            margin: 0;
+            color: #856404;
+            line-height: 1.6;
+        }
+        .email-footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .email-footer p {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        .email-footer strong {
+            font-size: 16px;
+            opacity: 1;
+        }
+        @media only screen and (max-width: 600px) {
+            .email-container {
+                margin: 10px;
+            }
+            .email-body {
+                padding: 20px 15px;
+            }
+            .data-row {
+                flex-direction: column;
+            }
+            .data-label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="email-header">
+            <h1>Confirmación de Registro</h1>
+            <p>Gestión Humana CHVS</p>
+        </div>
+
+        <!-- Body -->
+        <div class="email-body">
+            <div class="greeting">
+                Estimado/a <strong>{{ nombre_completo }}</strong>,
+            </div>
+
+            <div class="message">
+                Hemos recibido tu información correctamente en nuestro sistema de Gestión Humana.
+            </div>
+
+            <!-- Datos Registrados -->
+            <div class="data-section">
+                <h3>DATOS REGISTRADOS:</h3>
+                <div class="data-row">
+                    <div class="data-label">Cédula:</div>
+                    <div class="data-value">{{ cedula }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Nombre Completo:</div>
+                    <div class="data-value">{{ nombre_completo }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Correo Electrónico:</div>
+                    <div class="data-value">{{ correo }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Teléfono:</div>
+                    <div class="data-value">{{ telefono }}</div>
+                </div>
+                <div class="data-row">
+                    <div class="data-label">Fecha de Registro:</div>
+                    <div class="data-value">{{ fecha_registro }}</div>
+                </div>
+            </div>
+
+            <div class="message">
+                Tu registro ha sido enviado al área de Gestión Humana para su revisión y procesamiento.
+            </div>
+
+            <!-- Importante -->
+            <div class="important-box">
+                <h3>IMPORTANTE:</h3>
+                <p>
+                    Por favor, mantente pendiente de tu correo electrónico y teléfono, ya que
+                    podríamos contactarte si necesitamos información adicional o documentos complementarios.
+                </p>
+            </div>
+
+            <div class="message">
+                Si tienes alguna duda, puedes comunicarte con nosotros.
+            </div>
+
+            <div class="message" style="margin-top: 30px; font-style: italic; color: #777;">
+                Gracias por tu interés.
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+            <p><strong>Cooperativa de Ahorro y Crédito Valle Solidario</strong></p>
+            <p>Área de Gestión Humana</p>
+            <p style="margin-top: 15px; font-size: 12px;">
+                Este es un correo automático, por favor no responder a este mensaje.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

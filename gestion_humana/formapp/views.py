@@ -6,6 +6,10 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.http import HttpResponse
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
+from django.conf import settings
 from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado
 from .forms import (
     InformacionBasicaPublicForm,
@@ -20,6 +24,9 @@ import os
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 def calcular_experiencia_total(informacion_basica):
     """Calcula automáticamente la experiencia total de una persona"""
@@ -48,6 +55,38 @@ def calcular_experiencia_total(informacion_basica):
     )
     return calculo
 
+def enviar_correo_confirmacion(informacion_basica):
+    """Envía correo de confirmación al usuario que completó el formulario"""
+    try:
+        # Preparar contexto para el template
+        context = {
+            'nombre_completo': informacion_basica.nombre_completo,
+            'cedula': informacion_basica.cedula,
+            'correo': informacion_basica.correo,
+            'telefono': informacion_basica.telefono,
+            'fecha_registro': datetime.now().strftime('%d/%m/%Y %H:%M'),
+        }
+
+        # Renderizar template HTML
+        html_message = render_to_string('formapp/email_confirmacion.html', context)
+        # Crear versión texto plano
+        plain_message = strip_tags(html_message)
+
+        # Enviar correo
+        send_mail(
+            subject=f'Confirmación de Registro - Gestión Humana CHVS',
+            message=plain_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[informacion_basica.correo],
+            html_message=html_message,
+            fail_silently=False,
+        )
+        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo}')
+        return True
+    except Exception as e:
+        logger.error(f'Error al enviar correo a {informacion_basica.correo}: {str(e)}')
+        return False
+
 def public_form_view(request):
     if request.method == 'POST':
         form = InformacionBasicaPublicForm(request.POST, request.FILES)
@@ -74,7 +113,14 @@ def public_form_view(request):
                     if posgrado_formset.is_valid():
                         posgrado_formset.save()
 
-                    messages.success(request, '¡Formulario enviado con éxito!')
+                    # Enviar correo de confirmación al usuario
+                    correo_enviado = enviar_correo_confirmacion(informacion_basica)
+
+                    if correo_enviado:
+                        messages.success(request, '¡Formulario enviado con éxito! Hemos enviado un correo de confirmación a tu dirección de email.')
+                    else:
+                        messages.success(request, '¡Formulario enviado con éxito! (Nota: No se pudo enviar el correo de confirmación)')
+
                     return redirect('formapp:public_form')
             except Exception as e:
                 messages.error(request, f'Error al guardar el formulario: {str(e)}')
