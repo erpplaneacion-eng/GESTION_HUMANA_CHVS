@@ -440,7 +440,27 @@ def download_individual_zip(request, pk):
                     certificado_file.close()
 
                     # Obtener la extensión del archivo
+                    # Cloudinary puede no incluir extensión en el nombre, así que intentamos obtenerla de la URL
                     ext = os.path.splitext(certificado_file.name)[1]
+                    if not ext and hasattr(certificado_file, 'url'):
+                        # Intentar obtener extensión de la URL de Cloudinary
+                        url = certificado_file.url
+                        # La URL de Cloudinary tiene formato: .../upload/v123456/archivo.ext
+                        if '.' in url.split('/')[-1]:
+                            ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
+
+                    # Si aún no hay extensión, detectar por contenido
+                    if not ext:
+                        # Detectar tipo por magic bytes
+                        if file_content.startswith(b'%PDF'):
+                            ext = '.pdf'
+                        elif file_content.startswith(b'\x89PNG'):
+                            ext = '.png'
+                        elif file_content.startswith(b'\xff\xd8\xff'):
+                            ext = '.jpg'
+                        else:
+                            ext = '.pdf'  # Default a PDF si no se puede detectar
+
                     cargo_safe = experiencia.cargo.replace(' ', '_').replace('/', '-')
 
                     # Agregar al ZIP
@@ -548,7 +568,28 @@ def download_all_zip(request):
                         file_content = certificado_file.read()
                         certificado_file.close()
 
+                        # Obtener la extensión del archivo
+                        # Cloudinary puede no incluir extensión en el nombre, así que intentamos obtenerla de la URL
                         ext = os.path.splitext(certificado_file.name)[1]
+                        if not ext and hasattr(certificado_file, 'url'):
+                            # Intentar obtener extensión de la URL de Cloudinary
+                            url = certificado_file.url
+                            # La URL de Cloudinary tiene formato: .../upload/v123456/archivo.ext
+                            if '.' in url.split('/')[-1]:
+                                ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
+
+                        # Si aún no hay extensión, detectar por contenido
+                        if not ext:
+                            # Detectar tipo por magic bytes
+                            if file_content.startswith(b'%PDF'):
+                                ext = '.pdf'
+                            elif file_content.startswith(b'\x89PNG'):
+                                ext = '.png'
+                            elif file_content.startswith(b'\xff\xd8\xff'):
+                                ext = '.jpg'
+                            else:
+                                ext = '.pdf'  # Default a PDF si no se puede detectar
+
                         cargo_safe = experiencia.cargo.replace(' ', '_').replace('/', '-')
 
                         zip_file.writestr(
