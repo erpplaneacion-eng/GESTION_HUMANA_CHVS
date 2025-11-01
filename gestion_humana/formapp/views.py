@@ -6,10 +6,9 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.http import HttpResponse
-from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
-import resend
+from django.template.loader import render_to_string
 from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado
 from .forms import (
     InformacionBasicaPublicForm,
@@ -21,13 +20,24 @@ from .forms import (
 import zipfile
 import io
 import os
+import json
+import base64
+from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
-from datetime import datetime
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import logging
 import threading
 
 logger = logging.getLogger(__name__)
+
+# Gmail API scope
+SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 def calcular_experiencia_total(informacion_basica):
     """Calcula automáticamente la experiencia total de una persona"""
@@ -57,16 +67,37 @@ def calcular_experiencia_total(informacion_basica):
     return calculo
 
 def enviar_correo_confirmacion(informacion_basica):
-    """Envía correo de confirmación al usuario que completó el formulario usando Resend"""
+    """Envía correo de confirmación al usuario que completó el formulario usando Gmail API"""
     try:
-        # Verificar que la API key esté configurada
-        if not settings.RESEND_API_KEY:
-            logger.warning('RESEND_API_KEY no está configurada. No se enviará correo.')
+        # Obtener la ruta del token.json (en la raíz del proyecto)
+        BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        token_path = os.path.join(BASE_DIR, 'token.json')
+        
+        # Cargar credenciales desde token.json
+        if not os.path.exists(token_path):
+            logger.error(f'No se encontró token.json en {token_path}')
             return False
-
-        # Crear cliente de Resend
-        r = resend.Resend(api_key=settings.RESEND_API_KEY)
-
+            
+        with open(token_path, 'r') as token_file:
+            token_data = json.load(token_file)
+        
+        # Crear credenciales desde el token
+        creds = Credentials(
+            token=token_data.get('token'),
+            refresh_token=token_data.get('refresh_token'),
+            token_uri=token_data.get('token_uri'),
+            client_id=token_data.get('client_id'),
+            client_secret=token_data.get('client_secret'),
+            scopes=token_data.get('scopes', SCOPES)
+        )
+        
+        # Refrescar el token si es necesario
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            
+        # Construir el servicio de Gmail
+        service = build('gmail', 'v1', credentials=creds)
+        
         # Preparar contexto para el template
         context = {
             'nombre_completo': informacion_basica.nombre_completo,
@@ -75,21 +106,30 @@ def enviar_correo_confirmacion(informacion_basica):
             'telefono': informacion_basica.telefono,
             'fecha_registro': datetime.now().strftime('%d/%m/%Y %H:%M'),
         }
-
+        
         # Renderizar template HTML
         html_message = render_to_string('formapp/email_confirmacion.html', context)
-
-        # Enviar correo con Resend API
-        params = {
-            "from": settings.DEFAULT_FROM_EMAIL,
-            "to": [informacion_basica.correo],
-            "subject": "Confirmación de Registro - Gestión Humana CHVS",
-            "html": html_message,
-        }
-
-        r.emails.send(params)
-        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo} vía Resend')
+        
+        # Crear mensaje de correo
+        message = MIMEMultipart('alternative')
+        message['To'] = informacion_basica.correo
+        message['From'] = settings.DEFAULT_FROM_EMAIL
+        message['Subject'] = 'Confirmación de Registro - Gestión Humana CHVS'
+        
+        # Adjuntar contenido HTML
+        html_part = MIMEText(html_message, 'html', 'utf-8')
+        message.attach(html_part)
+        
+        # Codificar el mensaje en base64
+        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+        send_message = {'raw': raw_message}
+        
+        # Enviar correo
+        service.users().messages().send(userId='me', body=send_message).execute()
+        
+        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo} vía Gmail API')
         return True
+        
     except Exception as e:
         logger.error(f'Error al enviar correo a {informacion_basica.correo}: {str(e)}')
         return False

@@ -194,7 +194,6 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
 
-# Email Configuration with Resend
-RESEND_API_KEY = config('RESEND_API_KEY', default='')
+# Email Configuration
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='erp.planeacion@vallesolidario.com')
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
