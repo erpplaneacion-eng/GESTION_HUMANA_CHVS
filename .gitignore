@@ -71,3 +71,10 @@ archivos excel/
 # Otros
 *.sqlite
 *.db
+
+# Credenciales
+credentials.json
+token.json
+service-account.json
+*.json.json
+CREDENCIALES_CLOUDINARY_RAILWAY.txt
