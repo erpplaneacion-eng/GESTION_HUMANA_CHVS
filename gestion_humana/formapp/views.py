@@ -64,8 +64,8 @@ def enviar_correo_confirmacion(informacion_basica):
             logger.warning('RESEND_API_KEY no está configurada. No se enviará correo.')
             return False
 
-        # Configurar Resend
-        resend.api_key = settings.RESEND_API_KEY
+        # Crear cliente de Resend
+        r = resend.Resend(api_key=settings.RESEND_API_KEY)
 
         # Preparar contexto para el template
         context = {
@@ -87,7 +87,7 @@ def enviar_correo_confirmacion(informacion_basica):
             "html": html_message,
         }
 
-        resend.Emails.send(params)
+        r.emails.send(params)
         logger.info(f'Correo enviado exitosamente a {informacion_basica.correo} vía Resend')
         return True
     except Exception as e:

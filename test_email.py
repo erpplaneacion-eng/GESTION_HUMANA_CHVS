@@ -44,8 +44,8 @@ def test_envio_correo():
         print("   4. Agregala al archivo .env como RESEND_API_KEY=re_...")
         return False
 
-    # Configurar Resend
-    resend.api_key = settings.RESEND_API_KEY
+    # Crear cliente de Resend
+    r = resend.Resend(api_key=settings.RESEND_API_KEY)
 
     # Datos de prueba
     datos_prueba = {
@@ -83,7 +83,7 @@ def test_envio_correo():
             "html": html_message,
         }
 
-        response = resend.Emails.send(params)
+        response = r.emails.send(params)
 
         print("=" * 60)
         print(" CORREO ENVIADO EXITOSAMENTE!")
