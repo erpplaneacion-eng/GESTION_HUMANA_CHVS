@@ -9,17 +9,20 @@ class InformacionBasicaPublicForm(forms.ModelForm):
     primer_apellido = forms.CharField(
         max_length=50,
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Apellido'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Apellido'}),
+        error_messages={'required': 'El campo Primer Apellido es obligatorio.'}
     )
     segundo_apellido = forms.CharField(
         max_length=50,
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segundo Apellido'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segundo Apellido'}),
+        error_messages={'required': 'El campo Segundo Apellido es obligatorio.'}
     )
     primer_nombre = forms.CharField(
         max_length=50,
         required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Nombre'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Nombre'}),
+        error_messages={'required': 'El campo Primer Nombre es obligatorio.'}
     )
     segundo_nombre = forms.CharField(
         max_length=50,
@@ -60,6 +63,29 @@ class InformacionBasicaPublicForm(forms.ModelForm):
                 'class': 'form-control',
                 'required': 'required'
             }),
+        }
+        error_messages = {
+            'cedula': {
+                'required': 'El campo Cédula es obligatorio.',
+            },
+            'genero': {
+                'required': 'El campo Género es obligatorio.',
+            },
+            'tipo_via': {
+                'required': 'El campo Tipo de Vía es obligatorio.',
+            },
+            'numero_via': {
+                'required': 'El campo Número de Vía es obligatorio.',
+            },
+            'numero_casa': {
+                'required': 'El campo Número de Casa/Edificio es obligatorio.',
+            },
+            'telefono': {
+                'required': 'El campo Teléfono es obligatorio.',
+            },
+            'correo': {
+                'required': 'El campo Correo Electrónico es obligatorio.',
+            },
         }
 
     def __init__(self, *args, **kwargs):

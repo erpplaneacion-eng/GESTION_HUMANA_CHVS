@@ -195,7 +195,7 @@ def public_form_view(request):
             except Exception as e:
                 messages.error(request, f'Error al guardar el formulario: {str(e)}')
         else:
-            messages.error(request, 'Por favor corrija los errores en el formulario.')
+            messages.warning(request, 'Por favor corrija los errores en el formulario.')
     else:
         form = InformacionBasicaPublicForm()
         experiencia_formset = ExperienciaLaboralFormSet()
