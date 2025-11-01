@@ -51,7 +51,7 @@ def test_envio_correo():
     datos_prueba = {
         'nombre_completo': 'PREZ GMEZ JUAN CARLOS',
         'cedula': '1234567890',
-        'correo': 'diegoalgtr1@gmail.com',  # Correo de destino
+        'correo': 'erp.planeacion@vallesolidario.com',  # Correo de destino (debe ser el mismo con el que te registraste en Resend)
         'telefono': '3001234567',
         'fecha_registro': datetime.now().strftime('%d/%m/%Y %H:%M'),
     }
