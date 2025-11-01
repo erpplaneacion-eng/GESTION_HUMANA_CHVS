@@ -69,17 +69,35 @@ def calcular_experiencia_total(informacion_basica):
 def enviar_correo_confirmacion(informacion_basica):
     """Envía correo de confirmación al usuario que completó el formulario usando Gmail API"""
     try:
-        # Obtener la ruta del token.json (en la raíz del proyecto)
-        BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        token_path = os.path.join(BASE_DIR, 'token.json')
+        # Cargar credenciales: primero de variable de entorno (Railway) o archivo (desarrollo local)
+        token_data = None
         
-        # Cargar credenciales desde token.json
-        if not os.path.exists(token_path):
-            logger.error(f'No se encontró token.json en {token_path}')
-            return False
+        # Intentar cargar desde variable de entorno (Railway)
+        gmail_token_json = os.getenv('GMAIL_TOKEN_JSON')
+        if gmail_token_json:
+            try:
+                token_data = json.loads(gmail_token_json)
+                logger.info('Credenciales de Gmail cargadas desde variable de entorno')
+            except json.JSONDecodeError as e:
+                logger.error(f'Error parseando GMAIL_TOKEN_JSON: {str(e)}')
+                return False
+        
+        # Si no hay variable de entorno, intentar cargar desde archivo (desarrollo local)
+        if not token_data:
+            BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            token_path = os.path.join(BASE_DIR, 'token.json')
             
-        with open(token_path, 'r') as token_file:
-            token_data = json.load(token_file)
+            if os.path.exists(token_path):
+                try:
+                    with open(token_path, 'r') as token_file:
+                        token_data = json.load(token_file)
+                    logger.info(f'Credenciales de Gmail cargadas desde {token_path}')
+                except Exception as e:
+                    logger.error(f'Error leyendo token.json: {str(e)}')
+                    return False
+            else:
+                logger.error(f'No se encontró token.json en {token_path} ni variable GMAIL_TOKEN_JSON')
+                return False
         
         # Crear credenciales desde el token
         creds = Credentials(
