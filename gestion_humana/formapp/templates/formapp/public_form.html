@@ -19,7 +19,7 @@
         {% if messages %}
             {% for message in messages %}
                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
+                    <i class="fas fa-exclamation-circle"></i> {{ message }}
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
@@ -42,7 +42,7 @@
                         </label>
                         {{ form.primer_apellido }}
                         {% if form.primer_apellido.errors %}
-                            <div class="text-danger">{{ form.primer_apellido.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.primer_apellido.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -52,7 +52,7 @@
                         </label>
                         {{ form.segundo_apellido }}
                         {% if form.segundo_apellido.errors %}
-                            <div class="text-danger">{{ form.segundo_apellido.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.segundo_apellido.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -62,7 +62,7 @@
                         </label>
                         {{ form.primer_nombre }}
                         {% if form.primer_nombre.errors %}
-                            <div class="text-danger">{{ form.primer_nombre.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.primer_nombre.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -72,7 +72,7 @@
                         </label>
                         {{ form.segundo_nombre }}
                         {% if form.segundo_nombre.errors %}
-                            <div class="text-danger">{{ form.segundo_nombre.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.segundo_nombre.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -85,7 +85,7 @@
                         {{ form.cedula }}
                         <small class="form-text text-muted">Entre 5 y 10 dígitos</small>
                         {% if form.cedula.errors %}
-                            <div class="text-danger">{{ form.cedula.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.cedula.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -95,7 +95,7 @@
                         </label>
                         {{ form.genero }}
                         {% if form.genero.errors %}
-                            <div class="text-danger">{{ form.genero.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.genero.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -108,7 +108,7 @@
                         {{ form.telefono }}
                         <small class="form-text text-muted">Exactamente 10 dígitos</small>
                         {% if form.telefono.errors %}
-                            <div class="text-danger">{{ form.telefono.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.telefono.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -119,7 +119,7 @@
                         {{ form.correo }}
                         <small class="form-text text-muted">Debe contener @</small>
                         {% if form.correo.errors %}
-                            <div class="text-danger">{{ form.correo.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.correo.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -132,7 +132,7 @@
                         </label>
                         {{ form.cantidad }}
                         {% if form.cantidad.errors %}
-                            <div class="text-danger">{{ form.cantidad.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.cantidad.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -152,7 +152,7 @@
                         </label>
                         {{ form.tipo_via }}
                         {% if form.tipo_via.errors %}
-                            <div class="text-danger">{{ form.tipo_via.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.tipo_via.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -162,7 +162,7 @@
                         </label>
                         {{ form.numero_via }}
                         {% if form.numero_via.errors %}
-                            <div class="text-danger">{{ form.numero_via.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.numero_via.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -172,7 +172,7 @@
                         </label>
                         {{ form.numero_casa }}
                         {% if form.numero_casa.errors %}
-                            <div class="text-danger">{{ form.numero_casa.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.numero_casa.errors }}</div>
                         {% endif %}
                     </div>
 
@@ -183,7 +183,7 @@
                         {{ form.complemento_direccion }}
                         <small class="form-text">Opcional</small>
                         {% if form.complemento_direccion.errors %}
-                            <div class="text-danger">{{ form.complemento_direccion.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.complemento_direccion.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -196,7 +196,7 @@
                         {{ form.barrio }}
                         <small class="form-text">Opcional</small>
                         {% if form.barrio.errors %}
-                            <div class="text-danger">{{ form.barrio.errors }}</div>
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.barrio.errors }}</div>
                         {% endif %}
                     </div>
                 </div>
@@ -378,7 +378,7 @@
                                     <label class="form-label">{{ form.profesion.label }}</label>
                                     {{ form.profesion }}
                                     {% if form.profesion.errors %}
-                                        <div class="text-danger">{{ form.profesion.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.profesion.errors }}</div>
                                     {% endif %}
                                 </div>
 
@@ -386,7 +386,7 @@
                                     <label class="form-label">{{ form.universidad.label }}</label>
                                     {{ form.universidad }}
                                     {% if form.universidad.errors %}
-                                        <div class="text-danger">{{ form.universidad.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -396,7 +396,7 @@
                                     <label class="form-label">{{ form.tarjeta_profesional.label }}</label>
                                     {{ form.tarjeta_profesional }}
                                     {% if form.tarjeta_profesional.errors %}
-                                        <div class="text-danger">{{ form.tarjeta_profesional.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.tarjeta_profesional.errors }}</div>
                                     {% endif %}
                                 </div>
 
@@ -404,7 +404,7 @@
                                     <label class="form-label">{{ form.numero_tarjeta_resolucion.label }}</label>
                                     {{ form.numero_tarjeta_resolucion }}
                                     {% if form.numero_tarjeta_resolucion.errors %}
-                                        <div class="text-danger">{{ form.numero_tarjeta_resolucion.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.numero_tarjeta_resolucion.errors }}</div>
                                     {% endif %}
                                 </div>
 
@@ -412,7 +412,7 @@
                                     <label class="form-label">{{ form.fecha_expedicion.label }}</label>
                                     {{ form.fecha_expedicion }}
                                     {% if form.fecha_expedicion.errors %}
-                                        <div class="text-danger">{{ form.fecha_expedicion.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_expedicion.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -422,7 +422,7 @@
                                     <label class="form-label">{{ form.fecha_grado.label }}</label>
                                     {{ form.fecha_grado }}
                                     {% if form.fecha_grado.errors %}
-                                        <div class="text-danger">{{ form.fecha_grado.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_grado.errors }}</div>
                                     {% endif %}
                                 </div>
 
@@ -430,7 +430,7 @@
                                     <label class="form-label">{{ form.meses_experiencia_profesion.label }}</label>
                                     {{ form.meses_experiencia_profesion }}
                                     {% if form.meses_experiencia_profesion.errors %}
-                                        <div class="text-danger">{{ form.meses_experiencia_profesion.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.meses_experiencia_profesion.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -480,7 +480,7 @@
                                     <label class="form-label">{{ form.nombre_posgrado.label }}</label>
                                     {{ form.nombre_posgrado }}
                                     {% if form.nombre_posgrado.errors %}
-                                        <div class="text-danger">{{ form.nombre_posgrado.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.nombre_posgrado.errors }}</div>
                                     {% endif %}
                                 </div>
 
@@ -488,7 +488,7 @@
                                     <label class="form-label">{{ form.universidad.label }}</label>
                                     {{ form.universidad }}
                                     {% if form.universidad.errors %}
-                                        <div class="text-danger">{{ form.universidad.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -498,7 +498,7 @@
                                     <label class="form-label">{{ form.fecha_terminacion.label }}</label>
                                     {{ form.fecha_terminacion }}
                                     {% if form.fecha_terminacion.errors %}
-                                        <div class="text-danger">{{ form.fecha_terminacion.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
                                     {% endif %}
                                 </div>
 
@@ -507,7 +507,7 @@
                                     {{ form.meses_de_experiencia }}
                                     <small class="form-text">Ingrese los meses de experiencia que aporta este posgrado</small>
                                     {% if form.meses_de_experiencia.errors %}
-                                        <div class="text-danger">{{ form.meses_de_experiencia.errors }}</div>
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.meses_de_experiencia.errors }}</div>
                                     {% endif %}
                                 </div>
                             </div>
