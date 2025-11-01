@@ -6,10 +6,10 @@ from django.db import transaction
 from django.contrib import messages
 from django.db.models import Q, Count
 from django.http import HttpResponse
-from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
+import resend
 from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado
 from .forms import (
     InformacionBasicaPublicForm,
@@ -57,8 +57,16 @@ def calcular_experiencia_total(informacion_basica):
     return calculo
 
 def enviar_correo_confirmacion(informacion_basica):
-    """Envía correo de confirmación al usuario que completó el formulario"""
+    """Envía correo de confirmación al usuario que completó el formulario usando Resend"""
     try:
+        # Verificar que la API key esté configurada
+        if not settings.RESEND_API_KEY:
+            logger.warning('RESEND_API_KEY no está configurada. No se enviará correo.')
+            return False
+
+        # Configurar Resend
+        resend.api_key = settings.RESEND_API_KEY
+
         # Preparar contexto para el template
         context = {
             'nombre_completo': informacion_basica.nombre_completo,
@@ -70,19 +78,17 @@ def enviar_correo_confirmacion(informacion_basica):
 
         # Renderizar template HTML
         html_message = render_to_string('formapp/email_confirmacion.html', context)
-        # Crear versión texto plano
-        plain_message = strip_tags(html_message)
 
-        # Enviar correo con timeout y fail_silently=True para no bloquear
-        send_mail(
-            subject=f'Confirmación de Registro - Gestión Humana CHVS',
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[informacion_basica.correo],
-            html_message=html_message,
-            fail_silently=True,  # No bloquear si falla
-        )
-        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo}')
+        # Enviar correo con Resend API
+        params = {
+            "from": settings.DEFAULT_FROM_EMAIL,
+            "to": [informacion_basica.correo],
+            "subject": "Confirmación de Registro - Gestión Humana CHVS",
+            "html": html_message,
+        }
+
+        resend.Emails.send(params)
+        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo} vía Resend')
         return True
     except Exception as e:
         logger.error(f'Error al enviar correo a {informacion_basica.correo}: {str(e)}')

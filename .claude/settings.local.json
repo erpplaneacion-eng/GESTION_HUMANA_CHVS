@@ -11,7 +11,9 @@
       "Bash(python3:*)",
       "Bash(venv/Scripts/pip install:*)",
       "Bash(python -m pip:*)",
-      "Read(//mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/**)"
+      "Read(//mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/**)",
+      "Bash(python test_email.py:*)",
+      "Bash(./venv/Scripts/python.exe:*)"
     ],
     "deny": [],
     "ask": []
