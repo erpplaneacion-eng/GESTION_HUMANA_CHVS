@@ -534,16 +534,26 @@ def generar_anexo11_pdf(applicant):
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
-    import locale
 
-    # Configurar locale para español (nombres de meses)
-    try:
-        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
-    except:
-        try:
-            locale.setlocale(locale.LC_TIME, 'Spanish_Spain.1252')
-        except:
-            pass  # Si falla, usar locale por defecto
+    # Función auxiliar para convertir números a texto en español
+    def numero_a_texto_es(n):
+        """Convierte números del 1 al 31 a texto en español"""
+        numeros = {
+            1: 'uno', 2: 'dos', 3: 'tres', 4: 'cuatro', 5: 'cinco',
+            6: 'seis', 7: 'siete', 8: 'ocho', 9: 'nueve', 10: 'diez',
+            11: 'once', 12: 'doce', 13: 'trece', 14: 'catorce', 15: 'quince',
+            16: 'dieciséis', 17: 'diecisiete', 18: 'dieciocho', 19: 'diecinueve', 20: 'veinte',
+            21: 'veintiuno', 22: 'veintidós', 23: 'veintitrés', 24: 'veinticuatro', 25: 'veinticinco',
+            26: 'veintiséis', 27: 'veintisiete', 28: 'veintiocho', 29: 'veintinueve', 30: 'treinta',
+            31: 'treinta y uno'
+        }
+        return numeros.get(n, str(n))
+
+    # Diccionario de meses en español
+    meses_es = {
+        1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril', 5: 'mayo', 6: 'junio',
+        7: 'julio', 8: 'agosto', 9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+    }
 
     # Crear buffer en memoria para el PDF
     pdf_buffer = io.BytesIO()
@@ -612,10 +622,16 @@ def generar_anexo11_pdf(applicant):
 
     # Fecha y destinatario
     fecha_obj = datetime.now()
-    fecha_actual = fecha_obj.strftime('%d de %B de %Y')
     dia = fecha_obj.day
-    mes_nombre = fecha_obj.strftime('%B').lower()
+    mes = fecha_obj.month
     anio = fecha_obj.year
+
+    # Nombre del día en texto y mes en español
+    dia_texto = numero_a_texto_es(dia)
+    mes_nombre = meses_es.get(mes, 'error')
+
+    # Fecha en formato "04 de noviembre de 2025"
+    fecha_actual = f"{dia:02d} de {mes_nombre} de {anio}"
 
     elementos.append(Paragraph(f"Cali, {fecha_actual}", normal_style))
     elementos.append(Spacer(1, 0.2*inch))
@@ -631,9 +647,9 @@ def generar_anexo11_pdf(applicant):
     elementos.append(Paragraph(f"<b>REFERENCIA:</b> Proceso No. {numero_proceso}", normal_style))
     elementos.append(Spacer(1, 0.2*inch))
 
-    # Cuerpo de la carta - usar el campo organizacion
+    # Cuerpo de la carta - usar el campo organizacion y perfil
     organizacion = applicant.organizacion or "UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2"
-    cargo_propuesto = "el cargo correspondiente"  # Este se usa en la página 2
+    cargo_propuesto = applicant.perfil or "el cargo correspondiente"
 
     texto_compromiso = f"""
     Yo, <b>{applicant.nombre_completo}</b>, identificado con c.c. <b>{applicant.cedula}</b>,
@@ -657,8 +673,8 @@ def generar_anexo11_pdf(applicant):
     ))
     elementos.append(Spacer(1, 0.2*inch))
 
-    # Texto de firma con fecha dinámica
-    texto_firma = f"Para constancia se firma a los {dia} ({dia}) días del mes de {mes_nombre} del {anio}."
+    # Texto de firma con fecha dinámica en español
+    texto_firma = f"Para constancia se firma a los {dia_texto} ({dia}) días del mes de {mes_nombre} del {anio}."
     elementos.append(Paragraph(texto_firma, normal_style))
     elementos.append(Spacer(1, 0.5*inch))
 
@@ -736,80 +752,106 @@ def generar_anexo11_pdf(applicant):
     elementos.append(Spacer(1, 0.3*inch))
 
     # 2. Tabla: ESTUDIOS REALIZADOS - Formato de 4 columnas
-    # Obtener datos
-    formacion_academica = applicant.formacion_academica.first()  # Primer título universitario
+    # Obtener todos los estudios
+    formaciones_academicas = applicant.formacion_academica.all()
     posgrados = applicant.posgrados.all()
 
-    # Datos universitarios
-    if formacion_academica:
-        titulo_univ = formacion_academica.profesion or ''
-        institucion_univ = formacion_academica.universidad or ''
-        fecha_univ = formacion_academica.fecha_grado.strftime('%d/%m/%Y') if formacion_academica.fecha_grado else ''
-    else:
-        titulo_univ = ''
-        institucion_univ = ''
-        fecha_univ = ''
+    # Calcular experiencia en años
+    try:
+        calculo_exp = applicant.calculo_experiencia
+        experiencia_anos = f"{calculo_exp.total_experiencia_anos} años"
+    except:
+        experiencia_anos = "No calculada"
 
-    # Datos de posgrados (OTROS)
-    if posgrados.exists():
-        primer_posgrado = posgrados.first()
-        titulo_otros = primer_posgrado.nombre_posgrado or ''
-        institucion_otros = primer_posgrado.universidad or ''
-        fecha_otros = primer_posgrado.fecha_terminacion.strftime('%d/%m/%Y') if primer_posgrado.fecha_terminacion else ''
-    else:
-        titulo_otros = ''
-        institucion_otros = ''
-        fecha_otros = ''
+    # Crear una tabla por cada formación académica
+    for idx, formacion in enumerate(formaciones_academicas):
+        # Datos universitarios
+        titulo_univ = formacion.profesion or ''
+        institucion_univ = formacion.universidad or ''
+        fecha_univ = formacion.fecha_grado.strftime('%d/%m/%Y') if formacion.fecha_grado else ''
 
-    # Construir la tabla
-    estudios_nueva_data = [
-        # Fila de título con fondo gris
-        ['ESTUDIOS REALIZADOS', '', '', ''],
-        # Fila de encabezados de columnas
-        ['DESCRIPCIÓN', 'UNIVERSITARIOS', 'ESPECIALIZACIÓN', 'OTROS'],
-        # Filas de datos
-        ['TÍTULO OBTENIDO', titulo_univ, '', titulo_otros],
-        ['INSTITUCIÓN', institucion_univ, '', institucion_otros],
-        ['FECHA DE GRADO', fecha_univ, '', fecha_otros],
-    ]
+        # Tarjeta profesional
+        if formacion.tarjeta_profesional == 'Tarjeta Profesional':
+            tarjeta_texto = f"Tarjeta Profesional: {formacion.numero_tarjeta_resolucion or 'N/A'}"
+        elif formacion.tarjeta_profesional == 'Resolución':
+            tarjeta_texto = f"Resolución: {formacion.numero_tarjeta_resolucion or 'N/A'}"
+        else:
+            tarjeta_texto = "No Aplica"
 
-    tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
-    tabla_estudios_nueva.setStyle(TableStyle([
-        # Título - Primera fila con fondo gris y span
-        ('SPAN', (0, 0), (3, 0)),
-        ('BACKGROUND', (0, 0), (3, 0), colors.HexColor('#D3D3D3')),
-        ('TEXTCOLOR', (0, 0), (3, 0), colors.black),
-        ('ALIGN', (0, 0), (3, 0), 'CENTER'),
-        ('FONTNAME', (0, 0), (3, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (3, 0), 10),
+        # Datos de posgrados (OTROS) - solo el primero para la primera tabla
+        if idx == 0 and posgrados.exists():
+            primer_posgrado = posgrados.first()
+            titulo_otros = primer_posgrado.nombre_posgrado or ''
+            institucion_otros = primer_posgrado.universidad or ''
+            fecha_otros = primer_posgrado.fecha_terminacion.strftime('%d/%m/%Y') if primer_posgrado.fecha_terminacion else ''
+        else:
+            titulo_otros = ''
+            institucion_otros = ''
+            fecha_otros = ''
 
-        # Encabezados de columnas - Segunda fila
-        ('BACKGROUND', (0, 1), (3, 1), colors.HexColor('#366092')),
-        ('TEXTCOLOR', (0, 1), (3, 1), colors.whitesmoke),
-        ('ALIGN', (0, 1), (3, 1), 'CENTER'),
-        ('FONTNAME', (0, 1), (3, 1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 1), (3, 1), 9),
+        # Construir la tabla con las filas adicionales pegadas
+        estudios_nueva_data = [
+            # Fila de título con fondo gris
+            ['ESTUDIOS REALIZADOS', '', '', ''],
+            # Fila de encabezados de columnas
+            ['DESCRIPCIÓN', 'UNIVERSITARIOS', 'ESPECIALIZACIÓN', 'OTROS'],
+            # Filas de datos
+            ['TÍTULO OBTENIDO', titulo_univ, '', titulo_otros],
+            ['INSTITUCIÓN', institucion_univ, '', institucion_otros],
+            ['FECHA DE GRADO', fecha_univ, '', fecha_otros],
+            # Fila de tarjeta profesional (pegada)
+            ['TARJETA PROFESIONAL', tarjeta_texto, '', ''],
+            # Fila de experiencia (pegada)
+            ['2. EXPERIENCIA:', experiencia_anos, '', ''],
+        ]
 
-        # Primera columna (DESCRIPCIÓN) - Negrita
-        ('BACKGROUND', (0, 2), (0, 4), colors.HexColor('#E8E8E8')),
-        ('FONTNAME', (0, 2), (0, 4), 'Helvetica-Bold'),
-        ('ALIGN', (0, 2), (0, 4), 'LEFT'),
+        tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+        tabla_estudios_nueva.setStyle(TableStyle([
+            # Título - Primera fila con fondo gris y span
+            ('SPAN', (0, 0), (3, 0)),
+            ('BACKGROUND', (0, 0), (3, 0), colors.HexColor('#D3D3D3')),
+            ('TEXTCOLOR', (0, 0), (3, 0), colors.black),
+            ('ALIGN', (0, 0), (3, 0), 'CENTER'),
+            ('FONTNAME', (0, 0), (3, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (3, 0), 10),
 
-        # Resto de datos
-        ('FONTNAME', (1, 2), (3, 4), 'Helvetica'),
-        ('FONTSIZE', (0, 2), (3, 4), 8),
-        ('ALIGN', (1, 2), (3, 4), 'CENTER'),
+            # Encabezados de columnas - Segunda fila
+            ('BACKGROUND', (0, 1), (3, 1), colors.HexColor('#366092')),
+            ('TEXTCOLOR', (0, 1), (3, 1), colors.whitesmoke),
+            ('ALIGN', (0, 1), (3, 1), 'CENTER'),
+            ('FONTNAME', (0, 1), (3, 1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 1), (3, 1), 9),
 
-        # Bordes y espaciado
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-    ]))
+            # Primera columna (DESCRIPCIÓN) - Negrita para todas las filas de datos
+            ('BACKGROUND', (0, 2), (0, 6), colors.HexColor('#E8E8E8')),
+            ('FONTNAME', (0, 2), (0, 6), 'Helvetica-Bold'),
+            ('ALIGN', (0, 2), (0, 6), 'LEFT'),
 
-    elementos.append(tabla_estudios_nueva)
+            # Resto de datos
+            ('FONTNAME', (1, 2), (3, 6), 'Helvetica'),
+            ('FONTSIZE', (0, 2), (3, 6), 8),
+            ('ALIGN', (1, 2), (3, 6), 'CENTER'),
+
+            # Fila de tarjeta profesional - span en columnas 2-4
+            ('SPAN', (1, 5), (3, 5)),
+
+            # Fila de experiencia - span en columnas 2-4
+            ('SPAN', (1, 6), (3, 6)),
+
+            # Bordes y espaciado
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 6),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ]))
+
+        elementos.append(tabla_estudios_nueva)
+
+        # Si hay más formaciones, agregar un espacio
+        if idx < len(formaciones_academicas) - 1:
+            elementos.append(Spacer(1, 0.2*inch))
 
     # Construir PDF
     doc.build(elementos)
