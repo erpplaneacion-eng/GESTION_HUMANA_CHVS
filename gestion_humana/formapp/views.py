@@ -524,6 +524,295 @@ def create_excel_for_person(applicant):
 
     return wb
 
+def generar_anexo11_pdf(applicant):
+    """
+    Genera un PDF en formato ANEXO 11 con la información del candidato
+    """
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib import colors
+    from reportlab.lib.units import inch
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+
+    # Crear buffer en memoria para el PDF
+    pdf_buffer = io.BytesIO()
+
+    # Crear documento
+    doc = SimpleDocTemplate(
+        pdf_buffer,
+        pagesize=letter,
+        rightMargin=0.75*inch,
+        leftMargin=0.75*inch,
+        topMargin=0.5*inch,
+        bottomMargin=0.5*inch
+    )
+
+    # Estilos
+    styles = getSampleStyleSheet()
+
+    # Estilo para el título
+    titulo_style = ParagraphStyle(
+        'TituloAnexo',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#2C3E50'),
+        spaceAfter=6,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+
+    # Estilo para subtítulos
+    subtitulo_style = ParagraphStyle(
+        'Subtitulo',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#2C3E50'),
+        spaceAfter=12,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+
+    # Estilo para texto normal
+    normal_style = ParagraphStyle(
+        'NormalText',
+        parent=styles['Normal'],
+        fontSize=10,
+        alignment=TA_JUSTIFY,
+        spaceAfter=12
+    )
+
+    # Estilo para texto pequeño
+    small_style = ParagraphStyle(
+        'SmallText',
+        parent=styles['Normal'],
+        fontSize=9,
+        alignment=TA_LEFT
+    )
+
+    # Contenido del documento
+    elementos = []
+
+    # Título principal
+    elementos.append(Paragraph("ANEXO 11", titulo_style))
+    elementos.append(Paragraph("CARTA DE COMPROMISO PERSONAL", subtitulo_style))
+    elementos.append(Spacer(1, 0.3*inch))
+
+    # Fecha y destinatario
+    fecha_actual = datetime.now().strftime('%d de %B de %Y')
+    elementos.append(Paragraph(f"Cali, {fecha_actual}", normal_style))
+    elementos.append(Spacer(1, 0.2*inch))
+
+    elementos.append(Paragraph("Señores:", normal_style))
+    elementos.append(Paragraph("<b>SECRETARÍA DE BIENESTAR SOCIAL</b>", normal_style))
+    elementos.append(Paragraph("<b>DISTRITO ESPECIAL DE SANTIAGO DE CALI</b>", normal_style))
+    elementos.append(Paragraph("Ciudad", normal_style))
+    elementos.append(Spacer(1, 0.2*inch))
+
+    # Referencia
+    elementos.append(Paragraph("<b>REFERENCIA:</b> Proceso No. 4146.010.32.1.2366.2025", normal_style))
+    elementos.append(Spacer(1, 0.2*inch))
+
+    # Cuerpo de la carta
+    cargo_propuesto = applicant.base_anexo_11 or "el cargo correspondiente"
+
+    texto_compromiso = f"""
+    Yo, <b>{applicant.nombre_completo}</b>, identificado con c.c. <b>{applicant.cedula}</b>,
+    acepto ser presentado por la empresa UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2
+    como <b>{cargo_propuesto}</b> en su propuesta dentro de los equipo de profesionales, y participar dentro
+    de la ejecución del proceso de selección No. 4146.010.32.1.2366.2025, que tiene como objeto:
+    AUNAR ESFUERZOS TÉCNICOS, HUMANOS, ADMINISTRATIVOS Y FINANCIEROS PARA EL MEJORAMIENTO DE LAS
+    CONDICIONES DE SEGURIDAD ALIMENTARIA DE LA POBLACIÓN VULNERABLE, GARANTIZANDO SU ACCESO A LOS
+    ALIMENTOS Y BRINDANDO INTERVENCIÓN PSICOSOCIAL, EN EL DISTRITO DE SANTIAGO DE CALI, DE CONFORMIDAD
+    CON EL PROYECTO DE INVERSIÓN "FORTALECIMIENTO DEL PROGRAMA DE SEGURIDAD ALIMENTARIA Y NUTRICIONAL
+    EN SANTIAGO DE CALI" - BP-26005417 de acuerdo con lo establecido en la invitación, el estudio
+    previo y documento denominado ANEXO TÉCNICO.
+    """
+
+    elementos.append(Paragraph(texto_compromiso, normal_style))
+    elementos.append(Spacer(1, 0.15*inch))
+
+    elementos.append(Paragraph(
+        "Por lo que me comprometo a formar parte del equipo de trabajo durante el plazo que dure el convenio de asociación.",
+        normal_style
+    ))
+    elementos.append(Spacer(1, 0.3*inch))
+
+    # Tabla de información personal
+    elementos.append(Paragraph("<b>RELACIÓN DE EXPERIENCIA PROFESIONALES PARA EL PERSONAL BASE</b>", subtitulo_style))
+    elementos.append(Spacer(1, 0.1*inch))
+
+    # Construir dirección completa
+    direccion_completa = f"{applicant.tipo_via} {applicant.numero_via} #{applicant.numero_casa}"
+    if applicant.complemento_direccion:
+        direccion_completa += f" {applicant.complemento_direccion}"
+    if applicant.barrio:
+        direccion_completa += f", Barrio {applicant.barrio}"
+
+    # Datos personales
+    datos_personales = [
+        ['CARGO PROPUESTO:', cargo_propuesto],
+        ['NOMBRES Y APELLIDOS:', applicant.nombre_completo],
+        ['TIPO Y Nº DOCUMENTO DE IDENTIDAD:', f'CC {applicant.cedula}'],
+        ['DIRECCIÓN:', direccion_completa],
+        ['TELÉFONO:', applicant.telefono],
+        ['CORREO ELECTRÓNICO:', applicant.correo],
+    ]
+
+    tabla_personal = Table(datos_personales, colWidths=[2.5*inch, 4.5*inch])
+    tabla_personal.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E8E8E8')),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    elementos.append(tabla_personal)
+    elementos.append(Spacer(1, 0.2*inch))
+
+    # Estudios realizados
+    elementos.append(Paragraph("<b>ESTUDIOS REALIZADOS</b>", subtitulo_style))
+
+    # Títulos universitarios
+    formacion_academica = applicant.formacion_academica.all()
+    if formacion_academica.exists():
+        estudios_data = [['DESCRIPCIÓN', 'TÍTULO', 'INSTITUCIÓN', 'FECHA GRADO', 'TARJETA PROF.']]
+
+        for info in formacion_academica:
+            tarjeta = info.numero_tarjeta_resolucion if info.numero_tarjeta_resolucion else 'N/A'
+            fecha_grado = info.fecha_grado.strftime('%d/%m/%Y') if info.fecha_grado else 'N/A'
+
+            estudios_data.append([
+                'UNIVERSITARIO',
+                info.profesion or 'N/A',
+                info.universidad or 'N/A',
+                fecha_grado,
+                tarjeta
+            ])
+
+        # Posgrados
+        posgrados = applicant.posgrados.all()
+        for posgrado in posgrados:
+            fecha_term = posgrado.fecha_terminacion.strftime('%d/%m/%Y') if posgrado.fecha_terminacion else 'N/A'
+            estudios_data.append([
+                'POSGRADO',
+                posgrado.nombre_posgrado or 'N/A',
+                posgrado.universidad or 'N/A',
+                fecha_term,
+                'N/A'
+            ])
+
+        tabla_estudios = Table(estudios_data, colWidths=[1.2*inch, 1.8*inch, 1.8*inch, 1*inch, 1.2*inch])
+        tabla_estudios.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+
+        elementos.append(tabla_estudios)
+    else:
+        elementos.append(Paragraph("No se registró información académica.", small_style))
+
+    elementos.append(Spacer(1, 0.2*inch))
+
+    # Experiencia laboral
+    elementos.append(Paragraph("<b>EXPERIENCIA LABORAL</b>", subtitulo_style))
+
+    # Calcular experiencia total
+    try:
+        calculo = applicant.calculo_experiencia
+        experiencia_texto = f"<b>Experiencia Total:</b> {calculo.anos_y_meses_experiencia}"
+    except:
+        experiencia_texto = "<b>Experiencia Total:</b> No calculada"
+
+    elementos.append(Paragraph(experiencia_texto, normal_style))
+    elementos.append(Spacer(1, 0.1*inch))
+
+    # Lista de experiencias
+    experiencias = applicant.experiencias_laborales.all()
+    if experiencias.exists():
+        exp_data = [['CARGO', 'FECHA INICIAL', 'FECHA FINAL', 'MESES', 'FUNCIONES']]
+
+        for exp in experiencias:
+            fecha_ini = exp.fecha_inicial.strftime('%d/%m/%Y') if exp.fecha_inicial else 'N/A'
+            fecha_fin = exp.fecha_terminacion.strftime('%d/%m/%Y') if exp.fecha_terminacion else 'N/A'
+            funciones_cortas = exp.funciones[:80] + '...' if len(exp.funciones) > 80 else exp.funciones
+
+            exp_data.append([
+                exp.cargo or 'N/A',
+                fecha_ini,
+                fecha_fin,
+                str(exp.meses_experiencia),
+                funciones_cortas
+            ])
+
+        tabla_exp = Table(exp_data, colWidths=[1.5*inch, 1*inch, 1*inch, 0.7*inch, 2.8*inch])
+        tabla_exp.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 7),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+        ]))
+
+        elementos.append(tabla_exp)
+    else:
+        elementos.append(Paragraph("No se registró experiencia laboral.", small_style))
+
+    elementos.append(Spacer(1, 0.4*inch))
+
+    # Espacio para firmas
+    elementos.append(Paragraph("Para constancia se firma en la fecha indicada.", normal_style))
+    elementos.append(Spacer(1, 0.5*inch))
+
+    # Tabla de firmas
+    firmas_data = [
+        ['_________________________', '_________________________'],
+        [f'{applicant.nombre_completo}', 'Diego Fernando Guzmán Ruiz'],
+        ['Firma del Profesional', 'Firma del Representante Legal']
+    ]
+
+    tabla_firmas = Table(firmas_data, colWidths=[3.5*inch, 3.5*inch])
+    tabla_firmas.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 1), (-1, 2), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TOPPADDING', (0, 0), (-1, 0), 0),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 15),
+    ]))
+
+    elementos.append(tabla_firmas)
+
+    # Construir PDF
+    doc.build(elementos)
+
+    # Retornar buffer
+    pdf_buffer.seek(0)
+    return pdf_buffer
+
 @login_required
 def download_individual_zip(request, pk):
     """Descarga un ZIP con todos los certificados y Excel de una persona"""
@@ -545,7 +834,17 @@ def download_individual_zip(request, pk):
             excel_buffer.getvalue()
         )
 
-        # 2. Agregar certificados laborales
+        # 2. Agregar PDF ANEXO 11
+        try:
+            pdf_buffer = generar_anexo11_pdf(applicant)
+            zip_file.writestr(
+                f"{filename_safe}_ANEXO_11.pdf",
+                pdf_buffer.getvalue()
+            )
+        except Exception as e:
+            logger.error(f"Error al generar PDF ANEXO 11: {str(e)}")
+
+        # 3. Agregar certificados laborales
         for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
             if experiencia.certificado_laboral:
                 try:
@@ -674,6 +973,16 @@ def download_all_zip(request):
                 f"Personal/{filename_safe}/{filename_safe}_Informacion.xlsx",
                 excel_individual_buffer.getvalue()
             )
+
+            # 2.1. Agregar PDF ANEXO 11 de cada persona
+            try:
+                pdf_buffer_individual = generar_anexo11_pdf(applicant)
+                zip_file.writestr(
+                    f"Personal/{filename_safe}/{filename_safe}_ANEXO_11.pdf",
+                    pdf_buffer_individual.getvalue()
+                )
+            except Exception as e:
+                logger.error(f"Error al generar PDF ANEXO 11 para {applicant.nombre_completo}: {str(e)}")
 
             # 3. Agregar certificados de cada persona
             for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
