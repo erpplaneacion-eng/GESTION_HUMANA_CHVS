@@ -14,7 +14,9 @@
       "Read(//mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/**)",
       "Bash(python test_email.py:*)",
       "Bash(./venv/Scripts/python.exe:*)",
-      "Bash(/mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/GESTION_HUMANA_CHVS/venv/Scripts/python.exe:*)"
+      "Bash(/mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/GESTION_HUMANA_CHVS/venv/Scripts/python.exe:*)",
+      "Bash(../venv/Scripts/pip list:*)",
+      "Bash(venv/Scripts/python.exe:*)"
     ],
     "deny": [],
     "ask": []
