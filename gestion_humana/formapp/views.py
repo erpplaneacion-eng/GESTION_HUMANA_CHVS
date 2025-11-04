@@ -531,9 +531,19 @@ def generar_anexo11_pdf(applicant):
     from reportlab.lib.pagesizes import letter
     from reportlab.lib import colors
     from reportlab.lib.units import inch
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT
+    import locale
+
+    # Configurar locale para español (nombres de meses)
+    try:
+        locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')
+    except:
+        try:
+            locale.setlocale(locale.LC_TIME, 'Spanish_Spain.1252')
+        except:
+            pass  # Si falla, usar locale por defecto
 
     # Crear buffer en memoria para el PDF
     pdf_buffer = io.BytesIO()
@@ -598,8 +608,15 @@ def generar_anexo11_pdf(applicant):
     elementos.append(Paragraph("CARTA DE COMPROMISO PERSONAL", subtitulo_style))
     elementos.append(Spacer(1, 0.3*inch))
 
+    # ==================== PÁGINA 1 ====================
+
     # Fecha y destinatario
-    fecha_actual = datetime.now().strftime('%d de %B de %Y')
+    fecha_obj = datetime.now()
+    fecha_actual = fecha_obj.strftime('%d de %B de %Y')
+    dia = fecha_obj.day
+    mes_nombre = fecha_obj.strftime('%B').lower()
+    anio = fecha_obj.year
+
     elementos.append(Paragraph(f"Cali, {fecha_actual}", normal_style))
     elementos.append(Spacer(1, 0.2*inch))
 
@@ -609,18 +626,20 @@ def generar_anexo11_pdf(applicant):
     elementos.append(Paragraph("Ciudad", normal_style))
     elementos.append(Spacer(1, 0.2*inch))
 
-    # Referencia
-    elementos.append(Paragraph("<b>REFERENCIA:</b> Proceso No. 4146.010.32.1.2366.2025", normal_style))
+    # Referencia - usar el campo contrato
+    numero_proceso = applicant.contrato or "4146.010.32.1.2366.2025"
+    elementos.append(Paragraph(f"<b>REFERENCIA:</b> Proceso No. {numero_proceso}", normal_style))
     elementos.append(Spacer(1, 0.2*inch))
 
-    # Cuerpo de la carta
-    cargo_propuesto = applicant.contrato or "el cargo correspondiente"
+    # Cuerpo de la carta - usar el campo organizacion
+    organizacion = applicant.organizacion or "UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2"
+    cargo_propuesto = "el cargo correspondiente"  # Este se usa en la página 2
 
     texto_compromiso = f"""
     Yo, <b>{applicant.nombre_completo}</b>, identificado con c.c. <b>{applicant.cedula}</b>,
-    acepto ser presentado por la empresa UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2
+    acepto ser presentado por la empresa <b>{organizacion}</b>
     como <b>{cargo_propuesto}</b> en su propuesta dentro de los equipo de profesionales, y participar dentro
-    de la ejecución del proceso de selección No. 4146.010.32.1.2366.2025, que tiene como objeto:
+    de la ejecución del proceso de selección No. <b>{numero_proceso}</b>, que tiene como objeto:
     AUNAR ESFUERZOS TÉCNICOS, HUMANOS, ADMINISTRATIVOS Y FINANCIEROS PARA EL MEJORAMIENTO DE LAS
     CONDICIONES DE SEGURIDAD ALIMENTARIA DE LA POBLACIÓN VULNERABLE, GARANTIZANDO SU ACCESO A LOS
     ALIMENTOS Y BRINDANDO INTERVENCIÓN PSICOSOCIAL, EN EL DISTRITO DE SANTIAGO DE CALI, DE CONFORMIDAD
@@ -636,156 +655,11 @@ def generar_anexo11_pdf(applicant):
         "Por lo que me comprometo a formar parte del equipo de trabajo durante el plazo que dure el convenio de asociación.",
         normal_style
     ))
-    elementos.append(Spacer(1, 0.3*inch))
-
-    # Tabla de información personal
-    elementos.append(Paragraph("<b>RELACIÓN DE EXPERIENCIA PROFESIONALES PARA EL PERSONAL BASE</b>", subtitulo_style))
-    elementos.append(Spacer(1, 0.1*inch))
-
-    # Construir dirección completa
-    direccion_completa = f"{applicant.tipo_via} {applicant.numero_via} #{applicant.numero_casa}"
-    if applicant.complemento_direccion:
-        direccion_completa += f" {applicant.complemento_direccion}"
-    if applicant.barrio:
-        direccion_completa += f", Barrio {applicant.barrio}"
-
-    # Datos personales
-    datos_personales = [
-        ['CARGO PROPUESTO:', cargo_propuesto],
-        ['NOMBRES Y APELLIDOS:', applicant.nombre_completo],
-        ['TIPO Y Nº DOCUMENTO DE IDENTIDAD:', f'CC {applicant.cedula}'],
-        ['DIRECCIÓN:', direccion_completa],
-        ['TELÉFONO:', applicant.telefono],
-        ['CORREO ELECTRÓNICO:', applicant.correo],
-    ]
-
-    tabla_personal = Table(datos_personales, colWidths=[2.5*inch, 4.5*inch])
-    tabla_personal.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#E8E8E8')),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
-        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
-        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-    ]))
-
-    elementos.append(tabla_personal)
     elementos.append(Spacer(1, 0.2*inch))
 
-    # Estudios realizados
-    elementos.append(Paragraph("<b>ESTUDIOS REALIZADOS</b>", subtitulo_style))
-
-    # Títulos universitarios
-    formacion_academica = applicant.formacion_academica.all()
-    if formacion_academica.exists():
-        estudios_data = [['DESCRIPCIÓN', 'TÍTULO', 'INSTITUCIÓN', 'FECHA GRADO', 'TARJETA PROF.']]
-
-        for info in formacion_academica:
-            tarjeta = info.numero_tarjeta_resolucion if info.numero_tarjeta_resolucion else 'N/A'
-            fecha_grado = info.fecha_grado.strftime('%d/%m/%Y') if info.fecha_grado else 'N/A'
-
-            estudios_data.append([
-                'UNIVERSITARIO',
-                info.profesion or 'N/A',
-                info.universidad or 'N/A',
-                fecha_grado,
-                tarjeta
-            ])
-
-        # Posgrados
-        posgrados = applicant.posgrados.all()
-        for posgrado in posgrados:
-            fecha_term = posgrado.fecha_terminacion.strftime('%d/%m/%Y') if posgrado.fecha_terminacion else 'N/A'
-            estudios_data.append([
-                'POSGRADO',
-                posgrado.nombre_posgrado or 'N/A',
-                posgrado.universidad or 'N/A',
-                fecha_term,
-                'N/A'
-            ])
-
-        tabla_estudios = Table(estudios_data, colWidths=[1.2*inch, 1.8*inch, 1.8*inch, 1*inch, 1.2*inch])
-        tabla_estudios.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
-
-        elementos.append(tabla_estudios)
-    else:
-        elementos.append(Paragraph("No se registró información académica.", small_style))
-
-    elementos.append(Spacer(1, 0.2*inch))
-
-    # Experiencia laboral
-    elementos.append(Paragraph("<b>EXPERIENCIA LABORAL</b>", subtitulo_style))
-
-    # Calcular experiencia total
-    try:
-        calculo = applicant.calculo_experiencia
-        experiencia_texto = f"<b>Experiencia Total:</b> {calculo.anos_y_meses_experiencia}"
-    except:
-        experiencia_texto = "<b>Experiencia Total:</b> No calculada"
-
-    elementos.append(Paragraph(experiencia_texto, normal_style))
-    elementos.append(Spacer(1, 0.1*inch))
-
-    # Lista de experiencias
-    experiencias = applicant.experiencias_laborales.all()
-    if experiencias.exists():
-        exp_data = [['CARGO', 'FECHA INICIAL', 'FECHA FINAL', 'MESES', 'FUNCIONES']]
-
-        for exp in experiencias:
-            fecha_ini = exp.fecha_inicial.strftime('%d/%m/%Y') if exp.fecha_inicial else 'N/A'
-            fecha_fin = exp.fecha_terminacion.strftime('%d/%m/%Y') if exp.fecha_terminacion else 'N/A'
-            funciones_cortas = exp.funciones[:80] + '...' if len(exp.funciones) > 80 else exp.funciones
-
-            exp_data.append([
-                exp.cargo or 'N/A',
-                fecha_ini,
-                fecha_fin,
-                str(exp.meses_experiencia),
-                funciones_cortas
-            ])
-
-        tabla_exp = Table(exp_data, colWidths=[1.5*inch, 1*inch, 1*inch, 0.7*inch, 2.8*inch])
-        tabla_exp.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#366092')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 7),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
-
-        elementos.append(tabla_exp)
-    else:
-        elementos.append(Paragraph("No se registró experiencia laboral.", small_style))
-
-    elementos.append(Spacer(1, 0.4*inch))
-
-    # Espacio para firmas
-    elementos.append(Paragraph("Para constancia se firma en la fecha indicada.", normal_style))
+    # Texto de firma con fecha dinámica
+    texto_firma = f"Para constancia se firma a los {dia} ({dia}) días del mes de {mes_nombre} del {anio}."
+    elementos.append(Paragraph(texto_firma, normal_style))
     elementos.append(Spacer(1, 0.5*inch))
 
     # Tabla de firmas
@@ -805,6 +679,137 @@ def generar_anexo11_pdf(applicant):
     ]))
 
     elementos.append(tabla_firmas)
+
+    # ==================== SALTO DE PÁGINA ====================
+    elementos.append(PageBreak())
+
+    # ==================== PÁGINA 2 ====================
+
+    # 1. Tabla: RELACIÓN DE EXPERIENCIA PROFESIONALES PARA EL PERSONAL BASE
+    # Construir dirección completa
+    direccion_completa = f"{applicant.tipo_via} {applicant.numero_via} #{applicant.numero_casa}"
+    if applicant.complemento_direccion:
+        direccion_completa += f" {applicant.complemento_direccion}"
+    if applicant.barrio:
+        direccion_completa += f", Barrio {applicant.barrio}"
+
+    # Datos de la tabla con título en la primera fila con fondo gris
+    tabla_experiencia_data = [
+        ['RELACIÓN DE EXPERIENCIA PROFESIONALES PARA EL PERSONAL BASE', ''],  # Título con span
+        ['CARGO PROPUESTO:', cargo_propuesto],
+        ['NOMBRES Y APELLIDOS:', applicant.nombre_completo],
+        ['TIPO Y Nº DOCUMENTO DE IDENTIDAD:', f'CC {applicant.cedula}'],
+        ['DIRECCIÓN:', direccion_completa],
+        ['TELÉFONO:', applicant.telefono],
+        ['CORREO ELECTRÓNICO:', applicant.correo],
+    ]
+
+    tabla_experiencia = Table(tabla_experiencia_data, colWidths=[2.5*inch, 4.5*inch])
+    tabla_experiencia.setStyle(TableStyle([
+        # Título - Primera fila con fondo gris
+        ('SPAN', (0, 0), (1, 0)),  # Combinar columnas para el título
+        ('BACKGROUND', (0, 0), (1, 0), colors.HexColor('#D3D3D3')),  # Gris
+        ('TEXTCOLOR', (0, 0), (1, 0), colors.black),
+        ('ALIGN', (0, 0), (1, 0), 'CENTER'),
+        ('FONTNAME', (0, 0), (1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (1, 0), 10),
+        ('TOPPADDING', (0, 0), (1, 0), 8),
+        ('BOTTOMPADDING', (0, 0), (1, 0), 8),
+
+        # Resto de las filas
+        ('BACKGROUND', (0, 1), (0, -1), colors.HexColor('#E8E8E8')),
+        ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+        ('ALIGN', (0, 1), (0, -1), 'LEFT'),
+        ('ALIGN', (1, 1), (1, -1), 'LEFT'),
+        ('FONTNAME', (0, 1), (0, -1), 'Helvetica-Bold'),
+        ('FONTNAME', (1, 1), (1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('TOPPADDING', (0, 1), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+    ]))
+
+    elementos.append(tabla_experiencia)
+    elementos.append(Spacer(1, 0.3*inch))
+
+    # 2. Tabla: ESTUDIOS REALIZADOS - Formato de 4 columnas
+    # Obtener datos
+    formacion_academica = applicant.formacion_academica.first()  # Primer título universitario
+    posgrados = applicant.posgrados.all()
+
+    # Datos universitarios
+    if formacion_academica:
+        titulo_univ = formacion_academica.profesion or ''
+        institucion_univ = formacion_academica.universidad or ''
+        fecha_univ = formacion_academica.fecha_grado.strftime('%d/%m/%Y') if formacion_academica.fecha_grado else ''
+    else:
+        titulo_univ = ''
+        institucion_univ = ''
+        fecha_univ = ''
+
+    # Datos de posgrados (OTROS)
+    if posgrados.exists():
+        primer_posgrado = posgrados.first()
+        titulo_otros = primer_posgrado.nombre_posgrado or ''
+        institucion_otros = primer_posgrado.universidad or ''
+        fecha_otros = primer_posgrado.fecha_terminacion.strftime('%d/%m/%Y') if primer_posgrado.fecha_terminacion else ''
+    else:
+        titulo_otros = ''
+        institucion_otros = ''
+        fecha_otros = ''
+
+    # Construir la tabla
+    estudios_nueva_data = [
+        # Fila de título con fondo gris
+        ['ESTUDIOS REALIZADOS', '', '', ''],
+        # Fila de encabezados de columnas
+        ['DESCRIPCIÓN', 'UNIVERSITARIOS', 'ESPECIALIZACIÓN', 'OTROS'],
+        # Filas de datos
+        ['TÍTULO OBTENIDO', titulo_univ, '', titulo_otros],
+        ['INSTITUCIÓN', institucion_univ, '', institucion_otros],
+        ['FECHA DE GRADO', fecha_univ, '', fecha_otros],
+    ]
+
+    tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+    tabla_estudios_nueva.setStyle(TableStyle([
+        # Título - Primera fila con fondo gris y span
+        ('SPAN', (0, 0), (3, 0)),
+        ('BACKGROUND', (0, 0), (3, 0), colors.HexColor('#D3D3D3')),
+        ('TEXTCOLOR', (0, 0), (3, 0), colors.black),
+        ('ALIGN', (0, 0), (3, 0), 'CENTER'),
+        ('FONTNAME', (0, 0), (3, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (3, 0), 10),
+
+        # Encabezados de columnas - Segunda fila
+        ('BACKGROUND', (0, 1), (3, 1), colors.HexColor('#366092')),
+        ('TEXTCOLOR', (0, 1), (3, 1), colors.whitesmoke),
+        ('ALIGN', (0, 1), (3, 1), 'CENTER'),
+        ('FONTNAME', (0, 1), (3, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 1), (3, 1), 9),
+
+        # Primera columna (DESCRIPCIÓN) - Negrita
+        ('BACKGROUND', (0, 2), (0, 4), colors.HexColor('#E8E8E8')),
+        ('FONTNAME', (0, 2), (0, 4), 'Helvetica-Bold'),
+        ('ALIGN', (0, 2), (0, 4), 'LEFT'),
+
+        # Resto de datos
+        ('FONTNAME', (1, 2), (3, 4), 'Helvetica'),
+        ('FONTSIZE', (0, 2), (3, 4), 8),
+        ('ALIGN', (1, 2), (3, 4), 'CENTER'),
+
+        # Bordes y espaciado
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]))
+
+    elementos.append(tabla_estudios_nueva)
 
     # Construir PDF
     doc.build(elementos)

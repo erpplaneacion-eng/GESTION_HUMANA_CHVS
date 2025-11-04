@@ -47,7 +47,8 @@ def main():
             barrio="Centro",
             telefono="3001234567",
             correo="juan.perez@example.com",
-            base_anexo_11="PROFESIONAL PSICOSOCIAL",
+            contrato="4146.010.32.1.2366.2025",
+            organizacion="UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2",
             perfil="Profesional en Trabajo Social",
             area_conocimiento="Ciencias Sociales",
             profesion="Trabajador Social",
@@ -113,7 +114,8 @@ def main():
     print(f"Nombre: {ejemplo.nombre_completo}")
     print(f"Cédula: {ejemplo.cedula}")
     print(f"Correo: {ejemplo.correo}")
-    print(f"Cargo Anexo 11: {ejemplo.base_anexo_11 or 'No especificado'}")
+    print(f"Contrato: {ejemplo.contrato or 'No especificado'}")
+    print(f"Organizacion: {ejemplo.organizacion or 'No especificado'}")
 
     # Contar relaciones
     experiencias = ejemplo.experiencias_laborales.count()
