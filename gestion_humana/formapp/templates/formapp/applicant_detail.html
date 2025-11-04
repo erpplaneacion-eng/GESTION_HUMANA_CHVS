@@ -78,10 +78,10 @@
         </div>
 
         <div class="info-row mt-3">
-            <span class="info-label"><i class="fas fa-file-alt"></i> Descripción del Cargo:</span>
+            <span class="info-label"><i class="fas fa-building"></i> Organización:</span>
         </div>
         <div class="alert alert-light mt-2">
-            {{ applicant.descripcion }}
+            {{ applicant.organizacion }}
         </div>
 
         {% if applicant.observacion %}
@@ -94,8 +94,8 @@
         {% endif %}
 
         <div class="info-row">
-            <span class="info-label"><i class="fas fa-book"></i> Base Anexo 11:</span>
-            <span class="info-value">{{ applicant.base_anexo_11 }}</span>
+            <span class="info-label"><i class="fas fa-file-contract"></i> Contrato:</span>
+            <span class="info-value">{{ applicant.contrato }}</span>
         </div>
         <div class="info-row">
             <span class="info-label"><i class="fas fa-users"></i> Cantidad:</span>

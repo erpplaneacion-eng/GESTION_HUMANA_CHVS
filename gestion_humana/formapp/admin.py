@@ -55,8 +55,8 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
             'fields': (
                 'perfil', 'area_conocimiento', 'area_del_conocimiento',
                 'tipo_perfil', 'profesion', 'experiencia',
-                'tiempo_experiencia', 'cantidad', 'descripcion',
-                'base_anexo_11', 'observacion'
+                'tiempo_experiencia', 'cantidad', 'organizacion',
+                'contrato', 'observacion'
             ),
             'description': 'Estos campos deben ser completados por el personal administrativo'
         }),

@@ -377,8 +377,8 @@ def create_excel_for_person(applicant):
         ("Experiencia", applicant.experiencia or "N/A"),
         ("Tiempo de Experiencia", applicant.tiempo_experiencia or "N/A"),
         ("Cantidad", applicant.cantidad or "N/A"),
-        ("Descripción", applicant.descripcion or "N/A"),
-        ("Base Anexo 11", applicant.base_anexo_11 or "N/A"),
+        ("Organización", applicant.organizacion or "N/A"),
+        ("Contrato", applicant.contrato or "N/A"),
         ("Observaciones", applicant.observacion or "N/A"),
     ]
 
@@ -614,7 +614,7 @@ def generar_anexo11_pdf(applicant):
     elementos.append(Spacer(1, 0.2*inch))
 
     # Cuerpo de la carta
-    cargo_propuesto = applicant.base_anexo_11 or "el cargo correspondiente"
+    cargo_propuesto = applicant.contrato or "el cargo correspondiente"
 
     texto_compromiso = f"""
     Yo, <b>{applicant.nombre_completo}</b>, identificado con c.c. <b>{applicant.cedula}</b>,

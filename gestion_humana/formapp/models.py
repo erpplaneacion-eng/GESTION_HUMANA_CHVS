@@ -39,8 +39,8 @@ class InformacionBasica(models.Model):
     experiencia = models.CharField(max_length=200, verbose_name='Tipo de Experiencia', blank=True, null=True)
     tiempo_experiencia = models.CharField(max_length=200, verbose_name='Tiempo de Experiencia', blank=True, null=True)
     cantidad = models.IntegerField(verbose_name='Cantidad', blank=True, null=True)
-    descripcion = models.TextField(verbose_name='Descripción del Cargo', blank=True, null=True)
-    base_anexo_11 = models.CharField(max_length=200, verbose_name='Base Anexo 11', blank=True, null=True)
+    organizacion = models.TextField(verbose_name='Organización', blank=True, null=True)
+    contrato = models.CharField(max_length=200, verbose_name='Contrato', blank=True, null=True)
     observacion = models.TextField(verbose_name='Observaciones', blank=True, null=True)
 
     def __str__(self):
