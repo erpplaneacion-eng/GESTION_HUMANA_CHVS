@@ -57,7 +57,7 @@ class ExperienciaLaboral(models.Model):
     dias_experiencia = models.IntegerField(verbose_name='Días de Experiencia')  # Total de días calendario
     
     cargo = models.CharField(max_length=200, verbose_name='Cargo')
-    cargo_anexo_11 = models.CharField(max_length=200, verbose_name='Cargo Anexo 11')
+    cargo_anexo_11 = models.CharField(max_length=200, verbose_name='Cargo Anexo 11', blank=True, default='Profesional')
     objeto_contractual = models.TextField(verbose_name='Objeto Contractual')
     funciones = models.TextField(verbose_name='Funciones')     
     

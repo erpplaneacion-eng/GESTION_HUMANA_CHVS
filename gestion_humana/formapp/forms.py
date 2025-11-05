@@ -203,9 +203,6 @@ class ExperienciaLaboralForm(forms.ModelForm):
             'cargo': {
                 'required': 'El cargo es obligatorio.',
             },
-            'cargo_anexo_11': {
-                'required': 'El cargo anexo 11 es obligatorio.',
-            },
             'objeto_contractual': {
                 'required': 'El objeto contractual es obligatorio.',
             },
@@ -225,6 +222,12 @@ class ExperienciaLaboralForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Hacer el campo cargo_anexo_11 opcional
+        self.fields['cargo_anexo_11'].required = False
+        # Establecer valor por defecto si está vacío
+        if not self.instance.pk and not self.data:
+            self.fields['cargo_anexo_11'].initial = 'Profesional'
+        
         # Si es una instancia existente (edición) y ya tiene un certificado, hacer el campo opcional
         if self.instance and self.instance.pk and self.instance.certificado_laboral:
             self.fields['certificado_laboral'].required = False
@@ -233,6 +236,13 @@ class ExperienciaLaboralForm(forms.ModelForm):
         else:
             # Si es un nuevo registro, el certificado es obligatorio
             self.fields['certificado_laboral'].required = True
+
+    def clean_cargo_anexo_11(self):
+        cargo_anexo_11 = self.cleaned_data.get('cargo_anexo_11', '')
+        # Si el campo está vacío, establecer valor por defecto
+        if not cargo_anexo_11:
+            return 'Profesional'
+        return cargo_anexo_11
 
     def clean_certificado_laboral(self):
         certificado = self.cleaned_data.get('certificado_laboral')
