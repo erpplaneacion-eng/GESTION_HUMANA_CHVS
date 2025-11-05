@@ -246,10 +246,17 @@ class ExperienciaLaboralForm(forms.ModelForm):
 
     def clean_certificado_laboral(self):
         certificado = self.cleaned_data.get('certificado_laboral')
-        # Si no se proporciona un nuevo certificado y ya existe uno, mantener el existente
-        if not certificado and self.instance and self.instance.pk and hasattr(self.instance, 'certificado_laboral'):
-            if self.instance.certificado_laboral:
-                return self.instance.certificado_laboral
+        
+        # Si es una instancia existente (tiene pk) y no se proporciona un nuevo archivo
+        # mantener el archivo existente
+        if self.instance and self.instance.pk:
+            # Si no se proporciona un nuevo certificado (None, False, o cadena vacía)
+            if not certificado or (hasattr(certificado, 'name') and not certificado.name):
+                # Si ya existe un certificado, mantenerlo
+                if hasattr(self.instance, 'certificado_laboral') and self.instance.certificado_laboral:
+                    return self.instance.certificado_laboral
+        
+        # Si se proporciona un nuevo certificado, retornarlo (ya validado por los validators del modelo)
         return certificado
 
     def clean(self):
