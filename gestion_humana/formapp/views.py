@@ -840,11 +840,11 @@ def generar_anexo11_pdf(applicant):
         fecha = formacion.fecha_grado.strftime('%d/%m/%Y') if formacion.fecha_grado else ''
         
         if titulo:
-            contenido_titulos_univ += f'<b>Título:</b> {titulo}<br/>'
+            contenido_titulos_univ += f'{titulo}<br/>'
         if institucion:
-            contenido_instituciones_univ += f'<b>Institución:</b> {institucion}<br/>'
+            contenido_instituciones_univ += f'{institucion}<br/>'
         if fecha:
-            contenido_fechas_univ += f'<b>Fecha:</b> {fecha}<br/>'
+            contenido_fechas_univ += f'{fecha}<br/>'
         
         # Tarjeta profesional (solo la primera o consolidar todas)
         if not tarjeta_texto:
@@ -864,11 +864,11 @@ def generar_anexo11_pdf(applicant):
         fecha = especializacion.fecha_terminacion.strftime('%d/%m/%Y') if especializacion.fecha_terminacion else ''
         
         if titulo:
-            contenido_titulos_esp += f'<b>Título:</b> {titulo}<br/>'
+            contenido_titulos_esp += f'{titulo}<br/>'
         if institucion:
-            contenido_instituciones_esp += f'<b>Institución:</b> {institucion}<br/>'
+            contenido_instituciones_esp += f'{institucion}<br/>'
         if fecha:
-            contenido_fechas_esp += f'<b>Fecha:</b> {fecha}<br/>'
+            contenido_fechas_esp += f'{fecha}<br/>'
     
     # OTROS (POSGRADOS) - Agrupar todos los posgrados
     contenido_titulos_otros = ''
@@ -881,11 +881,11 @@ def generar_anexo11_pdf(applicant):
         fecha = posgrado.fecha_terminacion.strftime('%d/%m/%Y') if posgrado.fecha_terminacion else ''
         
         if titulo:
-            contenido_titulos_otros += f'<b>Título:</b> {titulo}<br/>'
+            contenido_titulos_otros += f'{titulo}<br/>'
         if institucion:
-            contenido_instituciones_otros += f'<b>Institución:</b> {institucion}<br/>'
+            contenido_instituciones_otros += f'{institucion}<br/>'
         if fecha:
-            contenido_fechas_otros += f'<b>Fecha:</b> {fecha}<br/>'
+            contenido_fechas_otros += f'{fecha}<br/>'
     
     # Si no hay tarjeta profesional, poner "No Aplica"
     if not tarjeta_texto:
