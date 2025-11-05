@@ -170,7 +170,7 @@
                         {{ experiencia_formset.management_form }}
                         <div id="experiencia-formset">
                             {% for form_exp in experiencia_formset %}
-                                <div class="formset-form mb-4 p-3 border rounded">
+                                <div class="formset-form mb-4 p-3 border rounded" {% if not form_exp.id.value and not form_exp.cargo.value %}style="display: none;"{% endif %}>
                                     <h5 class="mb-3">Experiencia #{{ forloop.counter }}</h5>
                                     {{ form_exp.id }}
                                     <div class="row">
@@ -242,7 +242,7 @@
                         {{ academica_formset.management_form }}
                         <div id="academica-formset">
                             {% for form_aca in academica_formset %}
-                                <div class="formset-form mb-4 p-3 border rounded">
+                                <div class="formset-form mb-4 p-3 border rounded" {% if not form_aca.id.value and not form_aca.profesion.value %}style="display: none;"{% endif %}>
                                     <h5 class="mb-3">Formación #{{ forloop.counter }}</h5>
                                     {{ form_aca.id }}
                                     <div class="row">
@@ -289,13 +289,13 @@
                 <!-- Sección 4: Posgrados -->
                 <div class="section-card mb-4">
                     <div class="section-header">
-                        <h4><i class="fas fa-award"></i> Posgrados</h4>
+                        <h4><i class="fas fa-award"></i> Posgrados (Maestrías, Doctorados)</h4>
                     </div>
                     <div class="section-body">
                         {{ posgrado_formset.management_form }}
                         <div id="posgrado-formset">
                             {% for form_pos in posgrado_formset %}
-                                <div class="formset-form mb-4 p-3 border rounded">
+                                <div class="formset-form mb-4 p-3 border rounded" {% if not form_pos.id.value and not form_pos.nombre_posgrado.value %}style="display: none;"{% endif %}>
                                     <h5 class="mb-3">Posgrado #{{ forloop.counter }}</h5>
                                     {{ form_pos.id }}
                                     <div class="row">
@@ -325,6 +325,45 @@
                     </div>
                 </div>
 
+                <!-- Sección 5: Especializaciones -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-certificate"></i> Especializaciones</h4>
+                    </div>
+                    <div class="section-body">
+                        {{ especializacion_formset.management_form }}
+                        <div id="especializacion-formset">
+                            {% for form_esp in especializacion_formset %}
+                                <div class="formset-form mb-4 p-3 border rounded" {% if not form_esp.id.value and not form_esp.nombre_especializacion.value %}style="display: none;"{% endif %}>
+                                    <h5 class="mb-3">Especialización #{{ forloop.counter }}</h5>
+                                    {{ form_esp.id }}
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Nombre de la Especialización</label>
+                                            {{ form_esp.nombre_especializacion }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Universidad</label>
+                                            {{ form_esp.universidad }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Fecha de Terminación</label>
+                                            {{ form_esp.fecha_terminacion }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Meses de Experiencia</label>
+                                            {{ form_esp.meses_de_experiencia }}
+                                        </div>
+                                    </div>
+                                    {{ form_esp.DELETE }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Botones de acción -->
                 <div class="text-center mb-4">
                     <button type="submit" class="btn btn-warning btn-lg me-2">
@@ -340,6 +379,45 @@
 </div>
 
 <script>
+// Ocultar formularios vacíos al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    // Ocultar formularios vacíos de experiencia
+    document.querySelectorAll('#experiencia-formset .formset-form').forEach(function(form) {
+        const idField = form.querySelector('[name*="-id"]');
+        const cargoField = form.querySelector('[name*="-cargo"]');
+        if (idField && !idField.value && cargoField && !cargoField.value) {
+            form.style.display = 'none';
+        }
+    });
+
+    // Ocultar formularios vacíos de formación académica
+    document.querySelectorAll('#academica-formset .formset-form').forEach(function(form) {
+        const idField = form.querySelector('[name*="-id"]');
+        const profesionField = form.querySelector('[name*="-profesion"]');
+        if (idField && !idField.value && profesionField && !profesionField.value) {
+            form.style.display = 'none';
+        }
+    });
+
+    // Ocultar formularios vacíos de posgrados
+    document.querySelectorAll('#posgrado-formset .formset-form').forEach(function(form) {
+        const idField = form.querySelector('[name*="-id"]');
+        const nombreField = form.querySelector('[name*="-nombre_posgrado"]');
+        if (idField && !idField.value && nombreField && !nombreField.value) {
+            form.style.display = 'none';
+        }
+    });
+
+    // Ocultar formularios vacíos de especializaciones
+    document.querySelectorAll('#especializacion-formset .formset-form').forEach(function(form) {
+        const idField = form.querySelector('[name*="-id"]');
+        const nombreField = form.querySelector('[name*="-nombre_especializacion"]');
+        if (idField && !idField.value && nombreField && !nombreField.value) {
+            form.style.display = 'none';
+        }
+    });
+});
+
 // Cálculo automático de meses y días de experiencia
 document.addEventListener('DOMContentLoaded', function() {
     const formset = document.getElementById('experiencia-formset');
