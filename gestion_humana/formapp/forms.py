@@ -183,7 +183,6 @@ class ExperienciaLaboralForm(forms.ModelForm):
             'certificado_laboral': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.pdf,.jpg,.jpeg,.png',
-                'required': 'required'
             }),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
@@ -223,6 +222,25 @@ class ExperienciaLaboralForm(forms.ModelForm):
                 'required': 'Los días de experiencia son obligatorios.',
             },
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si es una instancia existente (edición) y ya tiene un certificado, hacer el campo opcional
+        if self.instance and self.instance.pk and self.instance.certificado_laboral:
+            self.fields['certificado_laboral'].required = False
+            # Remover el atributo required del widget
+            self.fields['certificado_laboral'].widget.attrs.pop('required', None)
+        else:
+            # Si es un nuevo registro, el certificado es obligatorio
+            self.fields['certificado_laboral'].required = True
+
+    def clean_certificado_laboral(self):
+        certificado = self.cleaned_data.get('certificado_laboral')
+        # Si no se proporciona un nuevo certificado y ya existe uno, mantener el existente
+        if not certificado and self.instance and self.instance.pk and hasattr(self.instance, 'certificado_laboral'):
+            if self.instance.certificado_laboral:
+                return self.instance.certificado_laboral
+        return certificado
 
     def clean(self):
         cleaned_data = super().clean()
