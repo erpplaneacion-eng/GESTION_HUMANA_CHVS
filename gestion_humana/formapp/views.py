@@ -9,13 +9,14 @@ from django.http import HttpResponse
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.template.loader import render_to_string
-from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado
+from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion
 from .forms import (
     InformacionBasicaPublicForm,
     InformacionBasicaForm,
     ExperienciaLaboralFormSet,
     InformacionAcademicaFormSet,
     PosgradoFormSet,
+    EspecializacionFormSet,
 )
 import zipfile
 import io
@@ -158,6 +159,7 @@ def public_form_view(request):
         experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES)
         academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES)
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES)
+        especializacion_formset = EspecializacionFormSet(request.POST, request.FILES)
 
         if form.is_valid():
             try:
@@ -177,6 +179,10 @@ def public_form_view(request):
                     posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=informacion_basica)
                     if posgrado_formset.is_valid():
                         posgrado_formset.save()
+
+                    especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=informacion_basica)
+                    if especializacion_formset.is_valid():
+                        especializacion_formset.save()
 
                     # Enviar correo de confirmación al usuario en un thread separado
                     # para no bloquear la respuesta del formulario
@@ -201,12 +207,14 @@ def public_form_view(request):
         experiencia_formset = ExperienciaLaboralFormSet()
         academica_formset = InformacionAcademicaFormSet()
         posgrado_formset = PosgradoFormSet()
+        especializacion_formset = EspecializacionFormSet()
 
     context = {
         'form': form,
         'experiencia_formset': experiencia_formset,
         'academica_formset': academica_formset,
         'posgrado_formset': posgrado_formset,
+        'especializacion_formset': especializacion_formset,
     }
     return render(request, 'formapp/public_form.html', context)
 
@@ -260,6 +268,7 @@ def applicant_edit_view(request, pk):
         experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES, instance=applicant)
         academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES, instance=applicant)
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
+        especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=applicant)
 
         if form.is_valid():
             try:
@@ -277,6 +286,9 @@ def applicant_edit_view(request, pk):
                     if posgrado_formset.is_valid():
                         posgrado_formset.save()
 
+                    if especializacion_formset.is_valid():
+                        especializacion_formset.save()
+
                     messages.success(request, f'Registro de {informacion_basica.nombre_completo} actualizado con éxito!')
                     return redirect('formapp:applicant_detail', pk=informacion_basica.pk)
             except Exception as e:
@@ -288,12 +300,14 @@ def applicant_edit_view(request, pk):
         experiencia_formset = ExperienciaLaboralFormSet(instance=applicant)
         academica_formset = InformacionAcademicaFormSet(instance=applicant)
         posgrado_formset = PosgradoFormSet(instance=applicant)
+        especializacion_formset = EspecializacionFormSet(instance=applicant)
 
     context = {
         'form': form,
         'experiencia_formset': experiencia_formset,
         'academica_formset': academica_formset,
         'posgrado_formset': posgrado_formset,
+        'especializacion_formset': especializacion_formset,
         'applicant': applicant,
     }
     return render(request, 'formapp/applicant_edit.html', context)
@@ -487,11 +501,39 @@ def create_excel_for_person(applicant):
     for col in range(1, 5):
         ws4.column_dimensions[chr(64 + col)].width = 25
 
-    # Hoja 5: Cálculo de Experiencia
-    ws5 = wb.create_sheet("Cálculo Experiencia")
-    ws5['A1'] = f"CÁLCULO DE EXPERIENCIA - {applicant.nombre_completo}"
+    # Hoja 5: Especializaciones
+    ws5 = wb.create_sheet("Especializaciones")
+    ws5['A1'] = f"ESPECIALIZACIONES - {applicant.nombre_completo}"
     ws5['A1'].font = title_font
-    ws5.merge_cells('A1:B1')
+    ws5.merge_cells('A1:D1')
+
+    # Encabezados
+    headers = ["Nombre Especialización", "Universidad", "Fecha Terminación", "Meses Experiencia"]
+    for col, header in enumerate(headers, start=1):
+        cell = ws5.cell(row=3, column=col)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.border = border
+
+    # Datos
+    row = 4
+    for especializacion in applicant.especializaciones.all():
+        ws5.cell(row=row, column=1, value=especializacion.nombre_especializacion).border = border
+        ws5.cell(row=row, column=2, value=especializacion.universidad).border = border
+        ws5.cell(row=row, column=3, value=especializacion.fecha_terminacion.strftime('%Y-%m-%d')).border = border
+        ws5.cell(row=row, column=4, value=especializacion.meses_de_experiencia).border = border
+        row += 1
+
+    for col in range(1, 5):
+        ws5.column_dimensions[chr(64 + col)].width = 25
+
+    # Hoja 6: Cálculo de Experiencia
+    ws6 = wb.create_sheet("Cálculo Experiencia")
+    ws6['A1'] = f"CÁLCULO DE EXPERIENCIA - {applicant.nombre_completo}"
+    ws6['A1'].font = title_font
+    ws6.merge_cells('A1:B1')
 
     row = 3
     try:
@@ -511,16 +553,16 @@ def create_excel_for_person(applicant):
         ]
 
     for label, value in calculo_data:
-        ws5[f'A{row}'] = label
-        ws5[f'A{row}'].font = Font(bold=True)
-        ws5[f'A{row}'].fill = PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid")
-        ws5[f'B{row}'] = value
-        ws5[f'A{row}'].border = border
-        ws5[f'B{row}'].border = border
+        ws6[f'A{row}'] = label
+        ws6[f'A{row}'].font = Font(bold=True)
+        ws6[f'A{row}'].fill = PatternFill(start_color="E8E8E8", end_color="E8E8E8", fill_type="solid")
+        ws6[f'B{row}'] = value
+        ws6[f'A{row}'].border = border
+        ws6[f'B{row}'].border = border
         row += 1
 
-    ws5.column_dimensions['A'].width = 30
-    ws5.column_dimensions['B'].width = 30
+    ws6.column_dimensions['A'].width = 30
+    ws6.column_dimensions['B'].width = 30
 
     return wb
 
@@ -755,6 +797,7 @@ def generar_anexo11_pdf(applicant):
     # Obtener todos los estudios
     formaciones_academicas = applicant.formacion_academica.all()
     posgrados = applicant.posgrados.all()
+    especializaciones = applicant.especializaciones.all()
 
     # Calcular experiencia en años
     try:
@@ -784,6 +827,12 @@ def generar_anexo11_pdf(applicant):
             titulo_otros = primer_posgrado.nombre_posgrado or ''
             institucion_otros = primer_posgrado.universidad or ''
             fecha_otros = primer_posgrado.fecha_terminacion.strftime('%d/%m/%Y') if primer_posgrado.fecha_terminacion else ''
+        # Si no hay posgrado, intentar con especialización
+        elif idx == 0 and especializaciones.exists():
+            primera_especializacion = especializaciones.first()
+            titulo_otros = primera_especializacion.nombre_especializacion or ''
+            institucion_otros = primera_especializacion.universidad or ''
+            fecha_otros = primera_especializacion.fecha_terminacion.strftime('%d/%m/%Y') if primera_especializacion.fecha_terminacion else ''
         else:
             titulo_otros = ''
             institucion_otros = ''

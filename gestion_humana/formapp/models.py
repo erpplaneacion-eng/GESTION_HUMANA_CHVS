@@ -109,6 +109,17 @@ class Posgrado(models.Model):
     def __str__(self):
         return f'{self.nombre_posgrado} de {self.informacion_basica.cedula}'
 
+class Especializacion(models.Model):
+    informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='especializaciones')
+    nombre_especializacion = models.CharField(max_length=200, verbose_name='Nombre de la Especialización')
+    universidad = models.CharField(max_length=200, verbose_name='Universidad')
+    fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
+    meses_de_experiencia = models.IntegerField(verbose_name='Meses de Experiencia', validators=[MinValueValidator(0)])
+    
+
+    def __str__(self):
+        return f'{self.nombre_especializacion} de {self.informacion_basica.cedula}'
+
 class CalculoExperiencia(models.Model):
     informacion_basica = models.OneToOneField(InformacionBasica, on_delete=models.CASCADE, related_name='calculo_experiencia')
     total_meses_experiencia = models.IntegerField(verbose_name='Total Meses Experiencia Certificada')

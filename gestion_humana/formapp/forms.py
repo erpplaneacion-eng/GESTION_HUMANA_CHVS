@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
-from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado
+from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion
 
 # Formulario público - solo campos que el usuario puede llenar
 class InformacionBasicaPublicForm(forms.ModelForm):
@@ -261,6 +261,17 @@ class PosgradoForm(forms.ModelForm):
             'meses_de_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
         }
 
+class EspecializacionForm(forms.ModelForm):
+    class Meta:
+        model = Especializacion
+        exclude = ['informacion_basica']
+        widgets = {
+            'nombre_especializacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'universidad': forms.TextInput(attrs={'class': 'form-control'}),
+            'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'meses_de_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+        }
+
 ExperienciaLaboralFormSet = inlineformset_factory(
     InformacionBasica,
     ExperienciaLaboral,
@@ -281,6 +292,14 @@ PosgradoFormSet = inlineformset_factory(
     InformacionBasica,
     Posgrado,
     form=PosgradoForm,
+    extra=1,
+    can_delete=True
+)
+
+EspecializacionFormSet = inlineformset_factory(
+    InformacionBasica,
+    Especializacion,
+    form=EspecializacionForm,
     extra=1,
     can_delete=True
 )

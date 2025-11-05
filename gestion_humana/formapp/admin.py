@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, CalculoExperiencia
+from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia
 
 class ExperienciaLaboralInline(admin.TabularInline):
     model = ExperienciaLaboral
@@ -23,6 +23,11 @@ class PosgradoInline(admin.TabularInline):
     model = Posgrado
     extra = 1
     fields = ('nombre_posgrado', 'universidad', 'fecha_terminacion', 'meses_de_experiencia')
+
+class EspecializacionInline(admin.TabularInline):
+    model = Especializacion
+    extra = 1
+    fields = ('nombre_especializacion', 'universidad', 'fecha_terminacion', 'meses_de_experiencia')
 
 class CalculoExperienciaInline(admin.StackedInline):
     model = CalculoExperiencia
@@ -66,6 +71,7 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
         ExperienciaLaboralInline,
         InformacionAcademicaInline,
         PosgradoInline,
+        EspecializacionInline,
         CalculoExperienciaInline
     ]
 
@@ -117,6 +123,14 @@ class PosgradoAdmin(admin.ModelAdmin):
         'fecha_terminacion', 'meses_de_experiencia'
     )
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'nombre_posgrado')
+
+@admin.register(Especializacion)
+class EspecializacionAdmin(admin.ModelAdmin):
+    list_display = (
+        'informacion_basica', 'nombre_especializacion', 'universidad',
+        'fecha_terminacion', 'meses_de_experiencia'
+    )
+    search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'nombre_especializacion')
 
 @admin.register(CalculoExperiencia)
 class CalculoExperienciaAdmin(admin.ModelAdmin):

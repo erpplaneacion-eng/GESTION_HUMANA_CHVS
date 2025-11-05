@@ -209,7 +209,7 @@
     <!-- Posgrados -->
     <div class="detail-section">
         <h3>
-            <i class="fas fa-award"></i> Posgrados y Especializaciones
+            <i class="fas fa-award"></i> Posgrados (Maestrías, Doctorados)
         </h3>
         {% if applicant.posgrados.all %}
             <div class="row">
@@ -224,9 +224,13 @@
                                 <i class="fas fa-university"></i>
                                 <strong>Universidad:</strong> {{ posgrado.universidad }}
                             </p>
-                            <p class="mb-0">
+                            <p class="mb-2">
                                 <i class="fas fa-calendar-check"></i>
                                 <strong>Terminación:</strong> {{ posgrado.fecha_terminacion|date:"d/m/Y" }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-clock"></i>
+                                <strong>Experiencia:</strong> {{ posgrado.meses_de_experiencia }} meses
                             </p>
                         </div>
                     </div>
@@ -236,6 +240,44 @@
         {% else %}
             <div class="alert alert-info">
                 <i class="fas fa-info-circle"></i> No hay posgrados registrados.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Especializaciones -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-certificate"></i> Especializaciones
+        </h3>
+        {% if applicant.especializaciones.all %}
+            <div class="row">
+                {% for especializacion in applicant.especializaciones.all %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100" style="border-left: 4px solid #e67e22;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #e67e22;">
+                                <i class="fas fa-certificate"></i> {{ especializacion.nombre_especializacion }}
+                            </h5>
+                            <p class="mb-2">
+                                <i class="fas fa-university"></i>
+                                <strong>Universidad:</strong> {{ especializacion.universidad }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar-check"></i>
+                                <strong>Terminación:</strong> {{ especializacion.fecha_terminacion|date:"d/m/Y" }}
+                            </p>
+                            <p class="mb-0">
+                                <i class="fas fa-clock"></i>
+                                <strong>Experiencia:</strong> {{ especializacion.meses_de_experiencia }} meses
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay especializaciones registradas.
             </div>
         {% endif %}
     </div>

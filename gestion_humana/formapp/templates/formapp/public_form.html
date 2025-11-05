@@ -439,11 +439,11 @@
             <!-- SECCIÓN 4: POSGRADOS -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <i class="fas fa-award"></i> Posgrados y Especializaciones
+                    <i class="fas fa-award"></i> Posgrados (Maestrías, Doctorados)
                 </h2>
                 <p class="text-muted mb-3">
                     <i class="fas fa-star"></i>
-                    <strong>Opcional:</strong> Agregue información sobre maestrías, especializaciones, doctorados, etc.
+                    <strong>Opcional:</strong> Agregue información sobre maestrías, doctorados, etc.
                 </p>
 
                 <div id="posgrado-container">
@@ -513,6 +513,83 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN 5: ESPECIALIZACIONES -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-certificate"></i> Especializaciones
+                </h2>
+                <p class="text-muted mb-3">
+                    <i class="fas fa-star"></i>
+                    <strong>Opcional:</strong> Agregue información sobre especializaciones profesionales.
+                </p>
+
+                <div id="especializacion-container">
+                    {{ especializacion_formset.management_form }}
+                    {% for form in especializacion_formset %}
+                        <div class="especializacion-group">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-certificate"></i> Especialización {{ forloop.counter }}
+                                </h5>
+                                {% if not forloop.first %}
+                                    <button type="button" class="remove-btn remove-especializacion">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                {% endif %}
+                            </div>
+
+                            {{ form.id }}
+                            {% if form.DELETE %}
+                                {{ form.DELETE }}
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.nombre_especializacion.label }}</label>
+                                    {{ form.nombre_especializacion }}
+                                    {% if form.nombre_especializacion.errors %}
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.nombre_especializacion.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.universidad.label }}</label>
+                                    {{ form.universidad }}
+                                    {% if form.universidad.errors %}
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
+                                    {{ form.fecha_terminacion }}
+                                    {% if form.fecha_terminacion.errors %}
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label required-field">{{ form.meses_de_experiencia.label }}</label>
+                                    {{ form.meses_de_experiencia }}
+                                    <small class="form-text">Ingrese los meses de experiencia que aporta esta especialización</small>
+                                    {% if form.meses_de_experiencia.errors %}
+                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.meses_de_experiencia.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="add-btn" id="add-especializacion">
+                        <i class="fas fa-plus-circle"></i> Agregar Más Especializaciones
+                    </button>
+                </div>
+            </div>
+
             <!-- BOTONES DE ACCIÓN -->
             <div class="text-center mt-5">
                 <div class="alert alert-success mb-4">
@@ -575,6 +652,18 @@
                 posgradoGroup.hide();
             } else {
                 posgradoGroup.remove();
+            }
+        });
+
+        // Manejar eliminación de especialización
+        $('.remove-especializacion').on('click', function() {
+            var especializacionGroup = $(this).closest('.especializacion-group');
+            var deleteCheckbox = especializacionGroup.find('input[name$="-DELETE"]');
+            if (deleteCheckbox.length) {
+                deleteCheckbox.prop('checked', true);
+                especializacionGroup.hide();
+            } else {
+                especializacionGroup.remove();
             }
         });
 
@@ -661,9 +750,35 @@
             setupRemoveButtons();
         });
 
+        // Función para agregar más especializaciones
+        $('#add-especializacion').on('click', function(e) {
+            e.preventDefault();
+            var formsetContainer = $('#especializacion-container');
+            var totalForms = $('#id_especializaciones-TOTAL_FORMS');
+            var formNum = parseInt(totalForms.val());
+
+            var lastForm = $('.especializacion-group').last();
+            var newForm = lastForm.clone();
+
+            newForm.html(newForm.html().replace(/especializaciones-\d+-/g, 'especializaciones-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+
+            if (formNum > 0) {
+                newForm.find('.d-flex h5').parent().html(
+                    '<h5 class="mb-0"><i class="fas fa-certificate"></i> Especialización ' + (formNum + 1) + '</h5>' +
+                    '<button type="button" class="remove-btn remove-especializacion"><i class="fas fa-trash"></i> Eliminar</button>'
+                );
+            }
+
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+            setupRemoveButtons();
+        });
+
         // Función para configurar los botones de eliminar
         function setupRemoveButtons() {
-            $(document).off('click', '.remove-experiencia, .remove-academica, .remove-posgrado');
+            $(document).off('click', '.remove-experiencia, .remove-academica, .remove-posgrado, .remove-especializacion');
 
             $(document).on('click', '.remove-experiencia', function() {
                 var experienciaGroup = $(this).closest('.experiencia-group');
@@ -695,6 +810,17 @@
                     posgradoGroup.hide();
                 } else {
                     posgradoGroup.remove();
+                }
+            });
+
+            $(document).on('click', '.remove-especializacion', function() {
+                var especializacionGroup = $(this).closest('.especializacion-group');
+                var deleteCheckbox = especializacionGroup.find('input[name$="-DELETE"]');
+                if (deleteCheckbox.length) {
+                    deleteCheckbox.prop('checked', true);
+                    especializacionGroup.hide();
+                } else {
+                    especializacionGroup.remove();
                 }
             });
         }
