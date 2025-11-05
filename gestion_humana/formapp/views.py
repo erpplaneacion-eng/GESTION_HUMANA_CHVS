@@ -161,45 +161,83 @@ def public_form_view(request):
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES)
         especializacion_formset = EspecializacionFormSet(request.POST, request.FILES)
 
+        # CRÍTICO: Validar TODOS los formularios ANTES de guardar cualquier cosa
+        # Esto previene el bug donde certificados no se guardan pero el usuario ve "éxito"
         if form.is_valid():
-            try:
-                with transaction.atomic():
-                    informacion_basica = form.save()
+            # Validar todos los formsets primero
+            experiencia_valid = experiencia_formset.is_valid()
+            academica_valid = academica_formset.is_valid()
+            posgrado_valid = posgrado_formset.is_valid()
+            especializacion_valid = especializacion_formset.is_valid()
 
-                    experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES, instance=informacion_basica)
-                    if experiencia_formset.is_valid():
+            # Solo proceder si TODO es válido
+            if experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
+                try:
+                    with transaction.atomic():
+                        informacion_basica = form.save()
+
+                        # Asociar formsets con la instancia guardada y guardar
+                        experiencia_formset.instance = informacion_basica
                         experiencia_formset.save()
                         # Calcular experiencia automáticamente
                         calcular_experiencia_total(informacion_basica)
 
-                    academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES, instance=informacion_basica)
-                    if academica_formset.is_valid():
+                        academica_formset.instance = informacion_basica
                         academica_formset.save()
 
-                    posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=informacion_basica)
-                    if posgrado_formset.is_valid():
+                        posgrado_formset.instance = informacion_basica
                         posgrado_formset.save()
 
-                    especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=informacion_basica)
-                    if especializacion_formset.is_valid():
+                        especializacion_formset.instance = informacion_basica
                         especializacion_formset.save()
 
-                    # Enviar correo de confirmación al usuario en un thread separado
-                    # para no bloquear la respuesta del formulario
-                    def enviar_correo_async():
-                        try:
-                            enviar_correo_confirmacion(informacion_basica)
-                        except Exception as e:
-                            logger.error(f'Error en thread de correo: {str(e)}')
+                        # Enviar correo de confirmación al usuario en un thread separado
+                        # para no bloquear la respuesta del formulario
+                        def enviar_correo_async():
+                            try:
+                                enviar_correo_confirmacion(informacion_basica)
+                            except Exception as e:
+                                logger.error(f'Error en thread de correo: {str(e)}')
 
-                    thread = threading.Thread(target=enviar_correo_async)
-                    thread.daemon = True
-                    thread.start()
+                        thread = threading.Thread(target=enviar_correo_async)
+                        thread.daemon = True
+                        thread.start()
 
-                    messages.success(request, '¡Formulario enviado con éxito! Recibirás un correo de confirmación en los próximos minutos.')
-                    return redirect('formapp:public_form')
-            except Exception as e:
-                messages.error(request, f'Error al guardar el formulario: {str(e)}')
+                        messages.success(request, '¡Formulario enviado con éxito! Recibirás un correo de confirmación en los próximos minutos.')
+                        return redirect('formapp:public_form')
+                except Exception as e:
+                    messages.error(request, f'Error al guardar el formulario: {str(e)}')
+            else:
+                # Mostrar errores específicos de cada formset que falló
+                if not experiencia_valid:
+                    for i, form_errors in enumerate(experiencia_formset.errors):
+                        if form_errors:
+                            for field, error_list in form_errors.items():
+                                for error in error_list:
+                                    messages.error(request, f'Error en Experiencia Laboral #{i+1} - {field}: {error}')
+
+                if not academica_valid:
+                    for i, form_errors in enumerate(academica_formset.errors):
+                        if form_errors:
+                            for field, error_list in form_errors.items():
+                                for error in error_list:
+                                    messages.error(request, f'Error en Información Académica #{i+1} - {field}: {error}')
+
+                if not posgrado_valid:
+                    for i, form_errors in enumerate(posgrado_formset.errors):
+                        if form_errors:
+                            for field, error_list in form_errors.items():
+                                for error in error_list:
+                                    messages.error(request, f'Error en Posgrado #{i+1} - {field}: {error}')
+
+                if not especializacion_valid:
+                    for i, form_errors in enumerate(especializacion_formset.errors):
+                        if form_errors:
+                            for field, error_list in form_errors.items():
+                                for error in error_list:
+                                    messages.error(request, f'Error en Especialización #{i+1} - {field}: {error}')
+
+                messages.warning(request, 'Por favor corrija los errores en el formulario antes de enviarlo.')
         else:
             messages.warning(request, 'Por favor corrija los errores en el formulario.')
     else:
@@ -1076,11 +1114,10 @@ def download_individual_zip(request, pk):
         for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
             if experiencia.certificado_laboral:
                 try:
-                    # Leer el archivo del certificado
+                    # Leer el archivo del certificado usando context manager
                     certificado_file = experiencia.certificado_laboral
-                    certificado_file.open('rb')
-                    file_content = certificado_file.read()
-                    certificado_file.close()
+                    with certificado_file.open('rb') as f:
+                        file_content = f.read()
 
                     # Obtener la extensión del archivo
                     # Cloudinary puede no incluir extensión en el nombre, así que intentamos obtenerla de la URL
@@ -1112,7 +1149,7 @@ def download_individual_zip(request, pk):
                         file_content
                     )
                 except Exception as e:
-                    print(f"Error al agregar certificado: {e}")
+                    logger.error(f"Error al agregar certificado {idx} de {applicant.nombre_completo}: {e}")
 
     # Preparar respuesta
     zip_buffer.seek(0)
@@ -1217,9 +1254,8 @@ def download_all_zip(request):
                 if experiencia.certificado_laboral:
                     try:
                         certificado_file = experiencia.certificado_laboral
-                        certificado_file.open('rb')
-                        file_content = certificado_file.read()
-                        certificado_file.close()
+                        with certificado_file.open('rb') as f:
+                            file_content = f.read()
 
                         # Obtener la extensión del archivo
                         # Cloudinary puede no incluir extensión en el nombre, así que intentamos obtenerla de la URL
@@ -1250,7 +1286,7 @@ def download_all_zip(request):
                             file_content
                         )
                     except Exception as e:
-                        print(f"Error al agregar certificado: {e}")
+                        logger.error(f"Error al agregar certificado {idx} de {applicant.nombre_completo}: {e}")
 
     # Preparar respuesta
     zip_buffer.seek(0)

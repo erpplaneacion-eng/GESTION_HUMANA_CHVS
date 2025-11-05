@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from .validators import validate_file_size, validate_file_extension
+from .validators import validate_file_size, validate_file_extension, validate_file_mime
 
 class InformacionBasica(models.Model):
     # campos datos personales
@@ -65,9 +65,10 @@ class ExperienciaLaboral(models.Model):
     certificado_laboral = models.FileField(
         upload_to='certificados_laborales/',
         verbose_name='Certificado Laboral o Contractual',
-        validators=[validate_file_size, validate_file_extension],
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
-        blank=True  # Permitir que el campo esté vacío en edición
+        blank=False,  # Campo requerido para nuevos registros
+        null=False    # No permitir valores NULL en base de datos
     )     
     
 

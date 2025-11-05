@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 import os
+import magic
 
 def validate_file_size(value):
     """
@@ -63,4 +64,61 @@ def validate_file_extension(value):
             )
     except (AttributeError, TypeError, ValueError):
         # Si hay algún error al acceder al nombre o procesarlo, no validar (probablemente es un objeto vacío)
+        return
+
+def validate_file_mime(value):
+    """
+    Valida que el archivo sea realmente un PDF, JPG o PNG basándose en su contenido MIME type,
+    no solo en la extensión del archivo. Esto previene que archivos maliciosos sean disfrazados
+    con extensiones válidas (ej: malware.exe renombrado como certificado.pdf)
+    """
+    # Si no hay archivo (None, False, o cadena vacía), no validar
+    if not value or value == '':
+        return
+
+    # Si el archivo no tiene nombre, no validar
+    if not hasattr(value, 'name'):
+        return
+
+    # Si el nombre está vacío o es None, no validar
+    if not value.name or value.name == '':
+        return
+
+    # Si el archivo parece ser un objeto vacío (típico en formsets cuando no se envía archivo)
+    if hasattr(value, 'size') and value.size == 0:
+        return
+
+    try:
+        # Leer primeros 2048 bytes para detectar tipo MIME
+        # Guardar posición actual del cursor
+        original_position = value.tell() if hasattr(value, 'tell') else 0
+
+        # Leer encabezado del archivo
+        file_header = value.read(2048)
+
+        # Restaurar posición del cursor al inicio para no afectar procesamiento posterior
+        if hasattr(value, 'seek'):
+            value.seek(original_position)
+
+        # Detectar MIME type real del archivo
+        mime = magic.from_buffer(file_header, mime=True)
+
+        # Lista de MIME types permitidos
+        allowed_mimes = [
+            'application/pdf',           # PDF
+            'image/jpeg',                # JPEG/JPG
+            'image/png',                 # PNG
+        ]
+
+        if mime not in allowed_mimes:
+            raise ValidationError(
+                f'Tipo de archivo no válido. '
+                f'Se esperaba: PDF, JPG o PNG. '
+                f'Se detectó: {mime}. '
+                f'Por favor, asegúrese de que el archivo no haya sido renombrado y sea realmente un documento válido.'
+            )
+
+    except (AttributeError, TypeError, ValueError, IOError) as e:
+        # Si hay algún error al leer el archivo, no validar (probablemente es un objeto vacío)
+        # Nota: En producción esto podría ser más estricto
         return

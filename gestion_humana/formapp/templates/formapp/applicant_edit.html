@@ -207,12 +207,22 @@
                                         <div class="col-md-12 mb-3">
                                             <label class="form-label">Objeto Contractual</label>
                                             {{ form_exp.objeto_contractual }}
+                                            {% if form_exp.objeto_contractual.help_text %}
+                                                <small class="form-text text-warning d-block mt-1">
+                                                    <i class="fas fa-info-circle"></i> {{ form_exp.objeto_contractual.help_text }}
+                                                </small>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
                                             <label class="form-label">Funciones</label>
                                             {{ form_exp.funciones }}
+                                            {% if form_exp.funciones.help_text %}
+                                                <small class="form-text text-warning d-block mt-1">
+                                                    <i class="fas fa-info-circle"></i> {{ form_exp.funciones.help_text }}
+                                                </small>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="row">

@@ -227,7 +227,17 @@ class ExperienciaLaboralForm(forms.ModelForm):
         # Establecer valor por defecto si está vacío
         if not self.instance.pk and not self.data:
             self.fields['cargo_anexo_11'].initial = 'Profesional'
-        
+
+        # Agregar textos de ayuda para objeto contractual y funciones
+        self.fields['objeto_contractual'].help_text = (
+            '⚠️ IMPORTANTE: El certificado laboral que adjunte debe contener esta misma información. '
+            'Asegúrese de que el objeto contractual que describe aquí coincida con el que aparece en su certificado.'
+        )
+        self.fields['funciones'].help_text = (
+            '⚠️ IMPORTANTE: El certificado laboral que adjunte debe contener esta misma información. '
+            'Asegúrese de que las funciones que describe aquí coincidan con las que aparecen en su certificado.'
+        )
+
         # Si es una instancia existente (edición), hacer el campo opcional
         if self.instance and self.instance.pk:
             self.fields['certificado_laboral'].required = False
