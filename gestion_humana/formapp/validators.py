@@ -1,6 +1,17 @@
 from django.core.exceptions import ValidationError
 import os
-import magic
+
+# Importar magic de manera compatible con Windows y Linux
+try:
+    # Intenta importar python-magic-bin (Windows)
+    import magic
+except ImportError:
+    try:
+        # Si falla, intenta importar python-magic (Linux)
+        import magic
+    except ImportError:
+        # Si ninguno está disponible, magic será None
+        magic = None
 
 def validate_file_size(value):
     """
@@ -88,6 +99,10 @@ def validate_file_mime(value):
     if hasattr(value, 'size') and value.size == 0:
         return
 
+    # Si magic no está disponible, solo validar por magic bytes básicos
+    if magic is None:
+        return _validate_file_magic_bytes(value)
+
     try:
         # Leer primeros 2048 bytes para detectar tipo MIME
         # Guardar posición actual del cursor
@@ -121,4 +136,35 @@ def validate_file_mime(value):
     except (AttributeError, TypeError, ValueError, IOError) as e:
         # Si hay algún error al leer el archivo, no validar (probablemente es un objeto vacío)
         # Nota: En producción esto podría ser más estricto
+        return
+
+def _validate_file_magic_bytes(value):
+    """
+    Validación básica usando magic bytes cuando python-magic no está disponible
+    """
+    try:
+        # Guardar posición actual del cursor
+        original_position = value.tell() if hasattr(value, 'tell') else 0
+
+        # Leer primeros bytes del archivo
+        file_header = value.read(32)
+
+        # Restaurar posición del cursor
+        if hasattr(value, 'seek'):
+            value.seek(original_position)
+
+        # Verificar magic bytes conocidos
+        is_pdf = file_header.startswith(b'%PDF')
+        is_png = file_header.startswith(b'\x89PNG\r\n\x1a\n')
+        is_jpeg = file_header.startswith(b'\xff\xd8\xff')
+
+        if not (is_pdf or is_png or is_jpeg):
+            raise ValidationError(
+                'Tipo de archivo no válido. '
+                'Se esperaba: PDF, JPG o PNG. '
+                'Por favor, asegúrese de que el archivo sea realmente un documento válido.'
+            )
+
+    except (AttributeError, TypeError, ValueError, IOError):
+        # Si hay error al leer, permitir que pase (será validado por extensión)
         return
