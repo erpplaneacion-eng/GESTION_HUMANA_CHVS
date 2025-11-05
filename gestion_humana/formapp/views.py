@@ -853,8 +853,10 @@ def generar_anexo11_pdf(applicant):
             institucion_otros = ''
             fecha_otros = ''
 
-        # Solo mostrar la tarjeta profesional y experiencia en la primera tabla
-        mostrar_tarjeta_y_experiencia = (idx == 0 and len(formaciones_academicas) > 0)
+        # Mostrar tarjeta profesional si hay formación académica en esta tabla
+        mostrar_tarjeta_profesional = (idx < len(formaciones_academicas) and len(formaciones_academicas) > 0)
+        # Solo mostrar experiencia en la primera tabla
+        mostrar_experiencia = (idx == 0)
 
         # Construir la tabla con las filas adicionales pegadas
         estudios_nueva_data = [
@@ -868,9 +870,12 @@ def generar_anexo11_pdf(applicant):
             ['FECHA DE GRADO', fecha_univ, fecha_esp, fecha_otros],
         ]
 
-        # Agregar fila de tarjeta profesional solo en la primera tabla con formación académica
-        if mostrar_tarjeta_y_experiencia:
+        # Agregar fila de tarjeta profesional si hay formación académica en esta tabla
+        if mostrar_tarjeta_profesional:
             estudios_nueva_data.append(['TARJETA PROFESIONAL', tarjeta_texto, '', ''])
+        
+        # Agregar fila de experiencia solo en la primera tabla
+        if mostrar_experiencia:
             estudios_nueva_data.append(['2. EXPERIENCIA:', experiencia_anos, '', ''])
 
         tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
@@ -914,14 +919,18 @@ def generar_anexo11_pdf(applicant):
             ('RIGHTPADDING', (0, 0), (-1, -1), 6),
         ]
         
-        # Agregar estilos para tarjeta y experiencia solo si existen
-        if mostrar_tarjeta_y_experiencia:
-            estilos_base.extend([
-                # Fila de tarjeta profesional - span en columnas 2-4
-                ('SPAN', (1, num_filas - 2), (3, num_filas - 2)),
-                # Fila de experiencia - span en columnas 2-4
-                ('SPAN', (1, num_filas - 1), (3, num_filas - 1)),
-            ])
+        # Agregar estilos para tarjeta profesional y experiencia
+        # Calcular índices de filas dinámicamente
+        fila_tarjeta = None
+        fila_experiencia = None
+        
+        if mostrar_tarjeta_profesional:
+            fila_tarjeta = num_filas - (2 if mostrar_experiencia else 1)
+            estilos_base.append(('SPAN', (1, fila_tarjeta), (3, fila_tarjeta)))
+        
+        if mostrar_experiencia:
+            fila_experiencia = num_filas - 1
+            estilos_base.append(('SPAN', (1, fila_experiencia), (3, fila_experiencia)))
         
         tabla_estudios_nueva.setStyle(TableStyle(estilos_base))
 
