@@ -24,19 +24,43 @@ def validate_file_extension(value):
     """
     Valida que el archivo sea PDF, JPG, PNG o JPEG
     """
-    # Si no hay archivo (None o False), no validar
-    if not value:
+    # Si no hay archivo (None, False, o cadena vacía), no validar
+    # Esto permite que el campo esté vacío en edición
+    if not value or value == '':
         return
     
     # Si el archivo no tiene nombre, no validar
-    if not hasattr(value, 'name') or not value.name:
+    if not hasattr(value, 'name'):
         return
     
-    ext = os.path.splitext(value.name)[1].lower()  # Obtener extensión del archivo
-    valid_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+    # Si el nombre está vacío o es None, no validar
+    if not value.name or value.name == '':
+        return
+    
+    # Si el archivo parece ser un objeto vacío (típico en formsets cuando no se envía archivo)
+    # Verificar si realmente tiene contenido
+    if hasattr(value, 'size') and value.size == 0:
+        return
+    
+    try:
+        # Obtener extensión del archivo
+        name = str(value.name) if value.name else ''
+        if not name:
+            return
+        
+        ext = os.path.splitext(name)[1].lower()
+        
+        # Si la extensión está vacía, no validar (probablemente es un objeto vacío)
+        if not ext:
+            return
+        
+        valid_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
 
-    if ext not in valid_extensions:
-        raise ValidationError(
-            f'Tipo de archivo no permitido. Solo se permiten archivos: PDF, JPG, JPEG, PNG. '
-            f'Archivo actual: {ext}'
-        )
+        if ext not in valid_extensions:
+            raise ValidationError(
+                f'Tipo de archivo no permitido. Solo se permiten archivos: PDF, JPG, JPEG, PNG. '
+                f'Archivo actual: {ext}'
+            )
+    except (AttributeError, TypeError, ValueError):
+        # Si hay algún error al acceder al nombre o procesarlo, no validar (probablemente es un objeto vacío)
+        return

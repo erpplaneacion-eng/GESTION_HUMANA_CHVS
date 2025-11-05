@@ -228,14 +228,21 @@ class ExperienciaLaboralForm(forms.ModelForm):
         if not self.instance.pk and not self.data:
             self.fields['cargo_anexo_11'].initial = 'Profesional'
         
-        # Si es una instancia existente (edición) y ya tiene un certificado, hacer el campo opcional
-        if self.instance and self.instance.pk and self.instance.certificado_laboral:
+        # Si es una instancia existente (edición), hacer el campo opcional
+        if self.instance and self.instance.pk:
             self.fields['certificado_laboral'].required = False
             # Remover el atributo required del widget
             self.fields['certificado_laboral'].widget.attrs.pop('required', None)
+            # Remover validadores temporalmente para evitar errores cuando el campo está vacío
+            # Los validadores se ejecutarán solo si hay un archivo nuevo en clean_certificado_laboral
+            original_validators = self.fields['certificado_laboral'].validators.copy()
+            self.fields['certificado_laboral'].validators = []
+            # Guardar validadores originales para usarlos en clean_certificado_laboral
+            self._original_certificado_validators = original_validators
         else:
             # Si es un nuevo registro, el certificado es obligatorio
             self.fields['certificado_laboral'].required = True
+            self._original_certificado_validators = None
 
     def clean_cargo_anexo_11(self):
         cargo_anexo_11 = self.cleaned_data.get('cargo_anexo_11', '')
@@ -245,18 +252,27 @@ class ExperienciaLaboralForm(forms.ModelForm):
         return cargo_anexo_11
 
     def clean_certificado_laboral(self):
-        certificado = self.cleaned_data.get('certificado_laboral')
+        certificado = self.cleaned_data.get('certificado_laboral', None)
         
         # Si es una instancia existente (tiene pk) y no se proporciona un nuevo archivo
         # mantener el archivo existente
         if self.instance and self.instance.pk:
-            # Si no se proporciona un nuevo certificado (None, False, o cadena vacía)
-            if not certificado or (hasattr(certificado, 'name') and not certificado.name):
+            # Si no se proporciona un nuevo certificado
+            # En Django, cuando un campo de archivo está vacío en un formset, puede ser None, False, o un objeto vacío
+            if not certificado or (hasattr(certificado, 'name') and not certificado.name) or certificado == '':
                 # Si ya existe un certificado, mantenerlo
                 if hasattr(self.instance, 'certificado_laboral') and self.instance.certificado_laboral:
+                    # Retornar el archivo existente sin validarlo nuevamente
                     return self.instance.certificado_laboral
+                # Si no hay certificado existente y no se proporciona uno nuevo, retornar None
+                return None
         
-        # Si se proporciona un nuevo certificado, retornarlo (ya validado por los validators del modelo)
+        # Si se proporciona un nuevo certificado, validarlo con los validadores originales
+        if certificado and hasattr(self, '_original_certificado_validators') and self._original_certificado_validators:
+            # Ejecutar validadores manualmente solo si hay un archivo nuevo
+            for validator in self._original_certificado_validators:
+                validator(certificado)
+        
         return certificado
 
     def clean(self):

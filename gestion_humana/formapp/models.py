@@ -66,7 +66,8 @@ class ExperienciaLaboral(models.Model):
         upload_to='certificados_laborales/',
         verbose_name='Certificado Laboral o Contractual',
         validators=[validate_file_size, validate_file_extension],
-        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB'
+        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
+        blank=True  # Permitir que el campo esté vacío en edición
     )     
     
 
