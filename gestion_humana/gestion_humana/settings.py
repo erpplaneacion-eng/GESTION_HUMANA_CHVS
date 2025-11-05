@@ -180,6 +180,13 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/formapp/lista/'
 LOGOUT_REDIRECT_URL = '/login/'
 
+# Configuración de cookies para CSRF y sesiones
+# En desarrollo, permitir cookies sin HTTPS
+CSRF_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_HTTPONLY = False  # Permitir acceso desde JavaScript si es necesario
+SESSION_COOKIE_HTTPONLY = True
+
 # Security Settings for Production
 if not DEBUG:
     # Configuración para Railway (proxy HTTPS)
@@ -193,6 +200,10 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
+else:
+    # En desarrollo, no requerir HTTPS para cookies
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # Email Configuration
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='erp.planeacion@vallesolidario.com')
