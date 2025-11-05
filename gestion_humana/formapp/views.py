@@ -827,149 +827,155 @@ def generar_anexo11_pdf(applicant):
     except:
         experiencia_anos = "No calculada"
 
-    # Determinar el número máximo de tablas necesarias
-    max_tablas = max(len(formaciones_academicas), len(especializaciones), len(posgrados), 1)
-
-    # Crear tablas para mostrar todos los estudios
-    for idx in range(max_tablas):
-        # Datos universitarios (si existe formación académica en este índice)
-        if idx < len(formaciones_academicas):
-            formacion = formaciones_academicas[idx]
-            titulo_univ = formacion.profesion or ''
-            institucion_univ = formacion.universidad or ''
-            fecha_univ = formacion.fecha_grado.strftime('%d/%m/%Y') if formacion.fecha_grado else ''
-
-            # Tarjeta profesional
+    # Construir contenido consolidado para cada columna
+    # UNIVERSITARIOS - Agrupar todos los estudios universitarios
+    contenido_titulos_univ = ''
+    contenido_instituciones_univ = ''
+    contenido_fechas_univ = ''
+    tarjeta_texto = ''
+    
+    for formacion in formaciones_academicas:
+        titulo = formacion.profesion or ''
+        institucion = formacion.universidad or ''
+        fecha = formacion.fecha_grado.strftime('%d/%m/%Y') if formacion.fecha_grado else ''
+        
+        if titulo:
+            contenido_titulos_univ += f'<b>Título:</b> {titulo}<br/>'
+        if institucion:
+            contenido_instituciones_univ += f'<b>Institución:</b> {institucion}<br/>'
+        if fecha:
+            contenido_fechas_univ += f'<b>Fecha:</b> {fecha}<br/>'
+        
+        # Tarjeta profesional (solo la primera o consolidar todas)
+        if not tarjeta_texto:
             if formacion.tarjeta_profesional == 'Tarjeta Profesional':
                 tarjeta_texto = f"Tarjeta Profesional: {formacion.numero_tarjeta_resolucion or 'N/A'}"
             elif formacion.tarjeta_profesional == 'Resolución':
                 tarjeta_texto = f"Resolución: {formacion.numero_tarjeta_resolucion or 'N/A'}"
-            else:
-                tarjeta_texto = "No Aplica"
-        else:
-            titulo_univ = ''
-            institucion_univ = ''
-            fecha_univ = ''
-            tarjeta_texto = ''
-
-        # Datos de especialización (columna ESPECIALIZACIÓN)
-        if idx < len(especializaciones):
-            especializacion = especializaciones[idx]
-            titulo_esp = especializacion.nombre_especializacion or ''
-            institucion_esp = especializacion.universidad or ''
-            fecha_esp = especializacion.fecha_terminacion.strftime('%d/%m/%Y') if especializacion.fecha_terminacion else ''
-        else:
-            titulo_esp = ''
-            institucion_esp = ''
-            fecha_esp = ''
-
-        # Datos de posgrados (columna OTROS)
-        if idx < len(posgrados):
-            posgrado = posgrados[idx]
-            titulo_otros = posgrado.nombre_posgrado or ''
-            institucion_otros = posgrado.universidad or ''
-            fecha_otros = posgrado.fecha_terminacion.strftime('%d/%m/%Y') if posgrado.fecha_terminacion else ''
-        else:
-            titulo_otros = ''
-            institucion_otros = ''
-            fecha_otros = ''
-
-        # Mostrar tarjeta profesional si hay formación académica en esta tabla
-        mostrar_tarjeta_profesional = (idx < len(formaciones_academicas) and len(formaciones_academicas) > 0)
-        # Solo mostrar experiencia en la primera tabla
-        mostrar_experiencia = (idx == 0)
-
-        # Construir la tabla con las filas adicionales pegadas
-        # Usar Paragraph para textos largos que puedan desbordarse
-        estudios_nueva_data = [
-            # Fila de título con fondo gris
-            ['ESTUDIOS REALIZADOS', '', '', ''],
-            # Fila de encabezados de columnas
-            ['DESCRIPCIÓN', 'UNIVERSITARIOS', 'ESPECIALIZACIÓN', 'OTROS'],
-            # Filas de datos - convertir textos largos a Paragraph
-            ['TÍTULO OBTENIDO', 
-             Paragraph(str(titulo_univ or ''), cell_center_style), 
-             Paragraph(str(titulo_esp or ''), cell_center_style), 
-             Paragraph(str(titulo_otros or ''), cell_center_style)],
-            ['INSTITUCIÓN', 
-             Paragraph(str(institucion_univ or ''), cell_center_style), 
-             Paragraph(str(institucion_esp or ''), cell_center_style), 
-             Paragraph(str(institucion_otros or ''), cell_center_style)],
-            ['FECHA DE GRADO', 
-             Paragraph(str(fecha_univ or ''), cell_center_style), 
-             Paragraph(str(fecha_esp or ''), cell_center_style), 
-             Paragraph(str(fecha_otros or ''), cell_center_style)],
-        ]
-
-        # Agregar fila de tarjeta profesional si hay formación académica en esta tabla
-        if mostrar_tarjeta_profesional:
-            estudios_nueva_data.append(['TARJETA PROFESIONAL', Paragraph(str(tarjeta_texto or ''), cell_center_style), '', ''])
+    
+    # ESPECIALIZACIÓN - Agrupar todas las especializaciones
+    contenido_titulos_esp = ''
+    contenido_instituciones_esp = ''
+    contenido_fechas_esp = ''
+    
+    for especializacion in especializaciones:
+        titulo = especializacion.nombre_especializacion or ''
+        institucion = especializacion.universidad or ''
+        fecha = especializacion.fecha_terminacion.strftime('%d/%m/%Y') if especializacion.fecha_terminacion else ''
         
-        # Agregar fila de experiencia solo en la primera tabla
-        if mostrar_experiencia:
-            estudios_nueva_data.append(['2. EXPERIENCIA:', Paragraph(str(experiencia_anos or ''), cell_center_style), '', ''])
-
-        tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+        if titulo:
+            contenido_titulos_esp += f'<b>Título:</b> {titulo}<br/>'
+        if institucion:
+            contenido_instituciones_esp += f'<b>Institución:</b> {institucion}<br/>'
+        if fecha:
+            contenido_fechas_esp += f'<b>Fecha:</b> {fecha}<br/>'
+    
+    # OTROS (POSGRADOS) - Agrupar todos los posgrados
+    contenido_titulos_otros = ''
+    contenido_instituciones_otros = ''
+    contenido_fechas_otros = ''
+    
+    for posgrado in posgrados:
+        titulo = posgrado.nombre_posgrado or ''
+        institucion = posgrado.universidad or ''
+        fecha = posgrado.fecha_terminacion.strftime('%d/%m/%Y') if posgrado.fecha_terminacion else ''
         
-        # Calcular número de filas para los estilos
-        num_filas = len(estudios_nueva_data)
-        
-        # Construir lista de estilos base
-        estilos_base = [
-            # Título - Primera fila con fondo gris y span
-            ('SPAN', (0, 0), (3, 0)),
-            ('BACKGROUND', (0, 0), (3, 0), colors.HexColor('#D3D3D3')),
-            ('TEXTCOLOR', (0, 0), (3, 0), colors.black),
-            ('ALIGN', (0, 0), (3, 0), 'CENTER'),
-            ('FONTNAME', (0, 0), (3, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (3, 0), 10),
+        if titulo:
+            contenido_titulos_otros += f'<b>Título:</b> {titulo}<br/>'
+        if institucion:
+            contenido_instituciones_otros += f'<b>Institución:</b> {institucion}<br/>'
+        if fecha:
+            contenido_fechas_otros += f'<b>Fecha:</b> {fecha}<br/>'
+    
+    # Si no hay tarjeta profesional, poner "No Aplica"
+    if not tarjeta_texto:
+        tarjeta_texto = "No Aplica"
 
-            # Encabezados de columnas - Segunda fila
-            ('BACKGROUND', (0, 1), (3, 1), colors.HexColor('#366092')),
-            ('TEXTCOLOR', (0, 1), (3, 1), colors.whitesmoke),
-            ('ALIGN', (0, 1), (3, 1), 'CENTER'),
-            ('FONTNAME', (0, 1), (3, 1), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 1), (3, 1), 9),
+    # Construir la tabla con datos consolidados
+    estudios_nueva_data = [
+        # Fila de título con fondo gris
+        ['ESTUDIOS REALIZADOS', '', '', ''],
+        # Fila de encabezados de columnas
+        ['DESCRIPCIÓN', 'UNIVERSITARIOS', 'ESPECIALIZACIÓN', 'OTROS'],
+        # Fila de TÍTULO OBTENIDO con todos los títulos consolidados
+        ['TÍTULO OBTENIDO',
+         Paragraph(contenido_titulos_univ, cell_center_style) if contenido_titulos_univ else '',
+         Paragraph(contenido_titulos_esp, cell_center_style) if contenido_titulos_esp else '',
+         Paragraph(contenido_titulos_otros, cell_center_style) if contenido_titulos_otros else ''],
+        # Fila de INSTITUCIÓN con todas las instituciones consolidadas
+        ['INSTITUCIÓN',
+         Paragraph(contenido_instituciones_univ, cell_center_style) if contenido_instituciones_univ else '',
+         Paragraph(contenido_instituciones_esp, cell_center_style) if contenido_instituciones_esp else '',
+         Paragraph(contenido_instituciones_otros, cell_center_style) if contenido_instituciones_otros else ''],
+        # Fila de FECHA DE GRADO con todas las fechas consolidadas
+        ['FECHA DE GRADO',
+         Paragraph(contenido_fechas_univ, cell_center_style) if contenido_fechas_univ else '',
+         Paragraph(contenido_fechas_esp, cell_center_style) if contenido_fechas_esp else '',
+         Paragraph(contenido_fechas_otros, cell_center_style) if contenido_fechas_otros else ''],
+    ]
 
-            # Primera columna (DESCRIPCIÓN) - Negrita para todas las filas de datos
-            ('BACKGROUND', (0, 2), (0, num_filas - 1), colors.HexColor('#E8E8E8')),
-            ('FONTNAME', (0, 2), (0, num_filas - 1), 'Helvetica-Bold'),
-            ('ALIGN', (0, 2), (0, num_filas - 1), 'LEFT'),
+    # Agregar fila de tarjeta profesional (solo para universitarios)
+    if formaciones_academicas:
+        estudios_nueva_data.append(['TARJETA PROFESIONAL', Paragraph(str(tarjeta_texto or ''), cell_center_style), '', ''])
+    
+    # Agregar fila de experiencia
+    estudios_nueva_data.append(['2. EXPERIENCIA:', Paragraph(str(experiencia_anos or ''), cell_center_style), '', ''])
 
-            # Resto de datos
-            ('FONTNAME', (1, 2), (3, num_filas - 1), 'Helvetica'),
-            ('FONTSIZE', (0, 2), (3, num_filas - 1), 8),
-            ('ALIGN', (1, 2), (3, num_filas - 1), 'CENTER'),
+    tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
+    
+    # Calcular número de filas para los estilos
+    num_filas = len(estudios_nueva_data)
+    
+    # Construir lista de estilos base
+    estilos_base = [
+        # Título - Primera fila con fondo gris y span
+        ('SPAN', (0, 0), (3, 0)),
+        ('BACKGROUND', (0, 0), (3, 0), colors.HexColor('#D3D3D3')),
+        ('TEXTCOLOR', (0, 0), (3, 0), colors.black),
+        ('ALIGN', (0, 0), (3, 0), 'CENTER'),
+        ('FONTNAME', (0, 0), (3, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (3, 0), 10),
 
-            # Bordes y espaciado
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Cambiar a TOP para textos largos
-            ('TOPPADDING', (0, 0), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-            ('LEFTPADDING', (0, 0), (-1, -1), 6),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 6),
-        ]
-        
-        # Agregar estilos para tarjeta profesional y experiencia
-        # Calcular índices de filas dinámicamente
-        fila_tarjeta = None
-        fila_experiencia = None
-        
-        if mostrar_tarjeta_profesional:
-            fila_tarjeta = num_filas - (2 if mostrar_experiencia else 1)
-            estilos_base.append(('SPAN', (1, fila_tarjeta), (3, fila_tarjeta)))
-        
-        if mostrar_experiencia:
-            fila_experiencia = num_filas - 1
-            estilos_base.append(('SPAN', (1, fila_experiencia), (3, fila_experiencia)))
-        
-        tabla_estudios_nueva.setStyle(TableStyle(estilos_base))
+        # Encabezados de columnas - Segunda fila
+        ('BACKGROUND', (0, 1), (3, 1), colors.HexColor('#366092')),
+        ('TEXTCOLOR', (0, 1), (3, 1), colors.whitesmoke),
+        ('ALIGN', (0, 1), (3, 1), 'CENTER'),
+        ('FONTNAME', (0, 1), (3, 1), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 1), (3, 1), 9),
 
-        elementos.append(tabla_estudios_nueva)
+        # Primera columna (DESCRIPCIÓN) - Negrita para todas las filas de datos
+        ('BACKGROUND', (0, 2), (0, num_filas - 1), colors.HexColor('#E8E8E8')),
+        ('FONTNAME', (0, 2), (0, num_filas - 1), 'Helvetica-Bold'),
+        ('ALIGN', (0, 2), (0, num_filas - 1), 'LEFT'),
+        ('FONTSIZE', (0, 2), (0, num_filas - 1), 8),
 
-        # Agregar espacio entre tablas si no es la última
-        if idx < max_tablas - 1:
-            elementos.append(Spacer(1, 0.2*inch))
+        # Resto de datos
+        ('FONTNAME', (1, 2), (3, num_filas - 1), 'Helvetica'),
+        ('FONTSIZE', (1, 2), (3, num_filas - 1), 8),
+        ('ALIGN', (1, 2), (3, num_filas - 1), 'CENTER'),
+
+        # Bordes y espaciado
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # TOP para textos largos
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+    ]
+    
+    # Agregar estilos para tarjeta profesional y experiencia (span solo en la primera columna)
+    # Tarjeta profesional (si existe, es la penúltima fila)
+    if formaciones_academicas:
+        fila_tarjeta = num_filas - 2  # Penúltima fila
+        estilos_base.append(('SPAN', (1, fila_tarjeta), (3, fila_tarjeta)))
+    
+    # Experiencia (última fila)
+    fila_experiencia = num_filas - 1
+    estilos_base.append(('SPAN', (1, fila_experiencia), (3, fila_experiencia)))
+    
+    tabla_estudios_nueva.setStyle(TableStyle(estilos_base))
+
+    elementos.append(tabla_estudios_nueva)
 
     # Construir PDF
     doc.build(elementos)
