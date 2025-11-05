@@ -192,11 +192,13 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
+                                        <div class="col-md-12 mb-3">
                                             <label class="form-label">Cargo</label>
                                             {{ form_exp.cargo }}
                                         </div>
-                                        <div class="col-md-6 mb-3">
+                                    </div>
+                                    <div class="row" style="display: none;">
+                                        <div class="col-md-12 mb-3">
                                             <label class="form-label">Cargo Anexo 11</label>
                                             {{ form_exp.cargo_anexo_11 }}
                                         </div>
@@ -229,6 +231,11 @@
                                     {{ form_exp.DELETE }}
                                 </div>
                             {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" id="add-experiencia-edit">
+                                <i class="fas fa-plus-circle"></i> Agregar Más Experiencia
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -283,6 +290,11 @@
                                 </div>
                             {% endfor %}
                         </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" id="add-academica-edit">
+                                <i class="fas fa-plus-circle"></i> Agregar Más Formación Académica
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -322,6 +334,11 @@
                                 </div>
                             {% endfor %}
                         </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" id="add-posgrado-edit">
+                                <i class="fas fa-plus-circle"></i> Agregar Más Posgrados
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -360,6 +377,11 @@
                                     {{ form_esp.DELETE }}
                                 </div>
                             {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-primary" id="add-especializacion-edit">
+                                <i class="fas fa-plus-circle"></i> Agregar Más Especializaciones
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -471,5 +493,138 @@ function calcularDiferencia(fechaInicio, fechaFin) {
         totalDias: totalDias
     };
 }
+
+// Funciones para agregar más formularios en la vista de edición
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si jQuery está disponible
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery no está disponible');
+        return;
+    }
+    
+    var $ = jQuery;
+    // Función para agregar más experiencias
+    $('#add-experiencia-edit').on('click', function(e) {
+        e.preventDefault();
+        var formsetContainer = $('#experiencia-formset');
+        var totalForms = $('#id_experiencias_laborales-TOTAL_FORMS');
+        var formNum = parseInt(totalForms.val());
+
+        // Buscar el último formulario visible o disponible
+        var lastForm = $('.formset-form:visible', formsetContainer).last();
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).last();
+        }
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).first();
+        }
+
+        if (lastForm.length > 0) {
+            var newForm = lastForm.clone();
+            newForm.html(newForm.html().replace(/experiencias_laborales-\d+-/g, 'experiencias_laborales-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+            newForm.find('input[type="file"]').val('');
+            newForm.find('input[type="hidden"][name*="-id"]').remove();
+            newForm.show();
+            
+            // Actualizar el título
+            newForm.find('h5').text('Experiencia #' + (formNum + 1));
+            
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+        }
+    });
+
+    // Función para agregar más formación académica
+    $('#add-academica-edit').on('click', function(e) {
+        e.preventDefault();
+        var formsetContainer = $('#academica-formset');
+        var totalForms = $('#id_formacion_academica-TOTAL_FORMS');
+        var formNum = parseInt(totalForms.val());
+
+        var lastForm = $('.formset-form:visible', formsetContainer).last();
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).last();
+        }
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).first();
+        }
+
+        if (lastForm.length > 0) {
+            var newForm = lastForm.clone();
+            newForm.html(newForm.html().replace(/formacion_academica-\d+-/g, 'formacion_academica-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+            newForm.find('input[type="hidden"][name*="-id"]').remove();
+            newForm.show();
+            
+            newForm.find('h5').text('Formación #' + (formNum + 1));
+            
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+        }
+    });
+
+    // Función para agregar más posgrados
+    $('#add-posgrado-edit').on('click', function(e) {
+        e.preventDefault();
+        var formsetContainer = $('#posgrado-formset');
+        var totalForms = $('#id_posgrados-TOTAL_FORMS');
+        var formNum = parseInt(totalForms.val());
+
+        var lastForm = $('.formset-form:visible', formsetContainer).last();
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).last();
+        }
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).first();
+        }
+
+        if (lastForm.length > 0) {
+            var newForm = lastForm.clone();
+            newForm.html(newForm.html().replace(/posgrados-\d+-/g, 'posgrados-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+            newForm.find('input[type="hidden"][name*="-id"]').remove();
+            newForm.show();
+            
+            newForm.find('h5').text('Posgrado #' + (formNum + 1));
+            
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+        }
+    });
+
+    // Función para agregar más especializaciones
+    $('#add-especializacion-edit').on('click', function(e) {
+        e.preventDefault();
+        var formsetContainer = $('#especializacion-formset');
+        var totalForms = $('#id_especializaciones-TOTAL_FORMS');
+        var formNum = parseInt(totalForms.val());
+
+        var lastForm = $('.formset-form:visible', formsetContainer).last();
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).last();
+        }
+        if (lastForm.length === 0) {
+            lastForm = $('.formset-form', formsetContainer).first();
+        }
+
+        if (lastForm.length > 0) {
+            var newForm = lastForm.clone();
+            newForm.html(newForm.html().replace(/especializaciones-\d+-/g, 'especializaciones-' + formNum + '-'));
+            newForm.find('input, textarea, select').val('');
+            newForm.find('input[type="checkbox"]').prop('checked', false);
+            newForm.find('input[type="hidden"][name*="-id"]').remove();
+            newForm.show();
+            
+            newForm.find('h5').text('Especialización #' + (formNum + 1));
+            
+            formsetContainer.append(newForm);
+            totalForms.val(formNum + 1);
+        }
+    });
+});
 </script>
 {% endblock %}

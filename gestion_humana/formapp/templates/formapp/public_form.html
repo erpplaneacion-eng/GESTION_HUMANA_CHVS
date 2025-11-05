@@ -674,14 +674,27 @@
             var totalForms = $('#id_experiencias_laborales-TOTAL_FORMS');
             var formNum = parseInt(totalForms.val());
 
-            // Clonar el último formulario
-            var lastForm = $('.experiencia-group').last();
+            // Buscar el último formulario visible (no oculto), o el último disponible
+            var lastForm = $('.experiencia-group:visible').last();
+            if (lastForm.length === 0) {
+                lastForm = $('.experiencia-group').last();
+            }
+            
+            // Si no hay formularios, usar el primero disponible o crear desde cero
+            if (lastForm.length === 0) {
+                lastForm = $('.experiencia-group').first();
+            }
+
             var newForm = lastForm.clone();
 
             // Actualizar los índices en el nuevo formulario
             newForm.html(newForm.html().replace(/experiencias_laborales-\d+-/g, 'experiencias_laborales-' + formNum + '-'));
             newForm.find('input, textarea, select').val('');
             newForm.find('input[type="checkbox"]').prop('checked', false);
+            newForm.find('input[type="file"]').val('');
+            
+            // Asegurar que el nuevo formulario esté visible
+            newForm.show();
 
             // Agregar botón de eliminar si no existe
             if (formNum > 0) {
@@ -705,12 +718,26 @@
             var totalForms = $('#id_formacion_academica-TOTAL_FORMS');
             var formNum = parseInt(totalForms.val());
 
-            var lastForm = $('.academica-group').last();
+            // Buscar el último formulario visible (no oculto), o el último disponible
+            var lastForm = $('.academica-group:visible').last();
+            if (lastForm.length === 0) {
+                lastForm = $('.academica-group').last();
+            }
+            
+            // Si no hay formularios, usar el primero disponible
+            if (lastForm.length === 0) {
+                lastForm = $('.academica-group').first();
+            }
+
             var newForm = lastForm.clone();
 
             newForm.html(newForm.html().replace(/formacion_academica-\d+-/g, 'formacion_academica-' + formNum + '-'));
             newForm.find('input, textarea, select').val('');
             newForm.find('input[type="checkbox"]').prop('checked', false);
+            newForm.find('input[type="file"]').val('');
+            
+            // Asegurar que el nuevo formulario esté visible
+            newForm.show();
 
             if (formNum > 0) {
                 newForm.find('.d-flex h5').parent().html(
@@ -731,12 +758,25 @@
             var totalForms = $('#id_posgrados-TOTAL_FORMS');
             var formNum = parseInt(totalForms.val());
 
-            var lastForm = $('.posgrado-group').last();
+            // Buscar el último formulario visible (no oculto), o el último disponible
+            var lastForm = $('.posgrado-group:visible').last();
+            if (lastForm.length === 0) {
+                lastForm = $('.posgrado-group').last();
+            }
+            
+            // Si no hay formularios, usar el primero disponible
+            if (lastForm.length === 0) {
+                lastForm = $('.posgrado-group').first();
+            }
+
             var newForm = lastForm.clone();
 
             newForm.html(newForm.html().replace(/posgrados-\d+-/g, 'posgrados-' + formNum + '-'));
             newForm.find('input, textarea, select').val('');
             newForm.find('input[type="checkbox"]').prop('checked', false);
+            
+            // Asegurar que el nuevo formulario esté visible
+            newForm.show();
 
             if (formNum > 0) {
                 newForm.find('.d-flex h5').parent().html(
@@ -757,12 +797,25 @@
             var totalForms = $('#id_especializaciones-TOTAL_FORMS');
             var formNum = parseInt(totalForms.val());
 
-            var lastForm = $('.especializacion-group').last();
+            // Buscar el último formulario visible (no oculto), o el último disponible
+            var lastForm = $('.especializacion-group:visible').last();
+            if (lastForm.length === 0) {
+                lastForm = $('.especializacion-group').last();
+            }
+            
+            // Si no hay formularios, usar el primero disponible
+            if (lastForm.length === 0) {
+                lastForm = $('.especializacion-group').first();
+            }
+
             var newForm = lastForm.clone();
 
             newForm.html(newForm.html().replace(/especializaciones-\d+-/g, 'especializaciones-' + formNum + '-'));
             newForm.find('input, textarea, select').val('');
             newForm.find('input[type="checkbox"]').prop('checked', false);
+            
+            // Asegurar que el nuevo formulario esté visible
+            newForm.show();
 
             if (formNum > 0) {
                 newForm.find('.d-flex h5').parent().html(
