@@ -270,31 +270,88 @@ def applicant_edit_view(request, pk):
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
         especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=applicant)
 
-        if form.is_valid():
+        # Validar todos los formsets antes de guardar
+        form_valid = form.is_valid()
+        experiencia_valid = experiencia_formset.is_valid()
+        academica_valid = academica_formset.is_valid()
+        posgrado_valid = posgrado_formset.is_valid()
+        especializacion_valid = especializacion_formset.is_valid()
+
+        if form_valid and experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
             try:
                 with transaction.atomic():
                     informacion_basica = form.save()
 
-                    if experiencia_formset.is_valid():
-                        experiencia_formset.save()
-                        # Calcular experiencia automáticamente
-                        calcular_experiencia_total(informacion_basica)
+                    # Guardar todos los formsets
+                    # Guardar experiencia laboral - usar save() que maneja automáticamente todo
+                    experiencia_formset.save()
+                    
+                    # Recalcular meses y días para cada experiencia guardada
+                    for experiencia in informacion_basica.experiencias_laborales.all():
+                        if experiencia.fecha_inicial and experiencia.fecha_terminacion:
+                            from datetime import datetime as dt
+                            fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
+                            fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
+                            
+                            # Calcular diferencia
+                            delta = fecha_fin - fecha_inicio
+                            total_dias = delta.days
+                            
+                            # Calcular meses
+                            anos = fecha_fin.year - fecha_inicio.year
+                            meses = fecha_fin.month - fecha_inicio.month
+                            dias = fecha_fin.day - fecha_inicio.day
+                            
+                            if dias < 0:
+                                meses -= 1
+                                # Obtener días del mes anterior
+                                if fecha_inicio.month == 1:
+                                    ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
+                                else:
+                                    ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
+                                dias += ultimo_dia
+                            
+                            if meses < 0:
+                                anos -= 1
+                                meses += 12
+                            
+                            total_meses = (anos * 12) + meses
+                            
+                            experiencia.meses_experiencia = total_meses
+                            experiencia.dias_experiencia = total_dias
+                            experiencia.save()
+                    
+                    # Calcular experiencia total automáticamente
+                    calcular_experiencia_total(informacion_basica)
 
-                    if academica_formset.is_valid():
-                        academica_formset.save()
-
-                    if posgrado_formset.is_valid():
-                        posgrado_formset.save()
-
-                    if especializacion_formset.is_valid():
-                        especializacion_formset.save()
+                    # Guardar los demás formsets
+                    academica_formset.save()
+                    posgrado_formset.save()
+                    especializacion_formset.save()
 
                     messages.success(request, f'Registro de {informacion_basica.nombre_completo} actualizado con éxito!')
                     return redirect('formapp:applicant_detail', pk=informacion_basica.pk)
             except Exception as e:
+                import traceback
                 messages.error(request, f'Error al actualizar el registro: {str(e)}')
+                logger.error(f'Error guardando experiencia laboral: {str(e)}\n{traceback.format_exc()}')
         else:
-            messages.error(request, 'Por favor corrija los errores en el formulario.')
+            # Si hay errores, mostrar mensajes específicos
+            if not form_valid:
+                messages.error(request, 'Por favor corrija los errores en el formulario principal.')
+            if not experiencia_valid:
+                error_msg = experiencia_formset.non_form_errors()
+                if error_msg:
+                    messages.error(request, f'Error en Experiencia Laboral: {error_msg}')
+                for idx, form_exp in enumerate(experiencia_formset, 1):
+                    if form_exp.errors:
+                        messages.error(request, f'Experiencia {idx}: {form_exp.errors}')
+            if not academica_valid:
+                messages.error(request, 'Por favor corrija los errores en Formación Académica.')
+            if not posgrado_valid:
+                messages.error(request, 'Por favor corrija los errores en Posgrados.')
+            if not especializacion_valid:
+                messages.error(request, 'Por favor corrija los errores en Especializaciones.')
     else:
         form = InformacionBasicaForm(instance=applicant)
         experiencia_formset = ExperienciaLaboralFormSet(instance=applicant)
