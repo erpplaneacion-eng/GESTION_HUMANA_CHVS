@@ -652,6 +652,26 @@ def generar_anexo11_pdf(applicant):
         alignment=TA_LEFT
     )
 
+    # Estilo para texto en celdas de tabla (con word wrap)
+    cell_style = ParagraphStyle(
+        'CellText',
+        parent=styles['Normal'],
+        fontSize=8,
+        alignment=TA_LEFT,
+        leading=10,  # Espaciado entre líneas
+        wordWrap='CJK'  # Permite ajuste de texto
+    )
+
+    # Estilo para texto centrado en celdas de tabla
+    cell_center_style = ParagraphStyle(
+        'CellCenterText',
+        parent=styles['Normal'],
+        fontSize=8,
+        alignment=TA_CENTER,
+        leading=10,
+        wordWrap='CJK'
+    )
+
     # Contenido del documento
     elementos = []
 
@@ -752,14 +772,15 @@ def generar_anexo11_pdf(applicant):
         direccion_completa += f", Barrio {applicant.barrio}"
 
     # Datos de la tabla con título en la primera fila con fondo gris
+    # Usar Paragraph para textos largos que puedan desbordarse
     tabla_experiencia_data = [
         ['RELACIÓN DE EXPERIENCIA PROFESIONALES PARA EL PERSONAL BASE', ''],  # Título con span
-        ['CARGO PROPUESTO:', cargo_propuesto],
-        ['NOMBRES Y APELLIDOS:', applicant.nombre_completo],
-        ['TIPO Y Nº DOCUMENTO DE IDENTIDAD:', f'CC {applicant.cedula}'],
-        ['DIRECCIÓN:', direccion_completa],
-        ['TELÉFONO:', applicant.telefono],
-        ['CORREO ELECTRÓNICO:', applicant.correo],
+        ['CARGO PROPUESTO:', Paragraph(str(cargo_propuesto or ''), cell_style)],
+        ['NOMBRES Y APELLIDOS:', Paragraph(str(applicant.nombre_completo or ''), cell_style)],
+        ['TIPO Y Nº DOCUMENTO DE IDENTIDAD:', Paragraph(f'CC {applicant.cedula}', cell_style)],
+        ['DIRECCIÓN:', Paragraph(str(direccion_completa or ''), cell_style)],
+        ['TELÉFONO:', Paragraph(str(applicant.telefono or ''), cell_style)],
+        ['CORREO ELECTRÓNICO:', Paragraph(str(applicant.correo or ''), cell_style)],
     ]
 
     tabla_experiencia = Table(tabla_experiencia_data, colWidths=[2.5*inch, 4.5*inch])
@@ -783,7 +804,7 @@ def generar_anexo11_pdf(applicant):
         ('FONTNAME', (1, 1), (1, -1), 'Helvetica'),
         ('FONTSIZE', (0, 1), (-1, -1), 9),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Cambiar a TOP para textos largos
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ('TOPPADDING', (0, 1), (-1, -1), 6),
@@ -859,24 +880,34 @@ def generar_anexo11_pdf(applicant):
         mostrar_experiencia = (idx == 0)
 
         # Construir la tabla con las filas adicionales pegadas
+        # Usar Paragraph para textos largos que puedan desbordarse
         estudios_nueva_data = [
             # Fila de título con fondo gris
             ['ESTUDIOS REALIZADOS', '', '', ''],
             # Fila de encabezados de columnas
             ['DESCRIPCIÓN', 'UNIVERSITARIOS', 'ESPECIALIZACIÓN', 'OTROS'],
-            # Filas de datos
-            ['TÍTULO OBTENIDO', titulo_univ, titulo_esp, titulo_otros],
-            ['INSTITUCIÓN', institucion_univ, institucion_esp, institucion_otros],
-            ['FECHA DE GRADO', fecha_univ, fecha_esp, fecha_otros],
+            # Filas de datos - convertir textos largos a Paragraph
+            ['TÍTULO OBTENIDO', 
+             Paragraph(str(titulo_univ or ''), cell_center_style), 
+             Paragraph(str(titulo_esp or ''), cell_center_style), 
+             Paragraph(str(titulo_otros or ''), cell_center_style)],
+            ['INSTITUCIÓN', 
+             Paragraph(str(institucion_univ or ''), cell_center_style), 
+             Paragraph(str(institucion_esp or ''), cell_center_style), 
+             Paragraph(str(institucion_otros or ''), cell_center_style)],
+            ['FECHA DE GRADO', 
+             Paragraph(str(fecha_univ or ''), cell_center_style), 
+             Paragraph(str(fecha_esp or ''), cell_center_style), 
+             Paragraph(str(fecha_otros or ''), cell_center_style)],
         ]
 
         # Agregar fila de tarjeta profesional si hay formación académica en esta tabla
         if mostrar_tarjeta_profesional:
-            estudios_nueva_data.append(['TARJETA PROFESIONAL', tarjeta_texto, '', ''])
+            estudios_nueva_data.append(['TARJETA PROFESIONAL', Paragraph(str(tarjeta_texto or ''), cell_center_style), '', ''])
         
         # Agregar fila de experiencia solo en la primera tabla
         if mostrar_experiencia:
-            estudios_nueva_data.append(['2. EXPERIENCIA:', experiencia_anos, '', ''])
+            estudios_nueva_data.append(['2. EXPERIENCIA:', Paragraph(str(experiencia_anos or ''), cell_center_style), '', ''])
 
         tabla_estudios_nueva = Table(estudios_nueva_data, colWidths=[1.75*inch, 1.75*inch, 1.75*inch, 1.75*inch])
         
@@ -912,7 +943,7 @@ def generar_anexo11_pdf(applicant):
 
             # Bordes y espaciado
             ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # Cambiar a TOP para textos largos
             ('TOPPADDING', (0, 0), (-1, -1), 6),
             ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
             ('LEFTPADDING', (0, 0), (-1, -1), 6),
