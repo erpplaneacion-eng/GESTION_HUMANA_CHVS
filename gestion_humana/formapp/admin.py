@@ -116,10 +116,12 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
         }),
         ('Perfil Profesional (Administrativo)', {
             'fields': (
-                'perfil', 'area_del_conocimiento', 'profesion',
+                ('perfil', 'perfil_otro'),
+                ('area_del_conocimiento', 'area_del_conocimiento_otro'),
+                ('profesion', 'profesion_otro'),
                 'contrato', 'observacion'
             ),
-            'description': 'Estos campos deben ser completados por el personal administrativo'
+            'description': 'Estos campos deben ser completados por el personal administrativo. Si selecciona "OTRO", especifique en el campo adicional.'
         }),
     )
 

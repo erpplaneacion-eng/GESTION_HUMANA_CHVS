@@ -153,9 +153,12 @@ class InformacionBasicaForm(forms.ModelForm):
         fields = '__all__'
         widgets = {
             'nombre_completo': forms.TextInput(attrs={'class': 'form-control'}),
-            'perfil': forms.TextInput(attrs={'class': 'form-control'}),
-            'area_del_conocimiento': forms.TextInput(attrs={'class': 'form-control'}),
-            'profesion': forms.TextInput(attrs={'class': 'form-control'}),
+            'perfil': forms.Select(attrs={'class': 'form-control', 'id': 'id_perfil'}),
+            'perfil_otro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especifique el perfil', 'style': 'text-transform: uppercase;'}),
+            'area_del_conocimiento': forms.Select(attrs={'class': 'form-control', 'id': 'id_area_del_conocimiento'}),
+            'area_del_conocimiento_otro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especifique el área', 'style': 'text-transform: uppercase;'}),
+            'profesion': forms.Select(attrs={'class': 'form-control', 'id': 'id_profesion'}),
+            'profesion_otro': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Especifique la profesión', 'style': 'text-transform: uppercase;'}),
             'cedula': forms.TextInput(attrs={'class': 'form-control'}),
             'genero': forms.Select(attrs={'class': 'form-control'}),
             'contrato': forms.TextInput(attrs={'class': 'form-control'}),
@@ -168,6 +171,23 @@ class InformacionBasicaForm(forms.ModelForm):
             'correo': forms.EmailInput(attrs={'class': 'form-control'}),
             'observacion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Agregar opción vacía al inicio de cada select
+        empty_choice = [('', '-- Seleccione --')]
+        self.fields['perfil'].choices = empty_choice + list(InformacionBasica.PERFIL_CHOICES)
+        self.fields['area_del_conocimiento'].choices = empty_choice + list(InformacionBasica.AREA_CONOCIMIENTO_CHOICES)
+        self.fields['profesion'].choices = empty_choice + list(InformacionBasica.PROFESION_CHOICES)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Convertir campos "otro" a mayúsculas
+        for field in ['perfil_otro', 'area_del_conocimiento_otro', 'profesion_otro']:
+            value = cleaned_data.get(field)
+            if value:
+                cleaned_data[field] = value.upper()
+        return cleaned_data
 
 class ExperienciaLaboralForm(forms.ModelForm):
     class Meta:

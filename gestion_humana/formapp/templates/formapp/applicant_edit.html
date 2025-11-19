@@ -106,18 +106,55 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">{{ form.perfil.label }}</label>
-                            <input type="text" name="perfil" value="{{ form.perfil.value|default:'' }}" class="form-control admin-field">
+                            <select name="perfil" id="id_perfil" class="form-control admin-field">
+                                <option value="">-- Seleccione --</option>
+                                {% for choice in form.perfil.field.choices %}
+                                    {% if choice.0 %}
+                                    <option value="{{ choice.0 }}" {% if form.perfil.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
                         </div>
+                        <div class="col-md-6 mb-3" id="perfil_otro_container" style="{% if form.perfil.value != 'OTRO' %}display: none;{% endif %}">
+                            <label class="form-label">Especifique Perfil</label>
+                            <input type="text" name="perfil_otro" value="{{ form.perfil_otro.value|default:'' }}" class="form-control admin-field" style="text-transform: uppercase;" placeholder="Escriba el perfil">
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">{{ form.area_del_conocimiento.label }}</label>
-                            <input type="text" name="area_del_conocimiento" value="{{ form.area_del_conocimiento.value|default:'' }}" class="form-control admin-field">
+                            <select name="area_del_conocimiento" id="id_area_del_conocimiento" class="form-control admin-field">
+                                <option value="">-- Seleccione --</option>
+                                {% for choice in form.area_del_conocimiento.field.choices %}
+                                    {% if choice.0 %}
+                                    <option value="{{ choice.0 }}" {% if form.area_del_conocimiento.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3" id="area_otro_container" style="{% if form.area_del_conocimiento.value != 'OTRO' %}display: none;{% endif %}">
+                            <label class="form-label">Especifique Area</label>
+                            <input type="text" name="area_del_conocimiento_otro" value="{{ form.area_del_conocimiento_otro.value|default:'' }}" class="form-control admin-field" style="text-transform: uppercase;" placeholder="Escriba el area">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">{{ form.profesion.label }}</label>
-                            <input type="text" name="profesion" value="{{ form.profesion.value|default:'' }}" class="form-control admin-field">
+                            <select name="profesion" id="id_profesion" class="form-control admin-field">
+                                <option value="">-- Seleccione --</option>
+                                {% for choice in form.profesion.field.choices %}
+                                    {% if choice.0 %}
+                                    <option value="{{ choice.0 }}" {% if form.profesion.value == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
                         </div>
+                        <div class="col-md-6 mb-3" id="profesion_otro_container" style="{% if form.profesion.value != 'OTRO' %}display: none;{% endif %}">
+                            <label class="form-label">Especifique Profesion</label>
+                            <input type="text" name="profesion_otro" value="{{ form.profesion_otro.value|default:'' }}" class="form-control admin-field" style="text-transform: uppercase;" placeholder="Escriba la profesion">
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">{{ form.contrato.label }}</label>
                             <input type="text" name="contrato" value="{{ form.contrato.value|default:'' }}" class="form-control admin-field">
@@ -574,6 +611,52 @@
 </div>
 
 <script>
+// Manejar campos "Otro" para selects administrativos
+document.addEventListener('DOMContentLoaded', function() {
+    // Función para mostrar/ocultar campos "otro"
+    function toggleOtroField(selectId, containerId) {
+        const select = document.getElementById(selectId);
+        const container = document.getElementById(containerId);
+        if (select && container) {
+            if (select.value === 'OTRO') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+    }
+
+    // Configurar listeners para los selects
+    const perfilSelect = document.getElementById('id_perfil');
+    const areaSelect = document.getElementById('id_area_del_conocimiento');
+    const profesionSelect = document.getElementById('id_profesion');
+
+    if (perfilSelect) {
+        perfilSelect.addEventListener('change', function() {
+            toggleOtroField('id_perfil', 'perfil_otro_container');
+        });
+    }
+
+    if (areaSelect) {
+        areaSelect.addEventListener('change', function() {
+            toggleOtroField('id_area_del_conocimiento', 'area_otro_container');
+        });
+    }
+
+    if (profesionSelect) {
+        profesionSelect.addEventListener('change', function() {
+            toggleOtroField('id_profesion', 'profesion_otro_container');
+        });
+    }
+
+    // Convertir a mayúsculas los campos "otro"
+    document.querySelectorAll('input[name$="_otro"]').forEach(function(input) {
+        input.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    });
+});
+
 // Ocultar formularios vacíos al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     // Ocultar formularios vacíos de experiencia
