@@ -1298,6 +1298,85 @@
             var isValid = true;
             var errorMessages = [];
 
+            // ============================================
+            // VALIDACIÓN DE CAMPOS DE TEXTO OBLIGATORIOS
+            // ============================================
+
+            // Campos de información personal
+            var camposTexto = [
+                { id: 'id_primer_apellido', nombre: 'Primer Apellido' },
+                { id: 'id_segundo_apellido', nombre: 'Segundo Apellido' },
+                { id: 'id_primer_nombre', nombre: 'Primer Nombre' },
+                { id: 'id_cedula', nombre: 'Cédula' },
+                { id: 'id_genero', nombre: 'Género' },
+                { id: 'id_telefono', nombre: 'Teléfono' },
+                { id: 'id_correo', nombre: 'Correo Electrónico' },
+                { id: 'id_tipo_via', nombre: 'Tipo de Vía' },
+                { id: 'id_numero_via', nombre: 'Número de Vía' },
+                { id: 'id_numero_casa', nombre: 'Número de Casa/Edificio' }
+            ];
+
+            camposTexto.forEach(function(campo) {
+                var input = $('#' + campo.id);
+                if (input.length > 0 && !input.val().trim()) {
+                    isValid = false;
+                    input.addClass('is-invalid');
+                    errorMessages.push('El campo ' + campo.nombre + ' es obligatorio.');
+                } else {
+                    input.removeClass('is-invalid');
+                }
+            });
+
+            // Validar formato de cédula (5-10 dígitos)
+            var cedula = $('#id_cedula').val();
+            if (cedula && (!/^\d+$/.test(cedula) || cedula.length < 5 || cedula.length > 10)) {
+                isValid = false;
+                $('#id_cedula').addClass('is-invalid');
+                if (errorMessages.indexOf('La cédula debe tener entre 5 y 10 dígitos numéricos.') === -1) {
+                    errorMessages.push('La cédula debe tener entre 5 y 10 dígitos numéricos.');
+                }
+            }
+
+            // Validar formato de teléfono (10 dígitos)
+            var telefono = $('#id_telefono').val();
+            if (telefono && (!/^\d+$/.test(telefono) || telefono.length !== 10)) {
+                isValid = false;
+                $('#id_telefono').addClass('is-invalid');
+                errorMessages.push('El teléfono debe tener exactamente 10 dígitos numéricos.');
+            }
+
+            // Validar formato de correo
+            var correo = $('#id_correo').val();
+            if (correo && correo.indexOf('@') === -1) {
+                isValid = false;
+                $('#id_correo').addClass('is-invalid');
+                errorMessages.push('El correo electrónico debe contener @.');
+            }
+
+            // Validar fechas de antecedentes (obligatorias)
+            var fechasAntecedentes = [
+                { id: 'id_fecha_procuraduria', nombre: 'Fecha de Procuraduría' },
+                { id: 'id_fecha_contraloria', nombre: 'Fecha de Contraloría' },
+                { id: 'id_fecha_policia', nombre: 'Fecha de Policía' },
+                { id: 'id_fecha_medidas_correctivas', nombre: 'Fecha de Medidas Correctivas' },
+                { id: 'id_fecha_delitos_sexuales', nombre: 'Fecha de Delitos Sexuales' }
+            ];
+
+            fechasAntecedentes.forEach(function(fecha) {
+                var input = $('input[id*="' + fecha.id.replace('id_', '') + '"]');
+                if (input.length > 0 && !input.val()) {
+                    isValid = false;
+                    input.addClass('is-invalid');
+                    errorMessages.push('La ' + fecha.nombre + ' es obligatoria.');
+                } else {
+                    input.removeClass('is-invalid');
+                }
+            });
+
+            // ============================================
+            // VALIDACIÓN DE ARCHIVOS OBLIGATORIOS
+            // ============================================
+
             // Validar fotocopia de cédula (obligatorio)
             var fotocopiaCedula = $('input[type="file"][id*="fotocopia_cedula"]');
             if (fotocopiaCedula.length > 0 && !fotocopiaCedula.val()) {
@@ -1357,9 +1436,16 @@
             }
         });
 
-        // Quitar el borde rojo cuando el usuario seleccione un archivo
+        // Quitar el borde rojo cuando el usuario seleccione un archivo o escriba en un campo
         $(document).on('change', 'input[type="file"]', function() {
             if ($(this).val()) {
+                $(this).removeClass('is-invalid');
+            }
+        });
+
+        // Quitar borde rojo en campos de texto al escribir
+        $(document).on('input', 'input[type="text"], input[type="email"], input[type="number"], input[type="date"], select, textarea', function() {
+            if ($(this).val().trim()) {
                 $(this).removeClass('is-invalid');
             }
         });
