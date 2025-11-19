@@ -16,7 +16,7 @@ class InformacionAcademicaInline(admin.TabularInline):
     extra = 1
     fields = (
         'profesion', 'universidad', 'fecha_grado', 'tarjeta_profesional',
-        'numero_tarjeta_resolucion', 'fecha_expedicion', 'meses_experiencia_profesion',
+        'numero_tarjeta_resolucion', 'fecha_expedicion',
         'fotocopia_titulo', 'fotocopia_tarjeta_profesional',
         'certificado_vigencia_tarjeta', 'fecha_vigencia_tarjeta'
     )
@@ -24,12 +24,12 @@ class InformacionAcademicaInline(admin.TabularInline):
 class PosgradoInline(admin.TabularInline):
     model = Posgrado
     extra = 1
-    fields = ('nombre_posgrado', 'universidad', 'fecha_terminacion', 'meses_de_experiencia')
+    fields = ('nombre_posgrado', 'universidad', 'fecha_terminacion')
 
 class EspecializacionInline(admin.TabularInline):
     model = Especializacion
     extra = 1
-    fields = ('nombre_especializacion', 'universidad', 'fecha_terminacion', 'meses_de_experiencia')
+    fields = ('nombre_especializacion', 'universidad', 'fecha_terminacion')
 
 class CalculoExperienciaInline(admin.StackedInline):
     model = CalculoExperiencia
@@ -48,15 +48,12 @@ class DocumentosIdentidadInline(admin.StackedInline):
         ('Documento de Identidad', {
             'fields': ('fotocopia_cedula',)
         }),
-        ('Situación Militar (Solo Hombres)', {
+        ('Situación Militar (Opcional)', {
             'fields': (
                 'libreta_militar', 'numero_libreta_militar',
                 'distrito_militar', 'clase_libreta'
             ),
             'classes': ('collapse',)
-        }),
-        ('Autorización de Datos', {
-            'fields': ('carta_autorizacion_datos', 'fecha_autorizacion')
         }),
     )
 
@@ -186,8 +183,7 @@ class InformacionAcademicaAdmin(admin.ModelAdmin):
         }),
         ('Formación Académica', {
             'fields': (
-                'profesion', 'universidad', 'fecha_grado',
-                'meses_experiencia_profesion'
+                'profesion', 'universidad', 'fecha_grado'
             )
         }),
         ('Tarjeta Profesional', {
@@ -218,7 +214,7 @@ class InformacionAcademicaAdmin(admin.ModelAdmin):
 class PosgradoAdmin(admin.ModelAdmin):
     list_display = (
         'informacion_basica', 'nombre_posgrado', 'universidad',
-        'fecha_terminacion', 'meses_de_experiencia'
+        'fecha_terminacion'
     )
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'nombre_posgrado')
 
@@ -226,7 +222,7 @@ class PosgradoAdmin(admin.ModelAdmin):
 class EspecializacionAdmin(admin.ModelAdmin):
     list_display = (
         'informacion_basica', 'nombre_especializacion', 'universidad',
-        'fecha_terminacion', 'meses_de_experiencia'
+        'fecha_terminacion'
     )
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'nombre_especializacion')
 
@@ -245,10 +241,10 @@ class CalculoExperienciaAdmin(admin.ModelAdmin):
 @admin.register(DocumentosIdentidad)
 class DocumentosIdentidadAdmin(admin.ModelAdmin):
     list_display = (
-        'informacion_basica', 'fecha_autorizacion',
+        'informacion_basica',
         'tiene_libreta_militar', 'created_at'
     )
-    list_filter = ('fecha_autorizacion', 'clase_libreta')
+    list_filter = ('clase_libreta',)
     search_fields = (
         'informacion_basica__nombre_completo',
         'informacion_basica__cedula',
@@ -263,14 +259,11 @@ class DocumentosIdentidadAdmin(admin.ModelAdmin):
         ('Documento de Identidad', {
             'fields': ('fotocopia_cedula',)
         }),
-        ('Situación Militar', {
+        ('Situación Militar (Opcional)', {
             'fields': (
                 'libreta_militar', 'numero_libreta_militar',
                 'distrito_militar', 'clase_libreta'
             )
-        }),
-        ('Autorización de Datos Personales', {
-            'fields': ('carta_autorizacion_datos', 'fecha_autorizacion')
         }),
         ('Información del Sistema', {
             'fields': ('created_at', 'updated_at'),

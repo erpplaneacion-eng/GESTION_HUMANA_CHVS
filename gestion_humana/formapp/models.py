@@ -24,8 +24,8 @@ class InformacionBasica(models.Model):
     tipo_via = models.CharField(max_length=50, verbose_name='Tipo de Vía (Calle/Avenida/Carrera)', default='Calle')
     numero_via = models.CharField(max_length=20, verbose_name='Número de Vía', default='')
     numero_casa = models.CharField(max_length=20, verbose_name='Número de Casa/Edificio', default='')
-    complemento_direccion = models.CharField(max_length=100, verbose_name='Complemento (Apto, Interior, etc.)', blank=True, null=True)
-    barrio = models.CharField(max_length=100, verbose_name='Barrio', blank=True, null=True)
+    complemento_direccion = models.CharField(max_length=200, verbose_name='Complemento (Apto, Interior, etc.)', blank=True, null=True)
+    barrio = models.CharField(max_length=200, verbose_name='Barrio', blank=True, null=True)
 
     telefono = models.CharField(max_length=20, verbose_name='Teléfono')
     correo = models.EmailField(verbose_name='Correo Electrónico')    
@@ -85,16 +85,15 @@ class InformacionAcademica(models.Model):
     informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='formacion_academica')
     fecha_expedicion = models.DateField(verbose_name='Fecha de Expedición', blank=True, null=True)
     tarjeta_profesional = models.CharField(
-        max_length=100,
+        max_length=200,
         verbose_name='Tarjeta o Resolución Profesional',
         choices=TIPO_TARJETA_CHOICES,
         default='No Aplica'
     )
     profesion = models.CharField(max_length=200, verbose_name='Profesión')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
-    numero_tarjeta_resolucion = models.CharField(max_length=100, verbose_name='N° Tarjeta o Resolución', blank=True, null=True)
+    numero_tarjeta_resolucion = models.CharField(max_length=200, verbose_name='N° Tarjeta o Resolución', blank=True, null=True)
     fecha_grado = models.DateField(verbose_name='Fecha de Grado')
-    meses_experiencia_profesion = models.IntegerField(verbose_name='Meses de Experiencia por Profesión', default=0)
 
     # FASE 2: Documentos académicos
     fotocopia_titulo = models.FileField(
@@ -136,8 +135,7 @@ class Posgrado(models.Model):
     nombre_posgrado = models.CharField(max_length=200, verbose_name='Nombre del Posgrado')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
-    meses_de_experiencia = models.IntegerField(verbose_name='Meses de Experiencia', validators=[MinValueValidator(0)])
-    
+
 
     def __str__(self):
         return f'{self.nombre_posgrado} de {self.informacion_basica.cedula}'
@@ -147,8 +145,7 @@ class Especializacion(models.Model):
     nombre_especializacion = models.CharField(max_length=200, verbose_name='Nombre de la Especialización')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
-    meses_de_experiencia = models.IntegerField(verbose_name='Meses de Experiencia', validators=[MinValueValidator(0)])
-    
+
 
     def __str__(self):
         return f'{self.nombre_especializacion} de {self.informacion_basica.cedula}'
@@ -158,7 +155,7 @@ class CalculoExperiencia(models.Model):
     total_meses_experiencia = models.IntegerField(verbose_name='Total Meses Experiencia Certificada')
     total_dias_experiencia = models.IntegerField(verbose_name='Total Días Experiencia Certificada')
     total_experiencia_anos = models.DecimalField(max_digits=5, decimal_places=2, verbose_name='Total Experiencia en Años')
-    anos_y_meses_experiencia = models.CharField(max_length=100, verbose_name='Años y Meses de Experiencia')
+    anos_y_meses_experiencia = models.CharField(max_length=200, verbose_name='Años y Meses de Experiencia')
 
     def __str__(self):
         return f'Cálculo de experiencia para {self.informacion_basica.cedula}'
@@ -196,7 +193,7 @@ class DocumentosIdentidad(models.Model):
         null=True
     )
     distrito_militar = models.CharField(
-        max_length=100,
+        max_length=200,
         verbose_name='Distrito Militar',
         blank=True,
         null=True
@@ -210,17 +207,6 @@ class DocumentosIdentidad(models.Model):
         ],
         blank=True,
         null=True
-    )
-
-    # Carta de autorización para tratamiento de datos personales (Ley 1581 de 2012)
-    carta_autorizacion_datos = models.FileField(
-        upload_to='autorizaciones/',
-        verbose_name='Carta de Autorización Tratamiento de Datos',
-        validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Autorización según Ley 1581 de 2012. Formatos: PDF, JPG, PNG. Máx: 10 MB'
-    )
-    fecha_autorizacion = models.DateField(
-        verbose_name='Fecha de Autorización'
     )
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')

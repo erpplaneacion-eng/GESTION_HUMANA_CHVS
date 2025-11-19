@@ -308,7 +308,6 @@ class InformacionAcademicaForm(forms.ModelForm):
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'numero_tarjeta_resolucion': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_grado': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'meses_experiencia_profesion': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
             # FASE 2: Documentos académicos
             'fotocopia_titulo': forms.FileInput(attrs={
                 'class': 'form-control',
@@ -333,7 +332,6 @@ class PosgradoForm(forms.ModelForm):
             'nombre_posgrado': forms.TextInput(attrs={'class': 'form-control'}),
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'meses_de_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
         }
 
 class EspecializacionForm(forms.ModelForm):
@@ -344,7 +342,6 @@ class EspecializacionForm(forms.ModelForm):
             'nombre_especializacion': forms.TextInput(attrs={'class': 'form-control'}),
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'meses_de_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
         }
 
 ExperienciaLaboralFormSet = inlineformset_factory(
@@ -405,24 +402,10 @@ class DocumentosIdentidadForm(forms.ModelForm):
             'clase_libreta': forms.Select(attrs={
                 'class': 'form-control'
             }),
-            'carta_autorizacion_datos': forms.FileInput(attrs={
-                'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
-            }),
-            'fecha_autorizacion': forms.DateInput(attrs={
-                'class': 'form-control',
-                'type': 'date'
-            }),
         }
         error_messages = {
             'fotocopia_cedula': {
                 'required': 'La fotocopia de la cédula es obligatoria.',
-            },
-            'carta_autorizacion_datos': {
-                'required': 'La carta de autorización de datos es obligatoria.',
-            },
-            'fecha_autorizacion': {
-                'required': 'La fecha de autorización es obligatoria.',
             },
         }
 
@@ -433,7 +416,6 @@ class DocumentosIdentidadForm(forms.ModelForm):
         # Si es una instancia existente (edición), hacer los campos de archivo opcionales
         if self.instance and self.instance.pk:
             self.fields['fotocopia_cedula'].required = False
-            self.fields['carta_autorizacion_datos'].required = False
 
     def clean(self):
         cleaned_data = super().clean()
