@@ -631,11 +631,11 @@ def create_excel_for_person(applicant):
     ws3 = wb.create_sheet("Información Académica")
     ws3['A1'] = f"INFORMACIÓN ACADÉMICA - {applicant.nombre_completo}"
     ws3['A1'].font = title_font
-    ws3.merge_cells('A1:G1')
+    ws3.merge_cells('A1:F1')
 
     # Encabezados
     headers = ["Profesión", "Universidad", "Tarjeta Profesional",
-               "N° Tarjeta/Resolución", "Fecha Expedición", "Fecha Grado", "Meses Experiencia"]
+               "N° Tarjeta/Resolución", "Fecha Expedición", "Fecha Grado"]
     for col, header in enumerate(headers, start=1):
         cell = ws3.cell(row=3, column=col)
         cell.value = header
@@ -653,20 +653,19 @@ def create_excel_for_person(applicant):
         ws3.cell(row=row, column=4, value=academica.numero_tarjeta_resolucion or "N/A").border = border
         ws3.cell(row=row, column=5, value=academica.fecha_expedicion.strftime('%Y-%m-%d') if academica.fecha_expedicion else "N/A").border = border
         ws3.cell(row=row, column=6, value=academica.fecha_grado.strftime('%Y-%m-%d')).border = border
-        ws3.cell(row=row, column=7, value=academica.meses_experiencia_profesion).border = border
         row += 1
 
-    for col in range(1, 8):
+    for col in range(1, 7):
         ws3.column_dimensions[chr(64 + col)].width = 20
 
     # Hoja 4: Posgrados
     ws4 = wb.create_sheet("Posgrados")
     ws4['A1'] = f"POSGRADOS - {applicant.nombre_completo}"
     ws4['A1'].font = title_font
-    ws4.merge_cells('A1:D1')
+    ws4.merge_cells('A1:C1')
 
     # Encabezados
-    headers = ["Nombre Posgrado", "Universidad", "Fecha Terminación", "Meses Experiencia"]
+    headers = ["Nombre Posgrado", "Universidad", "Fecha Terminación"]
     for col, header in enumerate(headers, start=1):
         cell = ws4.cell(row=3, column=col)
         cell.value = header
@@ -681,20 +680,19 @@ def create_excel_for_person(applicant):
         ws4.cell(row=row, column=1, value=posgrado.nombre_posgrado).border = border
         ws4.cell(row=row, column=2, value=posgrado.universidad).border = border
         ws4.cell(row=row, column=3, value=posgrado.fecha_terminacion.strftime('%Y-%m-%d')).border = border
-        ws4.cell(row=row, column=4, value=posgrado.meses_de_experiencia).border = border
         row += 1
 
-    for col in range(1, 5):
+    for col in range(1, 4):
         ws4.column_dimensions[chr(64 + col)].width = 25
 
     # Hoja 5: Especializaciones
     ws5 = wb.create_sheet("Especializaciones")
     ws5['A1'] = f"ESPECIALIZACIONES - {applicant.nombre_completo}"
     ws5['A1'].font = title_font
-    ws5.merge_cells('A1:D1')
+    ws5.merge_cells('A1:C1')
 
     # Encabezados
-    headers = ["Nombre Especialización", "Universidad", "Fecha Terminación", "Meses Experiencia"]
+    headers = ["Nombre Especialización", "Universidad", "Fecha Terminación"]
     for col, header in enumerate(headers, start=1):
         cell = ws5.cell(row=3, column=col)
         cell.value = header
@@ -709,10 +707,9 @@ def create_excel_for_person(applicant):
         ws5.cell(row=row, column=1, value=especializacion.nombre_especializacion).border = border
         ws5.cell(row=row, column=2, value=especializacion.universidad).border = border
         ws5.cell(row=row, column=3, value=especializacion.fecha_terminacion.strftime('%Y-%m-%d')).border = border
-        ws5.cell(row=row, column=4, value=especializacion.meses_de_experiencia).border = border
         row += 1
 
-    for col in range(1, 5):
+    for col in range(1, 4):
         ws5.column_dimensions[chr(64 + col)].width = 25
 
     # Hoja 6: Cálculo de Experiencia
@@ -1201,46 +1198,130 @@ def download_individual_zip(request, pk):
         except Exception as e:
             logger.error(f"Error al generar PDF ANEXO 11: {str(e)}")
 
+        # Función auxiliar para obtener extensión de archivo
+        def get_file_extension(file_field, file_content):
+            ext = os.path.splitext(file_field.name)[1]
+            if not ext and hasattr(file_field, 'url'):
+                url = file_field.url
+                if '.' in url.split('/')[-1]:
+                    ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
+            if not ext:
+                if file_content.startswith(b'%PDF'):
+                    ext = '.pdf'
+                elif file_content.startswith(b'\x89PNG'):
+                    ext = '.png'
+                elif file_content.startswith(b'\xff\xd8\xff'):
+                    ext = '.jpg'
+                else:
+                    ext = '.pdf'
+            return ext
+
         # 3. Agregar certificados laborales
         for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
             if experiencia.certificado_laboral:
                 try:
-                    # Leer el archivo del certificado usando context manager
                     certificado_file = experiencia.certificado_laboral
                     with certificado_file.open('rb') as f:
                         file_content = f.read()
-
-                    # Obtener la extensión del archivo
-                    # Cloudinary puede no incluir extensión en el nombre, así que intentamos obtenerla de la URL
-                    ext = os.path.splitext(certificado_file.name)[1]
-                    if not ext and hasattr(certificado_file, 'url'):
-                        # Intentar obtener extensión de la URL de Cloudinary
-                        url = certificado_file.url
-                        # La URL de Cloudinary tiene formato: .../upload/v123456/archivo.ext
-                        if '.' in url.split('/')[-1]:
-                            ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
-
-                    # Si aún no hay extensión, detectar por contenido
-                    if not ext:
-                        # Detectar tipo por magic bytes
-                        if file_content.startswith(b'%PDF'):
-                            ext = '.pdf'
-                        elif file_content.startswith(b'\x89PNG'):
-                            ext = '.png'
-                        elif file_content.startswith(b'\xff\xd8\xff'):
-                            ext = '.jpg'
-                        else:
-                            ext = '.pdf'  # Default a PDF si no se puede detectar
-
+                    ext = get_file_extension(certificado_file, file_content)
                     cargo_safe = experiencia.cargo.replace(' ', '_').replace('/', '-')
-
-                    # Agregar al ZIP
                     zip_file.writestr(
-                        f"Certificados/{idx}_{cargo_safe}{ext}",
+                        f"Certificados_Laborales/{idx}_{cargo_safe}{ext}",
                         file_content
                     )
                 except Exception as e:
                     logger.error(f"Error al agregar certificado {idx} de {applicant.nombre_completo}: {e}")
+
+        # 4. Agregar documentos de identidad
+        try:
+            if hasattr(applicant, 'documentos_identidad'):
+                docs = applicant.documentos_identidad
+
+                # Fotocopia cédula
+                if docs.fotocopia_cedula:
+                    with docs.fotocopia_cedula.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(docs.fotocopia_cedula, file_content)
+                    zip_file.writestr(f"Documentos_Identidad/Cedula{ext}", file_content)
+
+                # Libreta militar
+                if docs.libreta_militar:
+                    with docs.libreta_militar.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(docs.libreta_militar, file_content)
+                    zip_file.writestr(f"Documentos_Identidad/Libreta_Militar{ext}", file_content)
+        except Exception as e:
+            logger.error(f"Error al agregar documentos de identidad de {applicant.nombre_completo}: {e}")
+
+        # 5. Agregar antecedentes
+        try:
+            if hasattr(applicant, 'antecedentes'):
+                ant = applicant.antecedentes
+                antecedentes_files = [
+                    (ant.certificado_procuraduria, "Procuraduria"),
+                    (ant.certificado_contraloria, "Contraloria"),
+                    (ant.certificado_policia, "Policia"),
+                    (ant.certificado_medidas_correctivas, "Medidas_Correctivas"),
+                    (ant.certificado_delitos_sexuales, "Delitos_Sexuales"),
+                ]
+                for archivo, nombre in antecedentes_files:
+                    if archivo:
+                        with archivo.open('rb') as f:
+                            file_content = f.read()
+                        ext = get_file_extension(archivo, file_content)
+                        zip_file.writestr(f"Antecedentes/{nombre}{ext}", file_content)
+        except Exception as e:
+            logger.error(f"Error al agregar antecedentes de {applicant.nombre_completo}: {e}")
+
+        # 6. Agregar documentos académicos
+        for idx, academica in enumerate(applicant.formacion_academica.all(), start=1):
+            try:
+                profesion_safe = academica.profesion.replace(' ', '_').replace('/', '-')[:30]
+
+                if academica.fotocopia_titulo:
+                    with academica.fotocopia_titulo.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(academica.fotocopia_titulo, file_content)
+                    zip_file.writestr(f"Documentos_Academicos/{idx}_{profesion_safe}_Titulo{ext}", file_content)
+
+                if academica.fotocopia_tarjeta_profesional:
+                    with academica.fotocopia_tarjeta_profesional.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(academica.fotocopia_tarjeta_profesional, file_content)
+                    zip_file.writestr(f"Documentos_Academicos/{idx}_{profesion_safe}_Tarjeta_Profesional{ext}", file_content)
+
+                if academica.certificado_vigencia_tarjeta:
+                    with academica.certificado_vigencia_tarjeta.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(academica.certificado_vigencia_tarjeta, file_content)
+                    zip_file.writestr(f"Documentos_Academicos/{idx}_{profesion_safe}_Certificado_Vigencia{ext}", file_content)
+            except Exception as e:
+                logger.error(f"Error al agregar documentos académicos {idx} de {applicant.nombre_completo}: {e}")
+
+        # 7. Agregar anexos adicionales
+        try:
+            if hasattr(applicant, 'anexos_adicionales'):
+                anexos = applicant.anexos_adicionales
+
+                if anexos.anexo_03_datos_personales:
+                    with anexos.anexo_03_datos_personales.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(anexos.anexo_03_datos_personales, file_content)
+                    zip_file.writestr(f"Anexos/ANEXO_03_Datos_Personales{ext}", file_content)
+
+                if anexos.carta_intencion:
+                    with anexos.carta_intencion.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(anexos.carta_intencion, file_content)
+                    zip_file.writestr(f"Anexos/Carta_Intencion{ext}", file_content)
+
+                if anexos.otros_documentos:
+                    with anexos.otros_documentos.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(anexos.otros_documentos, file_content)
+                    zip_file.writestr(f"Anexos/Otros_Documentos{ext}", file_content)
+        except Exception as e:
+            logger.error(f"Error al agregar anexos de {applicant.nombre_completo}: {e}")
 
     # Preparar respuesta
     zip_buffer.seek(0)

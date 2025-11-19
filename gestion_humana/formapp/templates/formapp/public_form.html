@@ -454,7 +454,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.profesion.label }}</label>
+                                    <label class="form-label required-field">{{ form.profesion.label }} *</label>
                                     {{ form.profesion }}
                                     {% if form.profesion.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.profesion.errors }}</div>
@@ -462,7 +462,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.universidad.label }}</label>
+                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
                                     {{ form.universidad }}
                                     {% if form.universidad.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
@@ -498,7 +498,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fecha_grado.label }}</label>
+                                    <label class="form-label required-field">{{ form.fecha_grado.label }} *</label>
                                     {{ form.fecha_grado }}
                                     {% if form.fecha_grado.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_grado.errors }}</div>
@@ -593,7 +593,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.nombre_posgrado.label }}</label>
+                                    <label class="form-label required-field">{{ form.nombre_posgrado.label }} *</label>
                                     {{ form.nombre_posgrado }}
                                     {% if form.nombre_posgrado.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.nombre_posgrado.errors }}</div>
@@ -601,7 +601,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.universidad.label }}</label>
+                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
                                     {{ form.universidad }}
                                     {% if form.universidad.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
@@ -611,7 +611,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
+                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
                                     {{ form.fecha_terminacion }}
                                     {% if form.fecha_terminacion.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
@@ -661,7 +661,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.nombre_especializacion.label }}</label>
+                                    <label class="form-label required-field">{{ form.nombre_especializacion.label }} *</label>
                                     {{ form.nombre_especializacion }}
                                     {% if form.nombre_especializacion.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.nombre_especializacion.errors }}</div>
@@ -669,7 +669,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.universidad.label }}</label>
+                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
                                     {{ form.universidad }}
                                     {% if form.universidad.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
@@ -679,7 +679,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
+                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
                                     {{ form.fecha_terminacion }}
                                     {% if form.fecha_terminacion.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
@@ -1387,20 +1387,208 @@
                 fotocopiaCedula.removeClass('is-invalid');
             }
 
-            // Validar que todas las experiencias laborales tengan certificado
+            // Validar campos obligatorios de Experiencia Laboral
             $('.experiencia-group:visible').each(function(index) {
                 var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
                 // Solo validar si el formulario no está marcado para eliminar
                 if (!deleteCheckbox.prop('checked')) {
+                    var expNum = index + 1;
+
+                    // Validar cargo
+                    var cargo = $(this).find('input[id*="cargo"]').not('[id*="cargo_anexo"]');
+                    if (cargo.length > 0 && !cargo.val().trim()) {
+                        isValid = false;
+                        cargo.addClass('is-invalid');
+                        errorMessages.push('Experiencia ' + expNum + ': El campo Cargo es obligatorio.');
+                    } else {
+                        cargo.removeClass('is-invalid');
+                    }
+
+                    // Validar fecha inicial
+                    var fechaInicial = $(this).find('input[id*="fecha_inicial"]');
+                    if (fechaInicial.length > 0 && !fechaInicial.val()) {
+                        isValid = false;
+                        fechaInicial.addClass('is-invalid');
+                        errorMessages.push('Experiencia ' + expNum + ': La Fecha Inicial es obligatoria.');
+                    } else {
+                        fechaInicial.removeClass('is-invalid');
+                    }
+
+                    // Validar fecha terminación
+                    var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
+                    if (fechaTerminacion.length > 0 && !fechaTerminacion.val()) {
+                        isValid = false;
+                        fechaTerminacion.addClass('is-invalid');
+                        errorMessages.push('Experiencia ' + expNum + ': La Fecha de Terminación es obligatoria.');
+                    } else {
+                        fechaTerminacion.removeClass('is-invalid');
+                    }
+
+                    // Validar objeto contractual
+                    var objetoContractual = $(this).find('textarea[id*="objeto_contractual"]');
+                    if (objetoContractual.length > 0 && !objetoContractual.val().trim()) {
+                        isValid = false;
+                        objetoContractual.addClass('is-invalid');
+                        errorMessages.push('Experiencia ' + expNum + ': El Objeto Contractual es obligatorio.');
+                    } else {
+                        objetoContractual.removeClass('is-invalid');
+                    }
+
+                    // Validar funciones
+                    var funciones = $(this).find('textarea[id*="funciones"]');
+                    if (funciones.length > 0 && !funciones.val().trim()) {
+                        isValid = false;
+                        funciones.addClass('is-invalid');
+                        errorMessages.push('Experiencia ' + expNum + ': Las Funciones son obligatorias.');
+                    } else {
+                        funciones.removeClass('is-invalid');
+                    }
+
+                    // Validar certificado laboral
                     var fileInput = $(this).find('input[type="file"][id*="certificado_laboral"]');
                     var hasExistingFile = $(this).find('a[href*="certificado"]').length > 0;
 
                     if (fileInput.length > 0 && !fileInput.val() && !hasExistingFile) {
                         isValid = false;
                         fileInput.addClass('is-invalid');
-                        errorMessages.push('La Experiencia ' + (index + 1) + ' requiere un certificado laboral.');
+                        errorMessages.push('Experiencia ' + expNum + ': El Certificado Laboral es obligatorio.');
                     } else {
                         fileInput.removeClass('is-invalid');
+                    }
+                }
+            });
+
+            // Validar campos obligatorios de Información Académica
+            $('.academica-group:visible').each(function(index) {
+                var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                // Solo validar si el formulario no está marcado para eliminar
+                if (!deleteCheckbox.prop('checked')) {
+                    var acadNum = index + 1;
+
+                    // Validar profesión
+                    var profesion = $(this).find('input[id*="profesion"]');
+                    if (profesion.length > 0 && !profesion.val().trim()) {
+                        isValid = false;
+                        profesion.addClass('is-invalid');
+                        errorMessages.push('Formación Académica ' + acadNum + ': La Profesión es obligatoria.');
+                    } else {
+                        profesion.removeClass('is-invalid');
+                    }
+
+                    // Validar universidad
+                    var universidad = $(this).find('input[id*="universidad"]');
+                    if (universidad.length > 0 && !universidad.val().trim()) {
+                        isValid = false;
+                        universidad.addClass('is-invalid');
+                        errorMessages.push('Formación Académica ' + acadNum + ': La Universidad es obligatoria.');
+                    } else {
+                        universidad.removeClass('is-invalid');
+                    }
+
+                    // Validar fecha de grado
+                    var fechaGrado = $(this).find('input[id*="fecha_grado"]');
+                    if (fechaGrado.length > 0 && !fechaGrado.val()) {
+                        isValid = false;
+                        fechaGrado.addClass('is-invalid');
+                        errorMessages.push('Formación Académica ' + acadNum + ': La Fecha de Grado es obligatoria.');
+                    } else {
+                        fechaGrado.removeClass('is-invalid');
+                    }
+                }
+            });
+
+            // Validar campos obligatorios de Posgrado (solo si el usuario empezó a llenarlo)
+            $('.posgrado-group:visible').each(function(index) {
+                var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                // Solo validar si el formulario no está marcado para eliminar
+                if (!deleteCheckbox.prop('checked')) {
+                    var posNum = index + 1;
+
+                    var nombrePosgrado = $(this).find('input[id*="nombre_posgrado"]');
+                    var universidad = $(this).find('input[id*="universidad"]');
+                    var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
+
+                    // Verificar si el usuario empezó a llenar algún campo
+                    var tieneNombre = nombrePosgrado.length > 0 && nombrePosgrado.val().trim();
+                    var tieneUniversidad = universidad.length > 0 && universidad.val().trim();
+                    var tieneFecha = fechaTerminacion.length > 0 && fechaTerminacion.val();
+
+                    // Solo validar si al menos un campo tiene valor
+                    if (tieneNombre || tieneUniversidad || tieneFecha) {
+                        // Validar nombre del posgrado
+                        if (!tieneNombre) {
+                            isValid = false;
+                            nombrePosgrado.addClass('is-invalid');
+                            errorMessages.push('Posgrado ' + posNum + ': El Nombre del Posgrado es obligatorio.');
+                        } else {
+                            nombrePosgrado.removeClass('is-invalid');
+                        }
+
+                        // Validar universidad
+                        if (!tieneUniversidad) {
+                            isValid = false;
+                            universidad.addClass('is-invalid');
+                            errorMessages.push('Posgrado ' + posNum + ': La Universidad es obligatoria.');
+                        } else {
+                            universidad.removeClass('is-invalid');
+                        }
+
+                        // Validar fecha de terminación
+                        if (!tieneFecha) {
+                            isValid = false;
+                            fechaTerminacion.addClass('is-invalid');
+                            errorMessages.push('Posgrado ' + posNum + ': La Fecha de Terminación es obligatoria.');
+                        } else {
+                            fechaTerminacion.removeClass('is-invalid');
+                        }
+                    }
+                }
+            });
+
+            // Validar campos obligatorios de Especialización (solo si el usuario empezó a llenarlo)
+            $('.especializacion-group:visible').each(function(index) {
+                var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                // Solo validar si el formulario no está marcado para eliminar
+                if (!deleteCheckbox.prop('checked')) {
+                    var espNum = index + 1;
+
+                    var nombreEspecializacion = $(this).find('input[id*="nombre_especializacion"]');
+                    var universidad = $(this).find('input[id*="universidad"]');
+                    var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
+
+                    // Verificar si el usuario empezó a llenar algún campo
+                    var tieneNombre = nombreEspecializacion.length > 0 && nombreEspecializacion.val().trim();
+                    var tieneUniversidad = universidad.length > 0 && universidad.val().trim();
+                    var tieneFecha = fechaTerminacion.length > 0 && fechaTerminacion.val();
+
+                    // Solo validar si al menos un campo tiene valor
+                    if (tieneNombre || tieneUniversidad || tieneFecha) {
+                        // Validar nombre de la especialización
+                        if (!tieneNombre) {
+                            isValid = false;
+                            nombreEspecializacion.addClass('is-invalid');
+                            errorMessages.push('Especialización ' + espNum + ': El Nombre de la Especialización es obligatorio.');
+                        } else {
+                            nombreEspecializacion.removeClass('is-invalid');
+                        }
+
+                        // Validar universidad
+                        if (!tieneUniversidad) {
+                            isValid = false;
+                            universidad.addClass('is-invalid');
+                            errorMessages.push('Especialización ' + espNum + ': La Universidad es obligatoria.');
+                        } else {
+                            universidad.removeClass('is-invalid');
+                        }
+
+                        // Validar fecha de terminación
+                        if (!tieneFecha) {
+                            isValid = false;
+                            fechaTerminacion.addClass('is-invalid');
+                            errorMessages.push('Especialización ' + espNum + ': La Fecha de Terminación es obligatoria.');
+                        } else {
+                            fechaTerminacion.removeClass('is-invalid');
+                        }
                     }
                 }
             });
