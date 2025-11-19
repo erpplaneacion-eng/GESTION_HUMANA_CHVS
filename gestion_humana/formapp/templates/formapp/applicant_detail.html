@@ -103,6 +103,208 @@
         </div>
     </div>
 
+    <!-- Documentos de Identidad -->
+    {% if applicant.documentos_identidad %}
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-id-card"></i> Documentos de Identidad y Autorización
+        </h3>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-file-pdf"></i> Fotocopia Cédula:</span>
+                    {% if applicant.documentos_identidad.fotocopia_cedula %}
+                        <a href="{{ applicant.documentos_identidad.fotocopia_cedula.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver Documento
+                        </a>
+                    {% else %}
+                        <span class="info-value text-muted">No cargado</span>
+                    {% endif %}
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-file-signature"></i> Carta Autorización Datos:</span>
+                    {% if applicant.documentos_identidad.carta_autorizacion_datos %}
+                        <a href="{{ applicant.documentos_identidad.carta_autorizacion_datos.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver Documento
+                        </a>
+                    {% else %}
+                        <span class="info-value text-muted">No cargado</span>
+                    {% endif %}
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-calendar"></i> Fecha Autorización:</span>
+                    <span class="info-value">{{ applicant.documentos_identidad.fecha_autorizacion|date:"d/m/Y"|default:"No especificada" }}</span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                {% if applicant.genero == 'Masculino' %}
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-shield-alt"></i> Libreta Militar:</span>
+                    {% if applicant.documentos_identidad.libreta_militar %}
+                        <a href="{{ applicant.documentos_identidad.libreta_militar.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver Documento
+                        </a>
+                    {% else %}
+                        <span class="info-value text-muted">No cargado</span>
+                    {% endif %}
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-hashtag"></i> Número Libreta:</span>
+                    <span class="info-value">{{ applicant.documentos_identidad.numero_libreta_militar|default:"No especificado" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-map-marker-alt"></i> Distrito Militar:</span>
+                    <span class="info-value">{{ applicant.documentos_identidad.distrito_militar|default:"No especificado" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-tag"></i> Clase Libreta:</span>
+                    <span class="info-value">{{ applicant.documentos_identidad.clase_libreta|default:"No especificada" }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Antecedentes -->
+    {% if applicant.antecedentes %}
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-clipboard-check"></i> Antecedentes y Verificaciones
+        </h3>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #e74c3c;">
+                    <div class="card-body">
+                        <h6 class="text-danger"><i class="fas fa-balance-scale"></i> Procuraduría</h6>
+                        {% if applicant.antecedentes.certificado_procuraduria %}
+                            <a href="{{ applicant.antecedentes.certificado_procuraduria.url }}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Ver Certificado
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No cargado</span>
+                        {% endif %}
+                        <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_procuraduria|date:"d/m/Y"|default:"N/A" }}</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #f39c12;">
+                    <div class="card-body">
+                        <h6 style="color: #f39c12;"><i class="fas fa-search-dollar"></i> Contraloría</h6>
+                        {% if applicant.antecedentes.certificado_contraloria %}
+                            <a href="{{ applicant.antecedentes.certificado_contraloria.url }}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Ver Certificado
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No cargado</span>
+                        {% endif %}
+                        <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_contraloria|date:"d/m/Y"|default:"N/A" }}</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #3498db;">
+                    <div class="card-body">
+                        <h6 class="text-primary"><i class="fas fa-user-shield"></i> Policía Nacional</h6>
+                        {% if applicant.antecedentes.certificado_policia %}
+                            <a href="{{ applicant.antecedentes.certificado_policia.url }}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Ver Certificado
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No cargado</span>
+                        {% endif %}
+                        <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_policia|date:"d/m/Y"|default:"N/A" }}</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #9b59b6;">
+                    <div class="card-body">
+                        <h6 style="color: #9b59b6;"><i class="fas fa-gavel"></i> Medidas Correctivas (RNMC)</h6>
+                        {% if applicant.antecedentes.certificado_medidas_correctivas %}
+                            <a href="{{ applicant.antecedentes.certificado_medidas_correctivas.url }}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Ver Certificado
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No cargado</span>
+                        {% endif %}
+                        <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_medidas_correctivas|date:"d/m/Y"|default:"N/A" }}</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #27ae60;">
+                    <div class="card-body">
+                        <h6 class="text-success"><i class="fas fa-child"></i> Delitos Sexuales</h6>
+                        {% if applicant.antecedentes.certificado_delitos_sexuales %}
+                            <a href="{{ applicant.antecedentes.certificado_delitos_sexuales.url }}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Ver Certificado
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No cargado</span>
+                        {% endif %}
+                        <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_delitos_sexuales|date:"d/m/Y"|default:"N/A" }}</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Anexos Adicionales -->
+    {% if applicant.anexos_adicionales %}
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-paperclip"></i> Anexos Adicionales
+        </h3>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-file-alt"></i> ANEXO 03:</span>
+                    {% if applicant.anexos_adicionales.anexo_03_datos_personales %}
+                        <a href="{{ applicant.anexos_adicionales.anexo_03_datos_personales.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-muted">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-file-contract"></i> Carta Intención:</span>
+                    {% if applicant.anexos_adicionales.carta_intencion %}
+                        <a href="{{ applicant.anexos_adicionales.carta_intencion.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-muted">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-folder-open"></i> Otros Documentos:</span>
+                    {% if applicant.anexos_adicionales.otros_documentos %}
+                        <a href="{{ applicant.anexos_adicionales.otros_documentos.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-muted">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if applicant.anexos_adicionales.descripcion_otros %}
+        <div class="alert alert-light mt-3">
+            <strong>Descripción de otros documentos:</strong><br>
+            {{ applicant.anexos_adicionales.descripcion_otros }}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Experiencia Laboral -->
     <div class="detail-section">
         <h3>
@@ -190,10 +392,32 @@
                                 <i class="fas fa-calendar-check"></i>
                                 <strong>Fecha Grado:</strong> {{ formacion.fecha_grado|date:"d/m/Y" }}
                             </p>
-                            <p class="mb-0">
+                            <p class="mb-2">
                                 <i class="fas fa-clock"></i>
                                 <strong>Experiencia en la profesión:</strong> {{ formacion.meses_experiencia_profesion }} meses
                             </p>
+                            <!-- Documentos académicos -->
+                            <hr class="my-2">
+                            <div class="mt-2">
+                                {% if formacion.fotocopia_titulo %}
+                                    <a href="{{ formacion.fotocopia_titulo.url }}" target="_blank" class="btn btn-sm btn-outline-success me-1 mb-1">
+                                        <i class="fas fa-file-pdf"></i> Título
+                                    </a>
+                                {% endif %}
+                                {% if formacion.fotocopia_tarjeta_profesional %}
+                                    <a href="{{ formacion.fotocopia_tarjeta_profesional.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-1 mb-1">
+                                        <i class="fas fa-id-badge"></i> Tarjeta Prof.
+                                    </a>
+                                {% endif %}
+                                {% if formacion.certificado_vigencia_tarjeta %}
+                                    <a href="{{ formacion.certificado_vigencia_tarjeta.url }}" target="_blank" class="btn btn-sm btn-outline-info me-1 mb-1">
+                                        <i class="fas fa-certificate"></i> Vigencia
+                                    </a>
+                                {% endif %}
+                            </div>
+                            {% if formacion.fecha_vigencia_tarjeta %}
+                            <p class="mb-0 mt-2"><small class="text-muted">Vigencia hasta: {{ formacion.fecha_vigencia_tarjeta|date:"d/m/Y" }}</small></p>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

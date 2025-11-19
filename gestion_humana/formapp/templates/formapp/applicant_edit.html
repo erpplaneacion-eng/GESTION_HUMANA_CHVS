@@ -161,6 +161,199 @@
                     </div>
                 </div>
 
+                <!-- Sección: Documentos de Identidad y Autorización -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-id-card"></i> Documentos de Identidad y Autorización</h4>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fotocopia de Cédula</label>
+                                {{ documentos_form.fotocopia_cedula }}
+                                {% if documentos_form.instance.fotocopia_cedula %}
+                                    <small class="text-muted d-block mt-1">
+                                        Actual: <a href="{{ documentos_form.instance.fotocopia_cedula.url }}" target="_blank">Ver documento</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Carta de Autorización de Datos</label>
+                                {{ documentos_form.carta_autorizacion_datos }}
+                                {% if documentos_form.instance.carta_autorizacion_datos %}
+                                    <small class="text-muted d-block mt-1">
+                                        Actual: <a href="{{ documentos_form.instance.carta_autorizacion_datos.url }}" target="_blank">Ver documento</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha de Autorización</label>
+                                {{ documentos_form.fecha_autorizacion }}
+                            </div>
+                        </div>
+
+                        <!-- Campos de Libreta Militar -->
+                        <div class="alert alert-info mt-3">
+                            <h6><i class="fas fa-shield-alt"></i> Situación Militar (Opcional)</h6>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Libreta Militar</label>
+                                {{ documentos_form.libreta_militar }}
+                                {% if documentos_form.instance.libreta_militar %}
+                                    <small class="text-muted d-block mt-1">
+                                        Actual: <a href="{{ documentos_form.instance.libreta_militar.url }}" target="_blank">Ver documento</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número de Libreta Militar</label>
+                                {{ documentos_form.numero_libreta_militar }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Distrito Militar</label>
+                                {{ documentos_form.distrito_militar }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Clase de Libreta</label>
+                                {{ documentos_form.clase_libreta }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Antecedentes y Verificaciones -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-clipboard-check"></i> Antecedentes y Verificaciones</h4>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Certificado Procuraduría</label>
+                                {{ antecedentes_form.certificado_procuraduria }}
+                                {% if antecedentes_form.instance.certificado_procuraduria %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ antecedentes_form.instance.certificado_procuraduria.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Procuraduría</label>
+                                {{ antecedentes_form.fecha_procuraduria }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Certificado Contraloría</label>
+                                {{ antecedentes_form.certificado_contraloria }}
+                                {% if antecedentes_form.instance.certificado_contraloria %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ antecedentes_form.instance.certificado_contraloria.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Contraloría</label>
+                                {{ antecedentes_form.fecha_contraloria }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Certificado Policía Nacional</label>
+                                {{ antecedentes_form.certificado_policia }}
+                                {% if antecedentes_form.instance.certificado_policia %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ antecedentes_form.instance.certificado_policia.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Policía</label>
+                                {{ antecedentes_form.fecha_policia }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Certificado Medidas Correctivas (RNMC)</label>
+                                {{ antecedentes_form.certificado_medidas_correctivas }}
+                                {% if antecedentes_form.instance.certificado_medidas_correctivas %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ antecedentes_form.instance.certificado_medidas_correctivas.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Medidas Correctivas</label>
+                                {{ antecedentes_form.fecha_medidas_correctivas }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Certificado Delitos Sexuales</label>
+                                {{ antecedentes_form.certificado_delitos_sexuales }}
+                                {% if antecedentes_form.instance.certificado_delitos_sexuales %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ antecedentes_form.instance.certificado_delitos_sexuales.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha Delitos Sexuales</label>
+                                {{ antecedentes_form.fecha_delitos_sexuales }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección: Anexos Adicionales -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-paperclip"></i> Anexos Adicionales</h4>
+                    </div>
+                    <div class="section-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ANEXO 03 - Datos Personales</label>
+                                {{ anexos_form.anexo_03_datos_personales }}
+                                {% if anexos_form.instance.anexo_03_datos_personales %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.anexo_03_datos_personales.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Carta de Intención</label>
+                                {{ anexos_form.carta_intencion }}
+                                {% if anexos_form.instance.carta_intencion %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.carta_intencion.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Otros Documentos</label>
+                                {{ anexos_form.otros_documentos }}
+                                {% if anexos_form.instance.otros_documentos %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.otros_documentos.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Descripción de Otros Documentos</label>
+                                {{ anexos_form.descripcion_otros }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Sección 2: Experiencia Laboral -->
                 <div class="section-card mb-4">
                     <div class="section-header">

@@ -37,8 +37,12 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import logging
 import threading
+import pytz
 
 logger = logging.getLogger(__name__)
+
+# Zona horaria de Colombia
+COLOMBIA_TZ = pytz.timezone('America/Bogota')
 
 # Gmail API scope
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
@@ -120,23 +124,24 @@ def enviar_correo_confirmacion(informacion_basica):
         # Construir el servicio de Gmail
         service = build('gmail', 'v1', credentials=creds)
         
-        # Preparar contexto para el template
+        # Preparar contexto para el template - usar zona horaria de Colombia
+        fecha_colombia = datetime.now(COLOMBIA_TZ)
         context = {
             'nombre_completo': informacion_basica.nombre_completo,
             'cedula': informacion_basica.cedula,
             'correo': informacion_basica.correo,
             'telefono': informacion_basica.telefono,
-            'fecha_registro': datetime.now().strftime('%d/%m/%Y %H:%M'),
+            'fecha_registro': fecha_colombia.strftime('%d/%m/%Y %H:%M'),
         }
-        
+
         # Renderizar template HTML
         html_message = render_to_string('formapp/email_confirmacion.html', context)
-        
-        # Crear mensaje de correo
+
+        # Crear mensaje de correo con nombre del remitente
         message = MIMEMultipart('alternative')
         message['To'] = informacion_basica.correo
-        message['From'] = settings.DEFAULT_FROM_EMAIL
-        message['Subject'] = 'Confirmación de Registro - Gestión Humana CHVS'
+        message['From'] = f'Sistema de Contratación CHVS <{settings.DEFAULT_FROM_EMAIL}>'
+        message['Subject'] = 'Confirmación de Registro - Sistema de Contratación CHVS'
         
         # Adjuntar contenido HTML
         html_part = MIMEText(html_message, 'html', 'utf-8')
@@ -343,8 +348,28 @@ def applicant_edit_view(request, pk):
     """Vista para editar un registro existente"""
     applicant = get_object_or_404(InformacionBasica, pk=pk)
 
+    # Obtener o crear instancias relacionadas
+    try:
+        documentos_identidad = applicant.documentos_identidad
+    except DocumentosIdentidad.DoesNotExist:
+        documentos_identidad = None
+
+    try:
+        antecedentes = applicant.antecedentes
+    except Antecedentes.DoesNotExist:
+        antecedentes = None
+
+    try:
+        anexos_adicionales = applicant.anexos_adicionales
+    except AnexosAdicionales.DoesNotExist:
+        anexos_adicionales = None
+
     if request.method == 'POST':
         form = InformacionBasicaForm(request.POST, request.FILES, instance=applicant)
+        genero = request.POST.get('genero', applicant.genero)
+        documentos_form = DocumentosIdentidadForm(request.POST, request.FILES, instance=documentos_identidad, genero=genero)
+        antecedentes_form = AntecedentesForm(request.POST, request.FILES, instance=antecedentes)
+        anexos_form = AnexosAdicionalesForm(request.POST, request.FILES, instance=anexos_adicionales)
         experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES, instance=applicant)
         academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES, instance=applicant)
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
@@ -352,15 +377,33 @@ def applicant_edit_view(request, pk):
 
         # Validar todos los formsets antes de guardar
         form_valid = form.is_valid()
+        documentos_valid = documentos_form.is_valid()
+        antecedentes_valid = antecedentes_form.is_valid()
+        anexos_valid = anexos_form.is_valid()
         experiencia_valid = experiencia_formset.is_valid()
         academica_valid = academica_formset.is_valid()
         posgrado_valid = posgrado_formset.is_valid()
         especializacion_valid = especializacion_formset.is_valid()
 
-        if form_valid and experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
+        if form_valid and documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
             try:
                 with transaction.atomic():
                     informacion_basica = form.save()
+
+                    # Guardar documentos de identidad
+                    documentos = documentos_form.save(commit=False)
+                    documentos.informacion_basica = informacion_basica
+                    documentos.save()
+
+                    # Guardar antecedentes
+                    antecedentes_obj = antecedentes_form.save(commit=False)
+                    antecedentes_obj.informacion_basica = informacion_basica
+                    antecedentes_obj.save()
+
+                    # Guardar anexos adicionales
+                    anexos = anexos_form.save(commit=False)
+                    anexos.informacion_basica = informacion_basica
+                    anexos.save()
 
                     # Guardar todos los formsets
                     # Guardar experiencia laboral - usar save() que maneja automáticamente todo
@@ -434,6 +477,9 @@ def applicant_edit_view(request, pk):
                 messages.error(request, 'Por favor corrija los errores en Especializaciones.')
     else:
         form = InformacionBasicaForm(instance=applicant)
+        documentos_form = DocumentosIdentidadForm(instance=documentos_identidad, genero=applicant.genero)
+        antecedentes_form = AntecedentesForm(instance=antecedentes)
+        anexos_form = AnexosAdicionalesForm(instance=anexos_adicionales)
         experiencia_formset = ExperienciaLaboralFormSet(instance=applicant)
         academica_formset = InformacionAcademicaFormSet(instance=applicant)
         posgrado_formset = PosgradoFormSet(instance=applicant)
@@ -441,6 +487,9 @@ def applicant_edit_view(request, pk):
 
     context = {
         'form': form,
+        'documentos_form': documentos_form,
+        'antecedentes_form': antecedentes_form,
+        'anexos_form': anexos_form,
         'experiencia_formset': experiencia_formset,
         'academica_formset': academica_formset,
         'posgrado_formset': posgrado_formset,

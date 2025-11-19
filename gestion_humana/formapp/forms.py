@@ -437,22 +437,8 @@ class DocumentosIdentidadForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        genero = self.genero
-
-        # Si es hombre, validar que tenga libreta militar
-        if genero == 'Masculino':
-            libreta_militar = cleaned_data.get('libreta_militar')
-            numero_libreta = cleaned_data.get('numero_libreta_militar')
-
-            # Solo validar si es un nuevo registro o si está intentando actualizar
-            if not self.instance.pk:  # Nuevo registro
-                if not libreta_militar:
-                    self.add_error('libreta_militar',
-                        'La libreta militar es obligatoria para hombres según el artículo 42 de la Ley 1861 de 2017.')
-                if not numero_libreta:
-                    self.add_error('numero_libreta_militar',
-                        'El número de libreta militar es obligatorio para hombres.')
-
+        # La libreta militar es ahora opcional para todos los géneros
+        # Se mantiene el campo pero sin validación obligatoria
         return cleaned_data
 
 
