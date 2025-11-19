@@ -1348,7 +1348,7 @@ def download_all_zip(request):
         # Título
         ws['A1'] = "REGISTRO COMPLETO DE PERSONAL"
         ws['A1'].font = Font(bold=True, size=14, color="2C3E50")
-        ws.merge_cells('A1:L1')
+        ws.merge_cells('A1:J1')
 
         # Encabezados
         header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
@@ -1361,8 +1361,7 @@ def download_all_zip(request):
         )
 
         headers = ["Cédula", "Nombre Completo", "Género", "Teléfono", "Correo",
-                   "Profesión", "Área Conocimiento", "Tipo Perfil", "Experiencia",
-                   "Tiempo Experiencia", "Cantidad", "Observaciones"]
+                   "Perfil", "Área del Conocimiento", "Profesión", "Contrato", "Observaciones"]
 
         for col, header in enumerate(headers, start=1):
             cell = ws.cell(row=3, column=col)
@@ -1380,17 +1379,15 @@ def download_all_zip(request):
             ws.cell(row=row, column=3, value=applicant.genero).border = border
             ws.cell(row=row, column=4, value=applicant.telefono).border = border
             ws.cell(row=row, column=5, value=applicant.correo).border = border
-            ws.cell(row=row, column=6, value=applicant.profesion or "N/A").border = border
-            ws.cell(row=row, column=7, value=applicant.area_conocimiento or "N/A").border = border
-            ws.cell(row=row, column=8, value=applicant.tipo_perfil or "N/A").border = border
-            ws.cell(row=row, column=9, value=applicant.experiencia or "N/A").border = border
-            ws.cell(row=row, column=10, value=applicant.tiempo_experiencia or "N/A").border = border
-            ws.cell(row=row, column=11, value=applicant.cantidad or "N/A").border = border
-            ws.cell(row=row, column=12, value=applicant.observacion or "N/A").border = border
+            ws.cell(row=row, column=6, value=applicant.perfil or "N/A").border = border
+            ws.cell(row=row, column=7, value=applicant.area_del_conocimiento or "N/A").border = border
+            ws.cell(row=row, column=8, value=applicant.profesion or "N/A").border = border
+            ws.cell(row=row, column=9, value=applicant.contrato or "N/A").border = border
+            ws.cell(row=row, column=10, value=applicant.observacion or "N/A").border = border
             row += 1
 
         # Ajustar anchos de columna
-        for col in range(1, 13):
+        for col in range(1, 11):
             ws.column_dimensions[chr(64 + col)].width = 20
 
         # Guardar Excel consolidado
