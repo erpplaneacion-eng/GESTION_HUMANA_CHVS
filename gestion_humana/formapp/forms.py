@@ -1,7 +1,7 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
-from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion
+from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, DocumentosIdentidad, Antecedentes, AnexosAdicionales
 
 # Formulario público - solo campos que el usuario puede llenar
 class InformacionBasicaPublicForm(forms.ModelForm):
@@ -309,6 +309,20 @@ class InformacionAcademicaForm(forms.ModelForm):
             'numero_tarjeta_resolucion': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_grado': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'meses_experiencia_profesion': forms.NumberInput(attrs={'class': 'form-control', 'min': '0'}),
+            # FASE 2: Documentos académicos
+            'fotocopia_titulo': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fotocopia_tarjeta_profesional': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'certificado_vigencia_tarjeta': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_vigencia_tarjeta': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
 class PosgradoForm(forms.ModelForm):
@@ -364,3 +378,195 @@ EspecializacionFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
+
+
+# FASE 1: Formulario de Documentos de Identidad y Autorización
+class DocumentosIdentidadForm(forms.ModelForm):
+    class Meta:
+        model = DocumentosIdentidad
+        exclude = ['informacion_basica', 'created_at', 'updated_at']
+        widgets = {
+            'fotocopia_cedula': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'libreta_militar': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'numero_libreta_militar': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: 123456789'
+            }),
+            'distrito_militar': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ej: Distrito Militar No. 32'
+            }),
+            'clase_libreta': forms.Select(attrs={
+                'class': 'form-control'
+            }),
+            'carta_autorizacion_datos': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_autorizacion': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+        }
+        error_messages = {
+            'fotocopia_cedula': {
+                'required': 'La fotocopia de la cédula es obligatoria.',
+            },
+            'carta_autorizacion_datos': {
+                'required': 'La carta de autorización de datos es obligatoria.',
+            },
+            'fecha_autorizacion': {
+                'required': 'La fecha de autorización es obligatoria.',
+            },
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.genero = kwargs.pop('genero', None)
+        super().__init__(*args, **kwargs)
+
+        # Si es una instancia existente (edición), hacer los campos de archivo opcionales
+        if self.instance and self.instance.pk:
+            self.fields['fotocopia_cedula'].required = False
+            self.fields['carta_autorizacion_datos'].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        genero = self.genero
+
+        # Si es hombre, validar que tenga libreta militar
+        if genero == 'Masculino':
+            libreta_militar = cleaned_data.get('libreta_militar')
+            numero_libreta = cleaned_data.get('numero_libreta_militar')
+
+            # Solo validar si es un nuevo registro o si está intentando actualizar
+            if not self.instance.pk:  # Nuevo registro
+                if not libreta_militar:
+                    self.add_error('libreta_militar',
+                        'La libreta militar es obligatoria para hombres según el artículo 42 de la Ley 1861 de 2017.')
+                if not numero_libreta:
+                    self.add_error('numero_libreta_militar',
+                        'El número de libreta militar es obligatorio para hombres.')
+
+        return cleaned_data
+
+
+# FASE 3: Formulario de Antecedentes y Verificaciones
+class AntecedentesForm(forms.ModelForm):
+    class Meta:
+        model = Antecedentes
+        exclude = ['informacion_basica', 'created_at', 'updated_at']
+        widgets = {
+            'certificado_procuraduria': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_procuraduria': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'certificado_contraloria': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_contraloria': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'certificado_policia': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_policia': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'certificado_medidas_correctivas': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_medidas_correctivas': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'certificado_delitos_sexuales': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_delitos_sexuales': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+        }
+        error_messages = {
+            'certificado_procuraduria': {
+                'required': 'El certificado de Procuraduría es obligatorio.',
+            },
+            'fecha_procuraduria': {
+                'required': 'La fecha del certificado de Procuraduría es obligatoria.',
+            },
+            'certificado_contraloria': {
+                'required': 'El certificado de Contraloría es obligatorio.',
+            },
+            'fecha_contraloria': {
+                'required': 'La fecha del certificado de Contraloría es obligatoria.',
+            },
+            'certificado_policia': {
+                'required': 'El certificado de Policía es obligatorio.',
+            },
+            'fecha_policia': {
+                'required': 'La fecha del certificado de Policía es obligatoria.',
+            },
+            'certificado_medidas_correctivas': {
+                'required': 'El certificado de Medidas Correctivas es obligatorio.',
+            },
+            'fecha_medidas_correctivas': {
+                'required': 'La fecha del certificado de Medidas Correctivas es obligatoria.',
+            },
+            'certificado_delitos_sexuales': {
+                'required': 'El certificado de Delitos Sexuales es obligatorio.',
+            },
+            'fecha_delitos_sexuales': {
+                'required': 'La fecha de consulta de Delitos Sexuales es obligatoria.',
+            },
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Si es una instancia existente (edición), hacer los campos de archivo opcionales
+        if self.instance and self.instance.pk:
+            for field_name in ['certificado_procuraduria', 'certificado_contraloria',
+                              'certificado_policia', 'certificado_medidas_correctivas',
+                              'certificado_delitos_sexuales']:
+                self.fields[field_name].required = False
+
+
+# FASE 4: Formulario de Anexos Adicionales
+class AnexosAdicionalesForm(forms.ModelForm):
+    class Meta:
+        model = AnexosAdicionales
+        exclude = ['informacion_basica', 'created_at', 'updated_at']
+        widgets = {
+            'anexo_03_datos_personales': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'carta_intencion': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'otros_documentos': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'descripcion_otros': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Describa el contenido del documento adicional'
+            }),
+        }

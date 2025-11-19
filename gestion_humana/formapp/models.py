@@ -96,6 +96,37 @@ class InformacionAcademica(models.Model):
     fecha_grado = models.DateField(verbose_name='Fecha de Grado')
     meses_experiencia_profesion = models.IntegerField(verbose_name='Meses de Experiencia por Profesión', default=0)
 
+    # FASE 2: Documentos académicos
+    fotocopia_titulo = models.FileField(
+        upload_to='titulos_academicos/',
+        verbose_name='Fotocopia del Título/Diploma',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Acta de grado o diploma. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+    fotocopia_tarjeta_profesional = models.FileField(
+        upload_to='tarjetas_profesionales/',
+        verbose_name='Fotocopia Tarjeta Profesional',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Solo si aplica. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+    certificado_vigencia_tarjeta = models.FileField(
+        upload_to='certificados_vigencia/',
+        verbose_name='Certificado de Vigencia',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Certificado de vigencia de tarjeta profesional. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+    fecha_vigencia_tarjeta = models.DateField(
+        verbose_name='Fecha de Vigencia del Certificado',
+        blank=True,
+        null=True
+    )
+
     def __str__(self):
         return f'{self.profesion} de {self.informacion_basica.cedula}'
 
@@ -131,3 +162,201 @@ class CalculoExperiencia(models.Model):
 
     def __str__(self):
         return f'Cálculo de experiencia para {self.informacion_basica.cedula}'
+
+
+# FASE 1: Documentos de Identidad y Autorización
+class DocumentosIdentidad(models.Model):
+    informacion_basica = models.OneToOneField(
+        InformacionBasica,
+        on_delete=models.CASCADE,
+        related_name='documentos_identidad'
+    )
+
+    # Fotocopia cédula de ciudadanía
+    fotocopia_cedula = models.FileField(
+        upload_to='documentos_identidad/cedulas/',
+        verbose_name='Fotocopia Cédula de Ciudadanía',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB'
+    )
+
+    # Libreta militar (solo para hombres)
+    libreta_militar = models.FileField(
+        upload_to='documentos_identidad/libretas_militares/',
+        verbose_name='Libreta Militar',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Requerido para hombres. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+    numero_libreta_militar = models.CharField(
+        max_length=50,
+        verbose_name='Número de Libreta Militar',
+        blank=True,
+        null=True
+    )
+    distrito_militar = models.CharField(
+        max_length=100,
+        verbose_name='Distrito Militar',
+        blank=True,
+        null=True
+    )
+    clase_libreta = models.CharField(
+        max_length=50,
+        verbose_name='Clase de Libreta',
+        choices=[
+            ('Primera', 'Primera Clase'),
+            ('Segunda', 'Segunda Clase'),
+        ],
+        blank=True,
+        null=True
+    )
+
+    # Carta de autorización para tratamiento de datos personales (Ley 1581 de 2012)
+    carta_autorizacion_datos = models.FileField(
+        upload_to='autorizaciones/',
+        verbose_name='Carta de Autorización Tratamiento de Datos',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Autorización según Ley 1581 de 2012. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+    )
+    fecha_autorizacion = models.DateField(
+        verbose_name='Fecha de Autorización'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Última Actualización')
+
+    class Meta:
+        verbose_name = 'Documentos de Identidad'
+        verbose_name_plural = 'Documentos de Identidad'
+
+    def __str__(self):
+        return f'Documentos de {self.informacion_basica.nombre_completo}'
+
+
+# FASE 3: Antecedentes y Verificaciones
+class Antecedentes(models.Model):
+    informacion_basica = models.OneToOneField(
+        InformacionBasica,
+        on_delete=models.CASCADE,
+        related_name='antecedentes'
+    )
+
+    # Antecedentes disciplinarios (Procuraduría General de la Nación)
+    certificado_procuraduria = models.FileField(
+        upload_to='antecedentes/procuraduria/',
+        verbose_name='Certificado de Antecedentes Disciplinarios',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Procuraduría General de la Nación. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+    )
+    fecha_procuraduria = models.DateField(
+        verbose_name='Fecha de Expedición Procuraduría'
+    )
+
+    # Antecedentes fiscales (Contraloría General de la República)
+    certificado_contraloria = models.FileField(
+        upload_to='antecedentes/contraloria/',
+        verbose_name='Certificado de Antecedentes Fiscales',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Contraloría General de la República. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+    )
+    fecha_contraloria = models.DateField(
+        verbose_name='Fecha de Expedición Contraloría'
+    )
+
+    # Antecedentes judiciales (Policía Nacional)
+    certificado_policia = models.FileField(
+        upload_to='antecedentes/policia/',
+        verbose_name='Certificado de Antecedentes Judiciales',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Policía Nacional de Colombia. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+    )
+    fecha_policia = models.DateField(
+        verbose_name='Fecha de Expedición Policía'
+    )
+
+    # Registro Nacional de Medidas Correctivas (RNMC)
+    certificado_medidas_correctivas = models.FileField(
+        upload_to='antecedentes/medidas_correctivas/',
+        verbose_name='Registro de Medidas Correctivas',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='RNMC - Policía Nacional. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+    )
+    fecha_medidas_correctivas = models.DateField(
+        verbose_name='Fecha de Expedición RNMC'
+    )
+
+    # Consulta de inhabilidades por delitos sexuales contra menores
+    certificado_delitos_sexuales = models.FileField(
+        upload_to='antecedentes/delitos_sexuales/',
+        verbose_name='Consulta Inhabilidades Delitos Sexuales',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Ley 1918 de 2018. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+    )
+    fecha_delitos_sexuales = models.DateField(
+        verbose_name='Fecha de Consulta'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Última Actualización')
+
+    class Meta:
+        verbose_name = 'Antecedentes'
+        verbose_name_plural = 'Antecedentes'
+
+    def __str__(self):
+        return f'Antecedentes de {self.informacion_basica.nombre_completo}'
+
+
+# FASE 4: Anexos Adicionales
+class AnexosAdicionales(models.Model):
+    informacion_basica = models.OneToOneField(
+        InformacionBasica,
+        on_delete=models.CASCADE,
+        related_name='anexos_adicionales'
+    )
+
+    # ANEXO 03 - Datos Personales
+    anexo_03_datos_personales = models.FileField(
+        upload_to='anexos/anexo_03/',
+        verbose_name='ANEXO 03 - Datos Personales',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formato de datos personales vigente. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+
+    # Carta de intención o contrato
+    carta_intencion = models.FileField(
+        upload_to='anexos/cartas_intencion/',
+        verbose_name='Carta de Intención o Contrato',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Carta de intención firmada. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+
+    # Otros documentos opcionales
+    otros_documentos = models.FileField(
+        upload_to='anexos/otros/',
+        verbose_name='Otros Documentos',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Documentos adicionales. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        blank=True,
+        null=True
+    )
+    descripcion_otros = models.TextField(
+        verbose_name='Descripción de Otros Documentos',
+        blank=True,
+        null=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='Última Actualización')
+
+    class Meta:
+        verbose_name = 'Anexos Adicionales'
+        verbose_name_plural = 'Anexos Adicionales'
+
+    def __str__(self):
+        return f'Anexos de {self.informacion_basica.nombre_completo}'

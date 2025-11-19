@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.template.loader import render_to_string
-from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion
+from .models import InformacionBasica, CalculoExperiencia, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, DocumentosIdentidad, Antecedentes, AnexosAdicionales
 from .forms import (
     InformacionBasicaPublicForm,
     InformacionBasicaForm,
@@ -17,6 +17,9 @@ from .forms import (
     InformacionAcademicaFormSet,
     PosgradoFormSet,
     EspecializacionFormSet,
+    DocumentosIdentidadForm,
+    AntecedentesForm,
+    AnexosAdicionalesForm,
 )
 import zipfile
 import io
@@ -156,6 +159,11 @@ def enviar_correo_confirmacion(informacion_basica):
 def public_form_view(request):
     if request.method == 'POST':
         form = InformacionBasicaPublicForm(request.POST, request.FILES)
+        # Obtener género para pasarlo al formulario de documentos
+        genero = request.POST.get('genero', '')
+        documentos_form = DocumentosIdentidadForm(request.POST, request.FILES, genero=genero)
+        antecedentes_form = AntecedentesForm(request.POST, request.FILES)
+        anexos_form = AnexosAdicionalesForm(request.POST, request.FILES)
         experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES)
         academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES)
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES)
@@ -164,17 +172,35 @@ def public_form_view(request):
         # CRÍTICO: Validar TODOS los formularios ANTES de guardar cualquier cosa
         # Esto previene el bug donde certificados no se guardan pero el usuario ve "éxito"
         if form.is_valid():
-            # Validar todos los formsets primero
+            # Validar todos los formsets y formularios primero
+            documentos_valid = documentos_form.is_valid()
+            antecedentes_valid = antecedentes_form.is_valid()
+            anexos_valid = anexos_form.is_valid()
             experiencia_valid = experiencia_formset.is_valid()
             academica_valid = academica_formset.is_valid()
             posgrado_valid = posgrado_formset.is_valid()
             especializacion_valid = especializacion_formset.is_valid()
 
             # Solo proceder si TODO es válido
-            if experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
+            if documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
                 try:
                     with transaction.atomic():
                         informacion_basica = form.save()
+
+                        # Guardar documentos de identidad
+                        documentos = documentos_form.save(commit=False)
+                        documentos.informacion_basica = informacion_basica
+                        documentos.save()
+
+                        # Guardar antecedentes
+                        antecedentes = antecedentes_form.save(commit=False)
+                        antecedentes.informacion_basica = informacion_basica
+                        antecedentes.save()
+
+                        # Guardar anexos adicionales (opcional)
+                        anexos = anexos_form.save(commit=False)
+                        anexos.informacion_basica = informacion_basica
+                        anexos.save()
 
                         # Asociar formsets con la instancia guardada y guardar
                         experiencia_formset.instance = informacion_basica
@@ -208,7 +234,17 @@ def public_form_view(request):
                 except Exception as e:
                     messages.error(request, f'Error al guardar el formulario: {str(e)}')
             else:
-                # Mostrar errores específicos de cada formset que falló
+                # Mostrar errores específicos de cada formulario/formset que falló
+                if not documentos_valid:
+                    for field, error_list in documentos_form.errors.items():
+                        for error in error_list:
+                            messages.error(request, f'Error en Documentos de Identidad - {field}: {error}')
+
+                if not antecedentes_valid:
+                    for field, error_list in antecedentes_form.errors.items():
+                        for error in error_list:
+                            messages.error(request, f'Error en Antecedentes - {field}: {error}')
+
                 if not experiencia_valid:
                     for i, form_errors in enumerate(experiencia_formset.errors):
                         if form_errors:
@@ -242,6 +278,9 @@ def public_form_view(request):
             messages.warning(request, 'Por favor corrija los errores en el formulario.')
     else:
         form = InformacionBasicaPublicForm()
+        documentos_form = DocumentosIdentidadForm()
+        antecedentes_form = AntecedentesForm()
+        anexos_form = AnexosAdicionalesForm()
         experiencia_formset = ExperienciaLaboralFormSet()
         academica_formset = InformacionAcademicaFormSet()
         posgrado_formset = PosgradoFormSet()
@@ -249,6 +288,9 @@ def public_form_view(request):
 
     context = {
         'form': form,
+        'documentos_form': documentos_form,
+        'antecedentes_form': antecedentes_form,
+        'anexos_form': anexos_form,
         'experiencia_formset': experiencia_formset,
         'academica_formset': academica_formset,
         'posgrado_formset': posgrado_formset,

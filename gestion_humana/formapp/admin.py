@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia
+from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales
 
 class ExperienciaLaboralInline(admin.TabularInline):
     model = ExperienciaLaboral
@@ -16,7 +16,9 @@ class InformacionAcademicaInline(admin.TabularInline):
     extra = 1
     fields = (
         'profesion', 'universidad', 'fecha_grado', 'tarjeta_profesional',
-        'numero_tarjeta_resolucion', 'fecha_expedicion', 'meses_experiencia_profesion'
+        'numero_tarjeta_resolucion', 'fecha_expedicion', 'meses_experiencia_profesion',
+        'fotocopia_titulo', 'fotocopia_tarjeta_profesional',
+        'certificado_vigencia_tarjeta', 'fecha_vigencia_tarjeta'
     )
 
 class PosgradoInline(admin.TabularInline):
@@ -37,6 +39,65 @@ class CalculoExperienciaInline(admin.StackedInline):
         'total_experiencia_anos', 'anos_y_meses_experiencia'
     )
     fields = readonly_fields
+
+class DocumentosIdentidadInline(admin.StackedInline):
+    model = DocumentosIdentidad
+    can_delete = False
+    extra = 0
+    fieldsets = (
+        ('Documento de Identidad', {
+            'fields': ('fotocopia_cedula',)
+        }),
+        ('Situación Militar (Solo Hombres)', {
+            'fields': (
+                'libreta_militar', 'numero_libreta_militar',
+                'distrito_militar', 'clase_libreta'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Autorización de Datos', {
+            'fields': ('carta_autorizacion_datos', 'fecha_autorizacion')
+        }),
+    )
+
+class AntecedentesInline(admin.StackedInline):
+    model = Antecedentes
+    can_delete = False
+    extra = 0
+    fieldsets = (
+        ('Antecedentes Disciplinarios - Procuraduría', {
+            'fields': ('certificado_procuraduria', 'fecha_procuraduria')
+        }),
+        ('Antecedentes Fiscales - Contraloría', {
+            'fields': ('certificado_contraloria', 'fecha_contraloria')
+        }),
+        ('Antecedentes Judiciales - Policía', {
+            'fields': ('certificado_policia', 'fecha_policia')
+        }),
+        ('Medidas Correctivas - RNMC', {
+            'fields': ('certificado_medidas_correctivas', 'fecha_medidas_correctivas')
+        }),
+        ('Inhabilidades por Delitos Sexuales', {
+            'fields': ('certificado_delitos_sexuales', 'fecha_delitos_sexuales')
+        }),
+    )
+
+class AnexosAdicionalesInline(admin.StackedInline):
+    model = AnexosAdicionales
+    can_delete = False
+    extra = 0
+    fieldsets = (
+        ('ANEXO 03', {
+            'fields': ('anexo_03_datos_personales',)
+        }),
+        ('Carta de Intención', {
+            'fields': ('carta_intencion',)
+        }),
+        ('Otros Documentos', {
+            'fields': ('otros_documentos', 'descripcion_otros'),
+            'classes': ('collapse',)
+        }),
+    )
 
 @admin.register(InformacionBasica)
 class InformacionBasicaAdmin(admin.ModelAdmin):
@@ -68,6 +129,9 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
     )
 
     inlines = [
+        DocumentosIdentidadInline,
+        AntecedentesInline,
+        AnexosAdicionalesInline,
         ExperienciaLaboralInline,
         InformacionAcademicaInline,
         PosgradoInline,
@@ -111,10 +175,44 @@ class ExperienciaLaboralAdmin(admin.ModelAdmin):
 class InformacionAcademicaAdmin(admin.ModelAdmin):
     list_display = (
         'informacion_basica', 'profesion', 'universidad',
-        'fecha_grado', 'tarjeta_profesional'
+        'fecha_grado', 'tarjeta_profesional', 'tiene_titulo', 'tiene_tarjeta'
     )
     list_filter = ('tarjeta_profesional',)
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'profesion')
+
+    fieldsets = (
+        ('Información del Aspirante', {
+            'fields': ('informacion_basica',)
+        }),
+        ('Formación Académica', {
+            'fields': (
+                'profesion', 'universidad', 'fecha_grado',
+                'meses_experiencia_profesion'
+            )
+        }),
+        ('Tarjeta Profesional', {
+            'fields': (
+                'tarjeta_profesional', 'numero_tarjeta_resolucion',
+                'fecha_expedicion'
+            )
+        }),
+        ('Documentos Académicos', {
+            'fields': (
+                'fotocopia_titulo', 'fotocopia_tarjeta_profesional',
+                'certificado_vigencia_tarjeta', 'fecha_vigencia_tarjeta'
+            )
+        }),
+    )
+
+    def tiene_titulo(self, obj):
+        return bool(obj.fotocopia_titulo)
+    tiene_titulo.boolean = True
+    tiene_titulo.short_description = 'Título'
+
+    def tiene_tarjeta(self, obj):
+        return bool(obj.fotocopia_tarjeta_profesional)
+    tiene_tarjeta.boolean = True
+    tiene_tarjeta.short_description = 'Tarjeta Prof.'
 
 @admin.register(Posgrado)
 class PosgradoAdmin(admin.ModelAdmin):
@@ -143,3 +241,93 @@ class CalculoExperienciaAdmin(admin.ModelAdmin):
         'total_experiencia_anos', 'anos_y_meses_experiencia'
     )
     search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula')
+
+@admin.register(DocumentosIdentidad)
+class DocumentosIdentidadAdmin(admin.ModelAdmin):
+    list_display = (
+        'informacion_basica', 'fecha_autorizacion',
+        'tiene_libreta_militar', 'created_at'
+    )
+    list_filter = ('fecha_autorizacion', 'clase_libreta')
+    search_fields = (
+        'informacion_basica__nombre_completo',
+        'informacion_basica__cedula',
+        'numero_libreta_militar'
+    )
+    readonly_fields = ('created_at', 'updated_at')
+
+    fieldsets = (
+        ('Información del Aspirante', {
+            'fields': ('informacion_basica',)
+        }),
+        ('Documento de Identidad', {
+            'fields': ('fotocopia_cedula',)
+        }),
+        ('Situación Militar', {
+            'fields': (
+                'libreta_militar', 'numero_libreta_militar',
+                'distrito_militar', 'clase_libreta'
+            )
+        }),
+        ('Autorización de Datos Personales', {
+            'fields': ('carta_autorizacion_datos', 'fecha_autorizacion')
+        }),
+        ('Información del Sistema', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def tiene_libreta_militar(self, obj):
+        return bool(obj.libreta_militar)
+    tiene_libreta_militar.boolean = True
+    tiene_libreta_militar.short_description = 'Libreta Militar'
+
+@admin.register(Antecedentes)
+class AntecedentesAdmin(admin.ModelAdmin):
+    list_display = (
+        'informacion_basica', 'fecha_procuraduria', 'fecha_contraloria',
+        'fecha_policia', 'tiene_todos_certificados', 'created_at'
+    )
+    list_filter = ('fecha_procuraduria', 'fecha_contraloria', 'fecha_policia')
+    search_fields = (
+        'informacion_basica__nombre_completo',
+        'informacion_basica__cedula'
+    )
+    readonly_fields = ('created_at', 'updated_at')
+
+    fieldsets = (
+        ('Información del Aspirante', {
+            'fields': ('informacion_basica',)
+        }),
+        ('Antecedentes Disciplinarios - Procuraduría', {
+            'fields': ('certificado_procuraduria', 'fecha_procuraduria')
+        }),
+        ('Antecedentes Fiscales - Contraloría', {
+            'fields': ('certificado_contraloria', 'fecha_contraloria')
+        }),
+        ('Antecedentes Judiciales - Policía', {
+            'fields': ('certificado_policia', 'fecha_policia')
+        }),
+        ('Medidas Correctivas - RNMC', {
+            'fields': ('certificado_medidas_correctivas', 'fecha_medidas_correctivas')
+        }),
+        ('Inhabilidades por Delitos Sexuales', {
+            'fields': ('certificado_delitos_sexuales', 'fecha_delitos_sexuales')
+        }),
+        ('Información del Sistema', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def tiene_todos_certificados(self, obj):
+        return all([
+            obj.certificado_procuraduria,
+            obj.certificado_contraloria,
+            obj.certificado_policia,
+            obj.certificado_medidas_correctivas,
+            obj.certificado_delitos_sexuales
+        ])
+    tiene_todos_certificados.boolean = True
+    tiene_todos_certificados.short_description = 'Completo'
