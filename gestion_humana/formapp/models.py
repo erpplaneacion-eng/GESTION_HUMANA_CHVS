@@ -32,14 +32,8 @@ class InformacionBasica(models.Model):
     
     #datos q se deben de cumplir de acuerdo al perfil, y se deben de diligenciar por el personal administrativo
     perfil = models.CharField(max_length=200, verbose_name='Perfil Profesional', blank=True, null=True)
-    area_conocimiento = models.CharField(max_length=200, verbose_name='Área de Conocimiento', blank=True, null=True)
     area_del_conocimiento = models.CharField(max_length=200, verbose_name='Área del Conocimiento', blank=True, null=True)
-    tipo_perfil = models.CharField(max_length=200, verbose_name='Tipo de Perfil', blank=True, null=True)
     profesion = models.CharField(max_length=200, verbose_name='Profesión', blank=True, null=True)
-    experiencia = models.CharField(max_length=200, verbose_name='Tipo de Experiencia', blank=True, null=True)
-    tiempo_experiencia = models.CharField(max_length=200, verbose_name='Tiempo de Experiencia', blank=True, null=True)
-    cantidad = models.IntegerField(verbose_name='Cantidad', blank=True, null=True)
-    organizacion = models.TextField(verbose_name='Organización', blank=True, null=True)
     contrato = models.CharField(max_length=200, verbose_name='Contrato', blank=True, null=True)
     observacion = models.TextField(verbose_name='Observaciones', blank=True, null=True)
 

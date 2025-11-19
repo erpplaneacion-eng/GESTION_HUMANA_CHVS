@@ -14,7 +14,7 @@
                 </h1>
                 <p class="mb-1"><i class="fas fa-id-card"></i> <strong>Cédula:</strong> {{ applicant.cedula }}</p>
                 <p class="mb-1"><i class="fas fa-briefcase"></i> <strong>Profesión:</strong> {{ applicant.profesion }}</p>
-                <p class="mb-0"><i class="fas fa-graduation-cap"></i> <strong>Área:</strong> {{ applicant.area_conocimiento }}</p>
+                <p class="mb-0"><i class="fas fa-graduation-cap"></i> <strong>Área:</strong> {{ applicant.area_del_conocimiento }}</p>
             </div>
             <div class="text-end">
                 <a href="{% url 'formapp:applicant_list' %}" class="btn btn-light btn-lg">
@@ -63,25 +63,14 @@
                     <span class="info-value">{{ applicant.perfil }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label"><i class="fas fa-chart-line"></i> Tipo de Perfil:</span>
-                    <span class="info-value">{{ applicant.tipo_perfil }}</span>
+                    <span class="info-label"><i class="fas fa-graduation-cap"></i> Área del Conocimiento:</span>
+                    <span class="info-value">{{ applicant.area_del_conocimiento }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label"><i class="fas fa-briefcase"></i> Tipo de Experiencia:</span>
-                    <span class="info-value">{{ applicant.experiencia }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label"><i class="fas fa-clock"></i> Tiempo de Experiencia:</span>
-                    <span class="info-value">{{ applicant.tiempo_experiencia }}</span>
+                    <span class="info-label"><i class="fas fa-file-contract"></i> Contrato:</span>
+                    <span class="info-value">{{ applicant.contrato }}</span>
                 </div>
             </div>
-        </div>
-
-        <div class="info-row mt-3">
-            <span class="info-label"><i class="fas fa-building"></i> Organización:</span>
-        </div>
-        <div class="alert alert-light mt-2">
-            {{ applicant.organizacion }}
         </div>
 
         {% if applicant.observacion %}
@@ -92,15 +81,6 @@
             {{ applicant.observacion }}
         </div>
         {% endif %}
-
-        <div class="info-row">
-            <span class="info-label"><i class="fas fa-file-contract"></i> Contrato:</span>
-            <span class="info-value">{{ applicant.contrato }}</span>
-        </div>
-        <div class="info-row">
-            <span class="info-label"><i class="fas fa-users"></i> Cantidad:</span>
-            <span class="info-value">{{ applicant.cantidad }}</span>
-        </div>
     </div>
 
     <!-- Documentos de Identidad -->

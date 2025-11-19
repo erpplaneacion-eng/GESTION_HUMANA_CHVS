@@ -570,14 +570,8 @@ def create_excel_for_person(applicant):
 
     professional_data = [
         ("Perfil", applicant.perfil or "N/A"),
-        ("Área de Conocimiento", applicant.area_conocimiento or "N/A"),
         ("Área del Conocimiento", applicant.area_del_conocimiento or "N/A"),
-        ("Tipo de Perfil", applicant.tipo_perfil or "N/A"),
         ("Profesión", applicant.profesion or "N/A"),
-        ("Experiencia", applicant.experiencia or "N/A"),
-        ("Tiempo de Experiencia", applicant.tiempo_experiencia or "N/A"),
-        ("Cantidad", applicant.cantidad or "N/A"),
-        ("Organización", applicant.organizacion or "N/A"),
         ("Contrato", applicant.contrato or "N/A"),
         ("Observaciones", applicant.observacion or "N/A"),
     ]
@@ -892,8 +886,8 @@ def generar_anexo11_pdf(applicant):
     elementos.append(Paragraph(f"<b>REFERENCIA:</b> Proceso No. {numero_proceso}", normal_style))
     elementos.append(Spacer(1, 0.2*inch))
 
-    # Cuerpo de la carta - usar el campo organizacion y perfil
-    organizacion = applicant.organizacion or "UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2"
+    # Cuerpo de la carta - usar el campo perfil
+    organizacion = "UNIÓN TEMPORAL COMISIÓN ARQUIDIOCESANA VIDA JUSTICIA Y PAZ 25-2"
     cargo_propuesto = applicant.perfil or "el cargo correspondiente"
 
     texto_compromiso = f"""

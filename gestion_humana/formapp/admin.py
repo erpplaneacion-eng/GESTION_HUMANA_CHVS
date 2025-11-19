@@ -100,9 +100,9 @@ class AnexosAdicionalesInline(admin.StackedInline):
 class InformacionBasicaAdmin(admin.ModelAdmin):
     list_display = (
         'cedula', 'nombre_completo', 'genero', 'profesion',
-        'area_conocimiento', 'telefono', 'correo'
+        'area_del_conocimiento', 'telefono', 'correo'
     )
-    list_filter = ('genero', 'area_conocimiento', 'tipo_perfil')
+    list_filter = ('genero', 'area_del_conocimiento', 'contrato')
     search_fields = ('cedula', 'nombre_completo', 'correo', 'profesion')
 
     fieldsets = (
@@ -116,9 +116,7 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
         }),
         ('Perfil Profesional (Administrativo)', {
             'fields': (
-                'perfil', 'area_conocimiento', 'area_del_conocimiento',
-                'tipo_perfil', 'profesion', 'experiencia',
-                'tiempo_experiencia', 'cantidad', 'organizacion',
+                'perfil', 'area_del_conocimiento', 'profesion',
                 'contrato', 'observacion'
             ),
             'description': 'Estos campos deben ser completados por el personal administrativo'
