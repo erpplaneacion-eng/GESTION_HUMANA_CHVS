@@ -216,6 +216,16 @@
                             <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ documentos_form.fotocopia_cedula.errors }}</div>
                         {% endif %}
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ documentos_form.hoja_de_vida.id_for_label }}" class="form-label required-field">
+                            {{ documentos_form.hoja_de_vida.label }} *
+                        </label>
+                        {{ documentos_form.hoja_de_vida }}
+                        <small class="form-text text-muted">{{ documentos_form.hoja_de_vida.help_text }}</small>
+                        {% if documentos_form.hoja_de_vida.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ documentos_form.hoja_de_vida.errors }}</div>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <!-- Sección de Libreta Militar (solo para hombres) -->
@@ -1385,6 +1395,16 @@
                 errorMessages.push('Debe adjuntar la fotocopia de la cédula de ciudadanía.');
             } else {
                 fotocopiaCedula.removeClass('is-invalid');
+            }
+
+            // Validar hoja de vida (obligatorio)
+            var hojaDeVida = $('input[type="file"][id*="hoja_de_vida"]');
+            if (hojaDeVida.length > 0 && !hojaDeVida.val()) {
+                isValid = false;
+                hojaDeVida.addClass('is-invalid');
+                errorMessages.push('Debe adjuntar la hoja de vida.');
+            } else {
+                hojaDeVida.removeClass('is-invalid');
             }
 
             // Validar campos obligatorios de Experiencia Laboral

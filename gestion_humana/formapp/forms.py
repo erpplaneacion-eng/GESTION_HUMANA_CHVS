@@ -387,6 +387,10 @@ class DocumentosIdentidadForm(forms.ModelForm):
                 'class': 'form-control',
                 'accept': '.pdf,.jpg,.jpeg,.png',
             }),
+            'hoja_de_vida': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
             'libreta_militar': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.pdf,.jpg,.jpeg,.png',
@@ -407,15 +411,22 @@ class DocumentosIdentidadForm(forms.ModelForm):
             'fotocopia_cedula': {
                 'required': 'La fotocopia de la cédula es obligatoria.',
             },
+            'hoja_de_vida': {
+                'required': 'La hoja de vida es obligatoria.',
+            },
         }
 
     def __init__(self, *args, **kwargs):
         self.genero = kwargs.pop('genero', None)
         super().__init__(*args, **kwargs)
 
+        # Hacer hoja_de_vida obligatoria (aunque el modelo permite null para registros existentes)
+        self.fields['hoja_de_vida'].required = True
+
         # Si es una instancia existente (edición), hacer los campos de archivo opcionales
         if self.instance and self.instance.pk:
             self.fields['fotocopia_cedula'].required = False
+            self.fields['hoja_de_vida'].required = False
 
     def clean(self):
         cleaned_data = super().clean()

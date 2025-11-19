@@ -1250,6 +1250,13 @@ def download_individual_zip(request, pk):
                         file_content = f.read()
                     ext = get_file_extension(docs.libreta_militar, file_content)
                     zip_file.writestr(f"Documentos_Identidad/Libreta_Militar{ext}", file_content)
+
+                # Hoja de vida
+                if docs.hoja_de_vida:
+                    with docs.hoja_de_vida.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(docs.hoja_de_vida, file_content)
+                    zip_file.writestr(f"Documentos_Identidad/Hoja_de_Vida{ext}", file_content)
         except Exception as e:
             logger.error(f"Error al agregar documentos de identidad de {applicant.nombre_completo}: {e}")
 

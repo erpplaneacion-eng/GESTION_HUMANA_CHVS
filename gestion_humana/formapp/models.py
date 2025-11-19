@@ -182,6 +182,17 @@ class DocumentosIdentidad(models.Model):
         max_length=200
     )
 
+    # Hoja de vida
+    hoja_de_vida = models.FileField(
+        upload_to='documentos_identidad/hojas_de_vida/',
+        verbose_name='Hoja de Vida',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
     # Libreta militar (opcional)
     libreta_militar = models.FileField(
         upload_to='documentos_identidad/libretas_militares/',

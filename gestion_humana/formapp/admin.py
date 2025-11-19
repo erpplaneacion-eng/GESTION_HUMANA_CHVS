@@ -46,7 +46,7 @@ class DocumentosIdentidadInline(admin.StackedInline):
     extra = 0
     fieldsets = (
         ('Documento de Identidad', {
-            'fields': ('fotocopia_cedula',)
+            'fields': ('fotocopia_cedula', 'hoja_de_vida')
         }),
         ('Situación Militar (Opcional)', {
             'fields': (
@@ -257,7 +257,7 @@ class DocumentosIdentidadAdmin(admin.ModelAdmin):
             'fields': ('informacion_basica',)
         }),
         ('Documento de Identidad', {
-            'fields': ('fotocopia_cedula',)
+            'fields': ('fotocopia_cedula', 'hoja_de_vida')
         }),
         ('Situación Militar (Opcional)', {
             'fields': (
