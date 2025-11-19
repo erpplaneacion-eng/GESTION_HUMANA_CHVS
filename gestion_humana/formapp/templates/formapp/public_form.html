@@ -1298,6 +1298,16 @@
             var isValid = true;
             var errorMessages = [];
 
+            // Validar fotocopia de cédula (obligatorio)
+            var fotocopiaCedula = $('input[type="file"][id*="fotocopia_cedula"]');
+            if (fotocopiaCedula.length > 0 && !fotocopiaCedula.val()) {
+                isValid = false;
+                fotocopiaCedula.addClass('is-invalid');
+                errorMessages.push('Debe adjuntar la fotocopia de la cédula de ciudadanía.');
+            } else {
+                fotocopiaCedula.removeClass('is-invalid');
+            }
+
             // Validar que todas las experiencias laborales tengan certificado
             $('.experiencia-group:visible').each(function(index) {
                 var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
@@ -1316,9 +1326,29 @@
                 }
             });
 
+            // Validar certificados de antecedentes (todos obligatorios)
+            var antecedentes = [
+                { campo: 'certificado_procuraduria', nombre: 'Certificado de Procuraduría' },
+                { campo: 'certificado_contraloria', nombre: 'Certificado de Contraloría' },
+                { campo: 'certificado_policia', nombre: 'Certificado de Policía' },
+                { campo: 'certificado_medidas_correctivas', nombre: 'Certificado de Medidas Correctivas' },
+                { campo: 'certificado_delitos_sexuales', nombre: 'Certificado de Delitos Sexuales' }
+            ];
+
+            antecedentes.forEach(function(antecedente) {
+                var fileInput = $('input[type="file"][id*="' + antecedente.campo + '"]');
+                if (fileInput.length > 0 && !fileInput.val()) {
+                    isValid = false;
+                    fileInput.addClass('is-invalid');
+                    errorMessages.push('Debe adjuntar el ' + antecedente.nombre + '.');
+                } else {
+                    fileInput.removeClass('is-invalid');
+                }
+            });
+
             if (!isValid) {
                 e.preventDefault();
-                alert('Por favor complete todos los campos obligatorios:\n\n' + errorMessages.join('\n'));
+                alert('Por favor complete todos los campos obligatorios de archivos:\n\n' + errorMessages.join('\n') + '\n\nIMPORTANTE: Si no adjunta todos los archivos requeridos antes de enviar, deberá volver a seleccionarlos.');
 
                 // Hacer scroll al primer error
                 $('html, body').animate({
@@ -1328,7 +1358,7 @@
         });
 
         // Quitar el borde rojo cuando el usuario seleccione un archivo
-        $(document).on('change', 'input[type="file"][id*="certificado_laboral"]', function() {
+        $(document).on('change', 'input[type="file"]', function() {
             if ($(this).val()) {
                 $(this).removeClass('is-invalid');
             }
