@@ -67,6 +67,7 @@ class ExperienciaLaboral(models.Model):
         verbose_name='Certificado Laboral o Contractual',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
+        max_length=200,
         blank=False,  # Campo requerido para nuevos registros
         null=False    # No permitir valores NULL en base de datos
     )     
@@ -101,6 +102,7 @@ class InformacionAcademica(models.Model):
         verbose_name='Fotocopia del Título/Diploma',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Acta de grado o diploma. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )
@@ -109,6 +111,7 @@ class InformacionAcademica(models.Model):
         verbose_name='Fotocopia Tarjeta Profesional',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Solo si aplica. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )
@@ -117,6 +120,7 @@ class InformacionAcademica(models.Model):
         verbose_name='Certificado de Vigencia',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Certificado de vigencia de tarjeta profesional. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )
@@ -174,15 +178,17 @@ class DocumentosIdentidad(models.Model):
         upload_to='documentos_identidad/cedulas/',
         verbose_name='Fotocopia Cédula de Ciudadanía',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB'
+        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
+        max_length=200
     )
 
-    # Libreta militar (solo para hombres)
+    # Libreta militar (opcional)
     libreta_militar = models.FileField(
         upload_to='documentos_identidad/libretas_militares/',
         verbose_name='Libreta Militar',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Requerido para hombres. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        help_text='Opcional. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )
@@ -233,7 +239,8 @@ class Antecedentes(models.Model):
         upload_to='antecedentes/procuraduria/',
         verbose_name='Certificado de Antecedentes Disciplinarios',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Procuraduría General de la Nación. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+        help_text='Procuraduría General de la Nación. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200
     )
     fecha_procuraduria = models.DateField(
         verbose_name='Fecha de Expedición Procuraduría'
@@ -244,7 +251,8 @@ class Antecedentes(models.Model):
         upload_to='antecedentes/contraloria/',
         verbose_name='Certificado de Antecedentes Fiscales',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Contraloría General de la República. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+        help_text='Contraloría General de la República. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200
     )
     fecha_contraloria = models.DateField(
         verbose_name='Fecha de Expedición Contraloría'
@@ -255,7 +263,8 @@ class Antecedentes(models.Model):
         upload_to='antecedentes/policia/',
         verbose_name='Certificado de Antecedentes Judiciales',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Policía Nacional de Colombia. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+        help_text='Policía Nacional de Colombia. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200
     )
     fecha_policia = models.DateField(
         verbose_name='Fecha de Expedición Policía'
@@ -266,7 +275,8 @@ class Antecedentes(models.Model):
         upload_to='antecedentes/medidas_correctivas/',
         verbose_name='Registro de Medidas Correctivas',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='RNMC - Policía Nacional. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+        help_text='RNMC - Policía Nacional. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200
     )
     fecha_medidas_correctivas = models.DateField(
         verbose_name='Fecha de Expedición RNMC'
@@ -277,7 +287,8 @@ class Antecedentes(models.Model):
         upload_to='antecedentes/delitos_sexuales/',
         verbose_name='Consulta Inhabilidades Delitos Sexuales',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Ley 1918 de 2018. Formatos: PDF, JPG, PNG. Máx: 10 MB'
+        help_text='Ley 1918 de 2018. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200
     )
     fecha_delitos_sexuales = models.DateField(
         verbose_name='Fecha de Consulta'
@@ -308,6 +319,7 @@ class AnexosAdicionales(models.Model):
         verbose_name='ANEXO 03 - Datos Personales',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Formato de datos personales vigente. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )
@@ -318,6 +330,7 @@ class AnexosAdicionales(models.Model):
         verbose_name='Carta de Intención o Contrato',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Carta de intención firmada. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )
@@ -328,6 +341,7 @@ class AnexosAdicionales(models.Model):
         verbose_name='Otros Documentos',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
         help_text='Documentos adicionales. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
         blank=True,
         null=True
     )

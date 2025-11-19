@@ -140,8 +140,8 @@ def enviar_correo_confirmacion(informacion_basica):
         # Crear mensaje de correo con nombre del remitente
         message = MIMEMultipart('alternative')
         message['To'] = informacion_basica.correo
-        message['From'] = f'Sistema de Contratación CHVS <{settings.DEFAULT_FROM_EMAIL}>'
-        message['Subject'] = 'Confirmación de Registro - Sistema de Contratación CHVS'
+        message['From'] = f'Gestión Humana CHVS <{settings.DEFAULT_FROM_EMAIL}>'
+        message['Subject'] = 'Confirmación de Registro - Gestión Humana CHVS'
         
         # Adjuntar contenido HTML
         html_part = MIMEText(html_message, 'html', 'utf-8')
