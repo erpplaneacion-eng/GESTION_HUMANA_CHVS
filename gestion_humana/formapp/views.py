@@ -1419,44 +1419,78 @@ def download_all_zip(request):
             except Exception as e:
                 logger.error(f"Error al generar PDF ANEXO 11 para {applicant.nombre_completo}: {str(e)}")
 
-            # 3. Agregar certificados de cada persona
+            # Función auxiliar para obtener extensión de archivo
+            def get_file_extension(file_field):
+                if not file_field:
+                    return '.pdf'
+                ext = os.path.splitext(file_field.name)[1]
+                if not ext and hasattr(file_field, 'url'):
+                    url = file_field.url
+                    if '.' in url.split('/')[-1]:
+                        ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
+                if not ext:
+                    try:
+                        with file_field.open('rb') as f:
+                            content = f.read(10)
+                            file_field.seek(0)
+                        if content.startswith(b'%PDF'):
+                            ext = '.pdf'
+                        elif content.startswith(b'\x89PNG'):
+                            ext = '.png'
+                        elif content.startswith(b'\xff\xd8\xff'):
+                            ext = '.jpg'
+                        else:
+                            ext = '.pdf'
+                    except:
+                        ext = '.pdf'
+                return ext
+
+            # Función auxiliar para agregar archivo al ZIP
+            def add_file_to_zip(file_field, zip_path):
+                if file_field:
+                    try:
+                        with file_field.open('rb') as f:
+                            file_content = f.read()
+                        ext = get_file_extension(file_field)
+                        zip_file.writestr(f"{zip_path}{ext}", file_content)
+                    except Exception as e:
+                        logger.error(f"Error al agregar archivo {zip_path}: {e}")
+
+            # 3. Agregar documentos de identidad
+            if hasattr(applicant, 'documentos_identidad') and applicant.documentos_identidad:
+                docs_id = applicant.documentos_identidad
+                add_file_to_zip(docs_id.fotocopia_cedula, f"Personal/{filename_safe}/Documentos_Identidad/Cedula")
+                add_file_to_zip(docs_id.hoja_de_vida, f"Personal/{filename_safe}/Documentos_Identidad/Hoja_de_Vida")
+                add_file_to_zip(docs_id.libreta_militar, f"Personal/{filename_safe}/Documentos_Identidad/Libreta_Militar")
+
+            # 4. Agregar antecedentes
+            if hasattr(applicant, 'antecedentes') and applicant.antecedentes:
+                antec = applicant.antecedentes
+                add_file_to_zip(antec.certificado_procuraduria, f"Personal/{filename_safe}/Antecedentes/Procuraduria")
+                add_file_to_zip(antec.certificado_contraloria, f"Personal/{filename_safe}/Antecedentes/Contraloria")
+                add_file_to_zip(antec.certificado_policia, f"Personal/{filename_safe}/Antecedentes/Policia")
+                add_file_to_zip(antec.certificado_medidas_correctivas, f"Personal/{filename_safe}/Antecedentes/Medidas_Correctivas")
+                add_file_to_zip(antec.certificado_delitos_sexuales, f"Personal/{filename_safe}/Antecedentes/Delitos_Sexuales")
+
+            # 5. Agregar documentos académicos
+            for idx, academica in enumerate(applicant.formacion_academica.all(), start=1):
+                profesion_safe = academica.profesion.replace(' ', '_').replace('/', '-')[:30]
+                add_file_to_zip(academica.fotocopia_titulo, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Titulo")
+                add_file_to_zip(academica.fotocopia_tarjeta_profesional, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Tarjeta_Profesional")
+                add_file_to_zip(academica.certificado_vigencia_tarjeta, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Vigencia_Tarjeta")
+
+            # 6. Agregar anexos adicionales
+            if hasattr(applicant, 'anexos_adicionales') and applicant.anexos_adicionales:
+                anexos = applicant.anexos_adicionales
+                add_file_to_zip(anexos.anexo_03_datos_personales, f"Personal/{filename_safe}/Anexos/Anexo_03_Datos_Personales")
+                add_file_to_zip(anexos.carta_intencion, f"Personal/{filename_safe}/Anexos/Carta_Intencion")
+                add_file_to_zip(anexos.otros_documentos, f"Personal/{filename_safe}/Anexos/Otros_Documentos")
+
+            # 7. Agregar certificados laborales
             for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
                 if experiencia.certificado_laboral:
-                    try:
-                        certificado_file = experiencia.certificado_laboral
-                        with certificado_file.open('rb') as f:
-                            file_content = f.read()
-
-                        # Obtener la extensión del archivo
-                        # Cloudinary puede no incluir extensión en el nombre, así que intentamos obtenerla de la URL
-                        ext = os.path.splitext(certificado_file.name)[1]
-                        if not ext and hasattr(certificado_file, 'url'):
-                            # Intentar obtener extensión de la URL de Cloudinary
-                            url = certificado_file.url
-                            # La URL de Cloudinary tiene formato: .../upload/v123456/archivo.ext
-                            if '.' in url.split('/')[-1]:
-                                ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
-
-                        # Si aún no hay extensión, detectar por contenido
-                        if not ext:
-                            # Detectar tipo por magic bytes
-                            if file_content.startswith(b'%PDF'):
-                                ext = '.pdf'
-                            elif file_content.startswith(b'\x89PNG'):
-                                ext = '.png'
-                            elif file_content.startswith(b'\xff\xd8\xff'):
-                                ext = '.jpg'
-                            else:
-                                ext = '.pdf'  # Default a PDF si no se puede detectar
-
-                        cargo_safe = experiencia.cargo.replace(' ', '_').replace('/', '-')
-
-                        zip_file.writestr(
-                            f"Personal/{filename_safe}/Certificados/{idx}_{cargo_safe}{ext}",
-                            file_content
-                        )
-                    except Exception as e:
-                        logger.error(f"Error al agregar certificado {idx} de {applicant.nombre_completo}: {e}")
+                    cargo_safe = experiencia.cargo.replace(' ', '_').replace('/', '-')[:30]
+                    add_file_to_zip(experiencia.certificado_laboral, f"Personal/{filename_safe}/Certificados_Laborales/{idx}_{cargo_safe}")
 
     # Preparar respuesta
     zip_buffer.seek(0)
