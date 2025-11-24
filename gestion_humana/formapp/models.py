@@ -116,7 +116,15 @@ class InformacionBasica(models.Model):
         ('OTRO', 'OTRO'),
     ]
 
+    # Campos desglosados de nombre
+    primer_apellido = models.CharField(max_length=50, verbose_name='Primer Apellido', default='')
+    segundo_apellido = models.CharField(max_length=50, verbose_name='Segundo Apellido', default='')
+    primer_nombre = models.CharField(max_length=50, verbose_name='Primer Nombre', default='')
+    segundo_nombre = models.CharField(max_length=50, verbose_name='Segundo Nombre', blank=True, null=True)
+    
+    # Campo nombre_completo se mantiene para búsquedas y compatibilidad, pero se calcula automáticamente
     nombre_completo = models.CharField(max_length=200, verbose_name='Nombre Completo', blank=True, null=True)
+    
     cedula = models.CharField(
         max_length=20,
         unique=True,
@@ -145,6 +153,21 @@ class InformacionBasica(models.Model):
     profesion_otro = models.CharField(max_length=200, verbose_name='Profesión (Otro)', blank=True, null=True)
     contrato = models.CharField(max_length=200, verbose_name='Contrato', blank=True, null=True)
     observacion = models.TextField(verbose_name='Observaciones', blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        # Normalizar a mayúsculas
+        self.primer_apellido = self.primer_apellido.upper().strip() if self.primer_apellido else ''
+        self.segundo_apellido = self.segundo_apellido.upper().strip() if self.segundo_apellido else ''
+        self.primer_nombre = self.primer_nombre.upper().strip() if self.primer_nombre else ''
+        self.segundo_nombre = self.segundo_nombre.upper().strip() if self.segundo_nombre else ''
+        
+        # Construir nombre completo
+        partes = [self.primer_apellido, self.segundo_apellido, self.primer_nombre]
+        if self.segundo_nombre:
+            partes.append(self.segundo_nombre)
+            
+        self.nombre_completo = ' '.join(partes)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nombre_completo

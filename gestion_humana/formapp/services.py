@@ -31,28 +31,80 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 def calcular_experiencia_total(informacion_basica):
     """
     Calcula automáticamente la experiencia total de una persona.
+    Implementa algoritmo de fusión de intervalos para descontar traslapes de fechas.
 
     Args:
         informacion_basica: Instancia de InformacionBasica
 
     Returns:
         CalculoExperiencia: Registro con el cálculo consolidado
-
-    Esta función suma todos los meses y días de experiencia laboral,
-    convierte a años y genera un formato legible.
     """
-    experiencias = informacion_basica.experiencias_laborales.all()
+    experiencias = informacion_basica.experiencias_laborales.all().order_by('fecha_inicial')
 
-    total_meses = sum(exp.meses_experiencia for exp in experiencias)
-    total_dias = sum(exp.dias_experiencia for exp in experiencias)
+    if not experiencias:
+        total_dias = 0
+        total_meses = 0
+    else:
+        # Algoritmo de fusión de intervalos para eliminar traslapes
+        intervalos = []
+        for exp in experiencias:
+            if exp.fecha_inicial and exp.fecha_terminacion:
+                intervalos.append((exp.fecha_inicial, exp.fecha_terminacion))
+        
+        if not intervalos:
+            total_dias = 0
+        else:
+            # Ordenar por fecha de inicio (ya ordenado por query, pero aseguramos)
+            intervalos.sort(key=lambda x: x[0])
+            
+            merged = []
+            if intervalos:
+                curr_start, curr_end = intervalos[0]
+                
+                for i in range(1, len(intervalos)):
+                    next_start, next_end = intervalos[i]
+                    
+                    if next_start <= curr_end:  # Hay traslape
+                        # Extender el final del intervalo actual si el siguiente termina después
+                        curr_end = max(curr_end, next_end)
+                    else:
+                        # No hay traslape, guardar intervalo actual e iniciar uno nuevo
+                        merged.append((curr_start, curr_end))
+                        curr_start, curr_end = next_start, next_end
+                
+                merged.append((curr_start, curr_end))
+            
+            # Calcular días totales sumando los intervalos fusionados
+            total_dias = 0
+            for start, end in merged:
+                # Sumar 1 porque la resta de fechas da la diferencia, pero ambos días cuentan (inclusivo)
+                # Ejemplo: 1 al 2 de enero = 2 días, pero 2-1 = 1.
+                dias_intervalo = (end - start).days
+                # Ajuste lógico para cálculos laborales: aproximación de 30 días por mes
+                # Sin embargo, para precisión usamos días calendario.
+                # Si queremos ser consistentes con el cálculo individual anterior (dias_experiencia)
+                # debemos usar la misma lógica. El modelo usa (fin-inicio).days en views o donde se guarde.
+                # Aquí usaremos days + 1 si queremos inclusivo, o days si queremos diferencia exacta.
+                # La lógica estándar laboral suele ser días calendario.
+                # Si fecha_terminacion es el último día trabajado:
+                total_dias += dias_intervalo + 1
 
-    # Convertir a años (considerando 12 meses por año)
+        # Aproximación de meses (30 días) para consistencia general
+        total_meses = int(total_dias / 30)
+
+    # Convertir a años (considerando 360 días por año laboral estándar o 12 meses)
     total_anos = round(total_meses / 12, 2)
 
     # Calcular años y meses para formato legible
     anos = total_meses // 12
     meses_restantes = total_meses % 12
-    anos_y_meses = f"{anos} años y {meses_restantes} meses"
+    dias_restantes = total_dias % 30 # Aproximado
+    
+    if dias_restantes > 0:
+        # Si sobran días que no completan un mes
+        anos_y_meses = f"{anos} años, {meses_restantes} meses y {dias_restantes} días"
+    else:
+        anos_y_meses = f"{anos} años y {meses_restantes} meses"
 
     # Crear o actualizar el registro de cálculo
     calculo, created = CalculoExperiencia.objects.update_or_create(

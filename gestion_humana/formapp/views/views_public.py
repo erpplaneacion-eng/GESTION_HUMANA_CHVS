@@ -90,17 +90,8 @@ def public_form_view(request):
                         especializacion_formset.instance = informacion_basica
                         especializacion_formset.save()
 
-                        # Enviar correo de confirmación al usuario en un thread separado
-                        # para no bloquear la respuesta del formulario
-                        def enviar_correo_async():
-                            try:
-                                enviar_correo_confirmacion(informacion_basica)
-                            except Exception as e:
-                                logger.error(f'Error en thread de correo: {str(e)}')
-
-                        thread = threading.Thread(target=enviar_correo_async)
-                        thread.daemon = True
-                        thread.start()
+                        # Enviar correo de confirmación al usuario de manera asíncrona
+                        enviar_correo_async(informacion_basica)
 
                         messages.success(request, '¡Formulario enviado con éxito! Recibirás un correo de confirmación en los próximos minutos.')
                         return redirect('formapp:public_form')

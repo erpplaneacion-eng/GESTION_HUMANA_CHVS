@@ -1,44 +1,25 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
+from datetime import date
 from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, DocumentosIdentidad, Antecedentes, AnexosAdicionales
 
 # Formulario público - solo campos que el usuario puede llenar
 class InformacionBasicaPublicForm(forms.ModelForm):
-    # Campos separados para el nombre
-    primer_apellido = forms.CharField(
-        max_length=50,
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Apellido'}),
-        error_messages={'required': 'El campo Primer Apellido es obligatorio.'}
-    )
-    segundo_apellido = forms.CharField(
-        max_length=50,
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segundo Apellido'}),
-        error_messages={'required': 'El campo Segundo Apellido es obligatorio.'}
-    )
-    primer_nombre = forms.CharField(
-        max_length=50,
-        required=True,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Nombre'}),
-        error_messages={'required': 'El campo Primer Nombre es obligatorio.'}
-    )
-    segundo_nombre = forms.CharField(
-        max_length=50,
-        required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segundo Nombre (Opcional)'})
-    )
-
     class Meta:
         model = InformacionBasica
-        # Excluir nombre_completo porque lo construiremos a partir de los campos separados
+        # Excluir nombre_completo porque se genera automáticamente
         fields = [
+            'primer_apellido', 'segundo_apellido', 'primer_nombre', 'segundo_nombre',
             'cedula', 'genero',
             'tipo_via', 'numero_via', 'numero_casa', 'complemento_direccion', 'barrio',
             'telefono', 'correo'
         ]
         widgets = {
+            'primer_apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Apellido'}),
+            'segundo_apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segundo Apellido'}),
+            'primer_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Nombre'}),
+            'segundo_nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Segundo Nombre (Opcional)'}),
             'cedula': forms.TextInput(attrs={
                 'class': 'form-control',
                 'minlength': '5',
@@ -65,39 +46,17 @@ class InformacionBasicaPublicForm(forms.ModelForm):
             }),
         }
         error_messages = {
-            'cedula': {
-                'required': 'El campo Cédula es obligatorio.',
-            },
-            'genero': {
-                'required': 'El campo Género es obligatorio.',
-            },
-            'tipo_via': {
-                'required': 'El campo Tipo de Vía es obligatorio.',
-            },
-            'numero_via': {
-                'required': 'El campo Número de Vía es obligatorio.',
-            },
-            'numero_casa': {
-                'required': 'El campo Número de Casa/Edificio es obligatorio.',
-            },
-            'telefono': {
-                'required': 'El campo Teléfono es obligatorio.',
-            },
-            'correo': {
-                'required': 'El campo Correo Electrónico es obligatorio.',
-            },
+            'primer_apellido': {'required': 'El campo Primer Apellido es obligatorio.'},
+            'segundo_apellido': {'required': 'El campo Segundo Apellido es obligatorio.'},
+            'primer_nombre': {'required': 'El campo Primer Nombre es obligatorio.'},
+            'cedula': {'required': 'El campo Cédula es obligatorio.'},
+            'genero': {'required': 'El campo Género es obligatorio.'},
+            'tipo_via': {'required': 'El campo Tipo de Vía es obligatorio.'},
+            'numero_via': {'required': 'El campo Número de Vía es obligatorio.'},
+            'numero_casa': {'required': 'El campo Número de Casa/Edificio es obligatorio.'},
+            'telefono': {'required': 'El campo Teléfono es obligatorio.'},
+            'correo': {'required': 'El campo Correo Electrónico es obligatorio.'},
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Si estamos editando, dividir el nombre completo
-        if self.instance and self.instance.nombre_completo:
-            partes = self.instance.nombre_completo.split()
-            if len(partes) >= 3:
-                self.initial['primer_apellido'] = partes[0] if len(partes) > 0 else ''
-                self.initial['segundo_apellido'] = partes[1] if len(partes) > 1 else ''
-                self.initial['primer_nombre'] = partes[2] if len(partes) > 2 else ''
-                self.initial['segundo_nombre'] = ' '.join(partes[3:]) if len(partes) > 3 else ''
 
     def clean_cedula(self):
         cedula = self.cleaned_data.get('cedula')
@@ -126,25 +85,6 @@ class InformacionBasicaPublicForm(forms.ModelForm):
         if '@' not in correo:
             raise forms.ValidationError('El correo electrónico debe contener @')
         return correo
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        # Construir nombre completo concatenando los campos
-        primer_apellido = self.cleaned_data.get('primer_apellido', '').strip()
-        segundo_apellido = self.cleaned_data.get('segundo_apellido', '').strip()
-        primer_nombre = self.cleaned_data.get('primer_nombre', '').strip()
-        segundo_nombre = self.cleaned_data.get('segundo_nombre', '').strip()
-
-        # Concatenar y convertir a mayúsculas
-        partes_nombre = [primer_apellido, segundo_apellido, primer_nombre]
-        if segundo_nombre:
-            partes_nombre.append(segundo_nombre)
-
-        instance.nombre_completo = ' '.join(partes_nombre).upper()
-
-        if commit:
-            instance.save()
-        return instance
 
 # Formulario completo para el admin - incluye todos los campos
 class InformacionBasicaForm(forms.ModelForm):
@@ -182,7 +122,26 @@ class InformacionBasicaForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        # Convertir campos "otro" a mayúsculas
+        # Convertir campos "otro" a mayúsculas y validar
+        
+        # Validar Perfil
+        perfil = cleaned_data.get('perfil')
+        perfil_otro = cleaned_data.get('perfil_otro')
+        if perfil == 'OTRO' and not perfil_otro:
+            self.add_error('perfil_otro', 'Debe especificar el perfil si seleccionó "OTRO".')
+        
+        # Validar Área del Conocimiento
+        area = cleaned_data.get('area_del_conocimiento')
+        area_otro = cleaned_data.get('area_del_conocimiento_otro')
+        if area == 'OTRO' and not area_otro:
+            self.add_error('area_del_conocimiento_otro', 'Debe especificar el área si seleccionó "OTRO".')
+            
+        # Validar Profesión
+        profesion = cleaned_data.get('profesion')
+        profesion_otro = cleaned_data.get('profesion_otro')
+        if profesion == 'OTRO' and not profesion_otro:
+            self.add_error('profesion_otro', 'Debe especificar la profesión si seleccionó "OTRO".')
+
         for field in ['perfil_otro', 'area_del_conocimiento_otro', 'profesion_otro']:
             value = cleaned_data.get(field)
             if value:
@@ -245,7 +204,8 @@ class ExperienciaLaboralForm(forms.ModelForm):
         # Agregar textos de ayuda para objeto contractual y funciones
         self.fields['objeto_contractual'].help_text = (
             '⚠️ IMPORTANTE: El certificado laboral que adjunte debe contener esta misma información. '
-            'Asegúrese de que el objeto contractual que describe aquí coincida con el que aparece en su certificado.'
+            'Asegúrese de que el objeto contractual que describe aquí coincida con el que aparece en su certificado. '
+            'NOTA: No es necesario adjuntar experiencia relacionada con comedores comunitarios en contrato con la Arquidiócesis de Cali.'
         )
         self.fields['funciones'].help_text = (
             '⚠️ IMPORTANTE: El certificado laboral que adjunte debe contener esta misma información. '
@@ -303,6 +263,13 @@ class ExperienciaLaboralForm(forms.ModelForm):
         cleaned_data = super().clean()
         fecha_inicial = cleaned_data.get('fecha_inicial')
         fecha_terminacion = cleaned_data.get('fecha_terminacion')
+        today = date.today()
+
+        if fecha_inicial and fecha_inicial > today:
+            raise forms.ValidationError('La fecha inicial no puede ser una fecha futura.')
+            
+        if fecha_terminacion and fecha_terminacion > today:
+            raise forms.ValidationError('La fecha de terminación no puede ser una fecha futura.')
 
         # Validar que la fecha inicial sea menor que la fecha de terminación
         if fecha_inicial and fecha_terminacion:
@@ -337,6 +304,12 @@ class InformacionAcademicaForm(forms.ModelForm):
             }),
             'fecha_vigencia_tarjeta': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+    
+    def clean_fecha_grado(self):
+        fecha = self.cleaned_data.get('fecha_grado')
+        if fecha and fecha > date.today():
+            raise forms.ValidationError('La fecha de grado no puede ser futura.')
+        return fecha
 
 class PosgradoForm(forms.ModelForm):
     class Meta:
@@ -347,6 +320,12 @@ class PosgradoForm(forms.ModelForm):
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+    
+    def clean_fecha_terminacion(self):
+        fecha = self.cleaned_data.get('fecha_terminacion')
+        if fecha and fecha > date.today():
+            raise forms.ValidationError('La fecha de terminación no puede ser futura.')
+        return fecha
 
 class EspecializacionForm(forms.ModelForm):
     class Meta:
@@ -357,6 +336,12 @@ class EspecializacionForm(forms.ModelForm):
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
+        
+    def clean_fecha_terminacion(self):
+        fecha = self.cleaned_data.get('fecha_terminacion')
+        if fecha and fecha > date.today():
+            raise forms.ValidationError('La fecha de terminación no puede ser futura.')
+        return fecha
 
 ExperienciaLaboralFormSet = inlineformset_factory(
     InformacionBasica,
@@ -537,6 +522,26 @@ class AntecedentesForm(forms.ModelForm):
                               'certificado_policia', 'certificado_medidas_correctivas',
                               'certificado_delitos_sexuales']:
                 self.fields[field_name].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Validar que las fechas de antecedentes no sean mayores a 30 días
+        today = date.today()
+        campos_fecha = [
+            'fecha_procuraduria', 'fecha_contraloria', 'fecha_policia', 
+            'fecha_medidas_correctivas', 'fecha_delitos_sexuales'
+        ]
+        
+        for campo in campos_fecha:
+            fecha = cleaned_data.get(campo)
+            if fecha:
+                dias_diferencia = (today - fecha).days
+                if dias_diferencia > 30:
+                    self.add_error(campo, 'El certificado no puede tener una vigencia mayor a 30 días.')
+                if fecha > today:
+                    self.add_error(campo, 'La fecha no puede ser futura.')
+        
+        return cleaned_data
 
 
 # FASE 4: Formulario de Anexos Adicionales

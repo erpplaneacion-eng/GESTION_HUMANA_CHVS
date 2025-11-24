@@ -293,6 +293,12 @@
                     <strong>Agregue toda su experiencia laboral relevante.</strong>
                     Por favor incluya certificados laborales o contractuales que respalden su experiencia.
                 </p>
+                
+                <div class="alert alert-warning mb-3" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> <strong>Nota Aclaratoria:</strong>
+                    Si la experiencia laboral que va a cargar está relacionada con procesos realizados en los <strong>comedores comunitarios en contrato con la Arquidiócesis de Cali</strong>, NO es necesario que adjunte dicha experiencia ni los soportes correspondientes.
+                </div>
+
                 <div class="alert alert-info mb-3" role="alert">
                     <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Todos los campos marcados con <span class="text-danger">*</span> son obligatorios.
                     Si hay un error de validación, deberá volver a adjuntar el archivo del certificado laboral.
@@ -1648,6 +1654,26 @@
         $(document).on('change', 'input[type="file"]', function() {
             if ($(this).val()) {
                 $(this).removeClass('is-invalid');
+            }
+            
+            // Validar tamaño y extensión del archivo
+            var file = this.files[0];
+            if (file) {
+                var maxSize = 10 * 1024 * 1024; // 10 MB
+                var validExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+                var extension = file.name.split('.').pop().toLowerCase();
+                
+                if (file.size > maxSize) {
+                    alert('El archivo excede el tamaño máximo permitido de 10 MB.');
+                    $(this).val(''); // Limpiar input
+                    return;
+                }
+                
+                if ($.inArray(extension, validExtensions) == -1) {
+                    alert('Tipo de archivo no válido. Solo se permiten: PDF, JPG, PNG.');
+                    $(this).val(''); // Limpiar input
+                    return;
+                }
             }
         });
 

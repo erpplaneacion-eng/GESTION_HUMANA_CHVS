@@ -48,7 +48,7 @@ class InformacionBasicaPublicFormTest(TestCase):
         """Test que nombre_completo se genera automáticamente en mayúsculas"""
         form = InformacionBasicaPublicForm(data=self.valid_data)
         self.assertTrue(form.is_valid())
-        instance = form.save(commit=False)
+        instance = form.save()  # Save to trigger model's save method
         self.assertEqual(instance.nombre_completo, 'GOMEZ LOPEZ JUAN CARLOS')
 
     def test_nombre_completo_mayusculas(self):
@@ -58,7 +58,7 @@ class InformacionBasicaPublicFormTest(TestCase):
         data['primer_nombre'] = 'juan'
         form = InformacionBasicaPublicForm(data=data)
         self.assertTrue(form.is_valid())
-        instance = form.save(commit=False)
+        instance = form.save()  # Save to trigger model's save method
         self.assertEqual(instance.nombre_completo, 'GOMEZ LOPEZ JUAN CARLOS')
 
     def test_cedula_debe_ser_numerica(self):
@@ -129,7 +129,7 @@ class InformacionBasicaPublicFormTest(TestCase):
         data['segundo_nombre'] = ''
         form = InformacionBasicaPublicForm(data=data)
         self.assertTrue(form.is_valid())
-        instance = form.save(commit=False)
+        instance = form.save()  # Save to trigger model's save method
         self.assertEqual(instance.nombre_completo, 'GOMEZ LOPEZ JUAN')
 
     def test_campos_obligatorios(self):
