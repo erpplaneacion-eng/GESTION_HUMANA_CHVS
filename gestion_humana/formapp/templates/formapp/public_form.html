@@ -940,6 +940,9 @@
                             {{ anexos_form.descripcion_otros.label }}
                         </label>
                         {{ anexos_form.descripcion_otros }}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> {{ anexos_form.descripcion_otros.help_text }}
+                        </small>
                         {% if anexos_form.descripcion_otros.errors %}
                             <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.descripcion_otros.errors }}</div>
                         {% endif %}
