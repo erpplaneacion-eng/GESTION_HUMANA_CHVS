@@ -29,21 +29,45 @@
                     </div>
                     <div class="section-body">
                         <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">{{ form.nombre_completo.label }}</label>
-                                {{ form.nombre_completo }}
-                                {% if form.nombre_completo.errors %}
-                                    <div class="text-danger">{{ form.nombre_completo.errors }}</div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.primer_apellido.label }}</label>
+                                {{ form.primer_apellido }}
+                                {% if form.primer_apellido.errors %}
+                                    <div class="text-danger">{{ form.primer_apellido.errors }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.segundo_apellido.label }}</label>
+                                {{ form.segundo_apellido }}
+                                {% if form.segundo_apellido.errors %}
+                                    <div class="text-danger">{{ form.segundo_apellido.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.primer_nombre.label }}</label>
+                                {{ form.primer_nombre }}
+                                {% if form.primer_nombre.errors %}
+                                    <div class="text-danger">{{ form.primer_nombre.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">{{ form.segundo_nombre.label }}</label>
+                                {{ form.segundo_nombre }}
+                                {% if form.segundo_nombre.errors %}
+                                    <div class="text-danger">{{ form.segundo_nombre.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">{{ form.cedula.label }}</label>
                                 {{ form.cedula }}
                                 {% if form.cedula.errors %}
                                     <div class="text-danger">{{ form.cedula.errors }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-3 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label class="form-label">{{ form.genero.label }}</label>
                                 {{ form.genero }}
                                 {% if form.genero.errors %}
