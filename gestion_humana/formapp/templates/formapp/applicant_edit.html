@@ -784,6 +784,19 @@
                                             {{ form_pos.meses_de_experiencia }}
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Acta de Grado / Diploma</label>
+                                            {{ form_pos.acta_grado_diploma }}
+                                            {% if form_pos.instance.acta_grado_diploma %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_pos.instance.acta_grado_diploma.url }}" target="_blank">{{ form_pos.instance.acta_grado_diploma.name }}</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
                                     {{ form_pos.DELETE }}
                                 </div>
                             {% endfor %}
@@ -826,6 +839,19 @@
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Meses de Experiencia</label>
                                             {{ form_esp.meses_de_experiencia }}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Acta de Grado / Diploma</label>
+                                            {{ form_esp.acta_grado_diploma }}
+                                            {% if form_esp.instance.acta_grado_diploma %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_esp.instance.acta_grado_diploma.url }}" target="_blank">{{ form_esp.instance.acta_grado_diploma.name }}</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     {{ form_esp.DELETE }}
