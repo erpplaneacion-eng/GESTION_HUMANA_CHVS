@@ -950,6 +950,49 @@
                 </div>
             </div>
 
+            <!-- SECCIÓN 9: AUTORIZACIÓN DE DATOS -->
+            <div class="form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-check-circle"></i> Autorización de Tratamiento de Datos
+                </h2>
+                <div class="alert alert-light border">
+                    <div class="form-check">
+                        {{ form.acepta_politica }}
+                        <label class="form-check-label" for="{{ form.acepta_politica.id_for_label }}">
+                            He leído y acepto la 
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#politicaModal">Política de Tratamiento de Datos Personales</a>
+                            y autorizo el uso de mi información para los procesos de selección y contratación.
+                        </label>
+                        {% if form.acepta_politica.errors %}
+                            <div class="text-danger mt-1"><i class="fas fa-exclamation-triangle"></i> {{ form.acepta_politica.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal de Política de Privacidad -->
+            <div class="modal fade" id="politicaModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Política de Tratamiento de Datos Personales</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>De conformidad con la Ley 1581 de 2012 y el Decreto 1377 de 2013, manifiesto que he sido informado que:</p>
+                            <ol>
+                                <li>La Corporación actuará como Responsable del Tratamiento de datos personales de los cuales soy titular.</li>
+                                <li>Mis datos serán tratados para fines de selección, contratación y gestión del talento humano.</li>
+                                <li>Tengo derecho a conocer, actualizar y rectificar mis datos personales.</li>
+                            </ol>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- BOTONES DE ACCIÓN -->
             <div class="text-center mt-5">
                 <div class="alert alert-success mb-4">
@@ -1272,11 +1315,19 @@
                     var fecha = new Date(valor + 'T00:00:00');
                     var label = $('label[for="' + $(this).attr('id') + '"]').text().replace('*', '').trim();
                     
+                    // Intentar identificar la sección y el número
+                    var context = "";
+                    var group = $(this).closest('.basica-group, .superior-group, .academica-group, .posgrado-group, .especializacion-group, .experiencia-group');
+                    
+                    if (group.length) {
+                        var title = group.find('h6, h5').first().text().trim(); // Ej: "Bachiller 1"
+                        if (title) context = title + ": ";
+                    }
+
                     if (fecha > hoy) {
                         isValid = false;
                         $(this).addClass('is-invalid');
-                        // Evitar mensajes duplicados si ya se validó arriba
-                        var msg = 'La fecha "' + label + '" no puede ser futura.';
+                        var msg = context + 'La fecha "' + label + '" no puede ser futura.';
                         if (errorMessages.indexOf(msg) === -1) {
                             errorMessages.push(msg);
                         }
@@ -1428,6 +1479,7 @@
                     var nombrePosgrado = $(this).find('input[id*="nombre_posgrado"]');
                     var universidad = $(this).find('input[id*="universidad"]');
                     var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
+                    var fileInput = $(this).find('input[type="file"][id*="acta_grado_diploma"]');
 
                     // Verificar si el usuario empezó a llenar algún campo
                     var tieneNombre = nombrePosgrado.length > 0 && nombrePosgrado.val().trim();
@@ -1462,6 +1514,15 @@
                         } else {
                             fechaTerminacion.removeClass('is-invalid');
                         }
+                        
+                        // Validar archivo
+                        if (!fileInput.val()) {
+                            isValid = false;
+                            fileInput.addClass('is-invalid');
+                            errorMessages.push('Posgrado ' + posNum + ': Debe adjuntar el acta de grado o diploma.');
+                        } else {
+                            fileInput.removeClass('is-invalid');
+                        }
                     }
                 }
             });
@@ -1476,6 +1537,7 @@
                     var nombreEspecializacion = $(this).find('input[id*="nombre_especializacion"]');
                     var universidad = $(this).find('input[id*="universidad"]');
                     var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
+                    var fileInput = $(this).find('input[type="file"][id*="acta_grado_diploma"]');
 
                     // Verificar si el usuario empezó a llenar algún campo
                     var tieneNombre = nombreEspecializacion.length > 0 && nombreEspecializacion.val().trim();
@@ -1509,6 +1571,15 @@
                             errorMessages.push('Especialización ' + espNum + ': La Fecha de Terminación es obligatoria.');
                         } else {
                             fechaTerminacion.removeClass('is-invalid');
+                        }
+                        
+                        // Validar archivo
+                        if (!fileInput.val()) {
+                            isValid = false;
+                            fileInput.addClass('is-invalid');
+                            errorMessages.push('Especialización ' + espNum + ': Debe adjuntar el acta de grado o diploma.');
+                        } else {
+                            fileInput.removeClass('is-invalid');
                         }
                     }
                 }
@@ -1579,6 +1650,16 @@
                     fileInput.removeClass('is-invalid');
                 }
             });
+
+            // Validar aceptación de política
+            var politicaCheckbox = $('#id_acepta_politica');
+            if (!politicaCheckbox.is(':checked')) {
+                isValid = false;
+                politicaCheckbox.addClass('is-invalid');
+                errorMessages.push('Debe aceptar la política de tratamiento de datos para continuar.');
+            } else {
+                politicaCheckbox.removeClass('is-invalid');
+            }
 
             if (!isValid) {
                 e.preventDefault();

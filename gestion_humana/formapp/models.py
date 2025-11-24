@@ -153,6 +153,13 @@ class InformacionBasica(models.Model):
     profesion_otro = models.CharField(max_length=200, verbose_name='Profesión (Otro)', blank=True, null=True)
     contrato = models.CharField(max_length=200, verbose_name='Contrato', blank=True, null=True)
     observacion = models.TextField(verbose_name='Observaciones', blank=True, null=True)
+    
+    # Campo de aceptación de política de datos
+    acepta_politica = models.BooleanField(
+        default=False, 
+        verbose_name='Acepto política de tratamiento de datos',
+        help_text='Debe aceptar la política de tratamiento de datos para continuar.'
+    )
 
     def save(self, *args, **kwargs):
         # Normalizar a mayúsculas
@@ -309,7 +316,15 @@ class Posgrado(models.Model):
     nombre_posgrado = models.CharField(max_length=200, verbose_name='Nombre del Posgrado')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
-
+    acta_grado_diploma = models.FileField(
+        upload_to='posgrados/',
+        verbose_name='Acta de Grado o Diploma',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'{self.nombre_posgrado} de {self.informacion_basica.cedula}'
@@ -319,7 +334,15 @@ class Especializacion(models.Model):
     nombre_especializacion = models.CharField(max_length=200, verbose_name='Nombre de la Especialización')
     universidad = models.CharField(max_length=200, verbose_name='Universidad')
     fecha_terminacion = models.DateField(verbose_name='Fecha de Terminación')
-
+    acta_grado_diploma = models.FileField(
+        upload_to='especializaciones/',
+        verbose_name='Acta de Grado o Diploma',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return f'{self.nombre_especializacion} de {self.informacion_basica.cedula}'

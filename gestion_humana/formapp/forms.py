@@ -44,6 +44,10 @@ class InformacionBasicaPublicForm(forms.ModelForm):
                 'class': 'form-control',
                 'required': 'required'
             }),
+            'acepta_politica': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'required': 'required'
+            }),
         }
         error_messages = {
             'primer_apellido': {'required': 'El campo Primer Apellido es obligatorio.'},
@@ -56,6 +60,7 @@ class InformacionBasicaPublicForm(forms.ModelForm):
             'numero_casa': {'required': 'El campo Número de Casa/Edificio es obligatorio.'},
             'telefono': {'required': 'El campo Teléfono es obligatorio.'},
             'correo': {'required': 'El campo Correo Electrónico es obligatorio.'},
+            'acepta_politica': {'required': 'Debe aceptar la política de tratamiento de datos para continuar.'},
         }
 
     def clean_cedula(self):
@@ -319,6 +324,10 @@ class PosgradoForm(forms.ModelForm):
             'nombre_posgrado': forms.TextInput(attrs={'class': 'form-control'}),
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'acta_grado_diploma': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
         }
     
     def clean_fecha_terminacion(self):
@@ -326,6 +335,19 @@ class PosgradoForm(forms.ModelForm):
         if fecha and fecha > date.today():
             raise forms.ValidationError('La fecha de terminación no puede ser futura.')
         return fecha
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre_posgrado')
+        universidad = cleaned_data.get('universidad')
+        fecha = cleaned_data.get('fecha_terminacion')
+        documento = cleaned_data.get('acta_grado_diploma')
+        
+        # Si se llenó algún campo de texto, el archivo es obligatorio
+        if (nombre or universidad or fecha) and not documento and not self.instance.pk:
+            self.add_error('acta_grado_diploma', 'Debe adjuntar el acta de grado o diploma si registra este posgrado.')
+            
+        return cleaned_data
 
 class EspecializacionForm(forms.ModelForm):
     class Meta:
@@ -335,6 +357,10 @@ class EspecializacionForm(forms.ModelForm):
             'nombre_especializacion': forms.TextInput(attrs={'class': 'form-control'}),
             'universidad': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'acta_grado_diploma': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
         }
         
     def clean_fecha_terminacion(self):
@@ -342,6 +368,19 @@ class EspecializacionForm(forms.ModelForm):
         if fecha and fecha > date.today():
             raise forms.ValidationError('La fecha de terminación no puede ser futura.')
         return fecha
+
+    def clean(self):
+        cleaned_data = super().clean()
+        nombre = cleaned_data.get('nombre_especializacion')
+        universidad = cleaned_data.get('universidad')
+        fecha = cleaned_data.get('fecha_terminacion')
+        documento = cleaned_data.get('acta_grado_diploma')
+        
+        # Si se llenó algún campo de texto, el archivo es obligatorio
+        if (nombre or universidad or fecha) and not documento and not self.instance.pk:
+            self.add_error('acta_grado_diploma', 'Debe adjuntar el acta de grado o diploma si registra esta especialización.')
+            
+        return cleaned_data
 
 from .models import EducacionBasica, EducacionSuperior
 
