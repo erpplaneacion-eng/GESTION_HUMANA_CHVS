@@ -57,6 +57,29 @@ Sistema web completo para la gestión y registro de personal desarrollado con Dj
 
 ## 🚀 Instalación y Configuración
 
+> **📘 Para desarrollo local completo**, consulta [README_LOCAL.md](README_LOCAL.md) con instrucciones detalladas.
+
+### Inicio Rápido para Desarrollo Local
+
+```bash
+# 1. Clonar repositorio
+git clone https://github.com/tu-usuario/GESTION_HUMANA_CHVS.git
+cd GESTION_HUMANA_CHVS
+
+# 2. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
+
+# 3. Ejecutar script de inicio
+# En Linux/Mac/WSL:
+./start_local.sh
+
+# En Windows:
+start_local.bat
+```
+
+### Configuración Manual (Alternativa)
+
 ### 1. Clonar el Repositorio
 
 ```bash

@@ -139,6 +139,8 @@ STATICFILES_DIRS = [
 ]
 
 # Configuración de Cloudinary
+# IMPORTANTE: Usa las mismas credenciales en local y producción
+# para compartir el almacenamiento de archivos
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
     'API_KEY': config('CLOUDINARY_API_KEY', default=''),
@@ -152,6 +154,23 @@ cloudinary.config(
     api_secret=CLOUDINARY_STORAGE['API_SECRET'],
     secure=True
 )
+
+# Validar que Cloudinary esté configurado correctamente
+if not all([CLOUDINARY_STORAGE['CLOUD_NAME'], CLOUDINARY_STORAGE['API_KEY'], CLOUDINARY_STORAGE['API_SECRET']]):
+    import sys
+    if DEBUG:
+        print("\n" + "="*70)
+        print("⚠️  WARNING: Cloudinary no está configurado correctamente")
+        print("="*70)
+        print("Por favor, configura las siguientes variables en tu archivo .env:")
+        print("  - CLOUDINARY_CLOUD_NAME")
+        print("  - CLOUDINARY_API_KEY")
+        print("  - CLOUDINARY_API_SECRET")
+        print("\nConsulta .env.example para más detalles")
+        print("="*70 + "\n")
+    else:
+        # En producción, esto es crítico
+        sys.stderr.write("ERROR: Cloudinary credentials not configured\n")
 
 # Configuración de STORAGE (Cloudinary para media, WhiteNoise para estáticos)
 STORAGES = {
