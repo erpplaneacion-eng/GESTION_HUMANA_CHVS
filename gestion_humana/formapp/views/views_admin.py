@@ -25,6 +25,8 @@ from ..forms import (
     InformacionAcademicaFormSet,
     PosgradoFormSet,
     EspecializacionFormSet,
+    EducacionBasicaFormSet,
+    EducacionSuperiorFormSet,
     DocumentosIdentidadForm,
     AntecedentesForm,
     AnexosAdicionalesForm,
@@ -105,6 +107,8 @@ def applicant_edit_view(request, pk):
         antecedentes_form = AntecedentesForm(request.POST, request.FILES, instance=antecedentes)
         anexos_form = AnexosAdicionalesForm(request.POST, request.FILES, instance=anexos_adicionales)
         experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES, instance=applicant)
+        basica_formset = EducacionBasicaFormSet(request.POST, request.FILES, instance=applicant)
+        superior_formset = EducacionSuperiorFormSet(request.POST, request.FILES, instance=applicant)
         academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES, instance=applicant)
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
         especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=applicant)
@@ -115,11 +119,13 @@ def applicant_edit_view(request, pk):
         antecedentes_valid = antecedentes_form.is_valid()
         anexos_valid = anexos_form.is_valid()
         experiencia_valid = experiencia_formset.is_valid()
+        basica_valid = basica_formset.is_valid()
+        superior_valid = superior_formset.is_valid()
         academica_valid = academica_formset.is_valid()
         posgrado_valid = posgrado_formset.is_valid()
         especializacion_valid = especializacion_formset.is_valid()
 
-        if form_valid and documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
+        if form_valid and documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and basica_valid and superior_valid and academica_valid and posgrado_valid and especializacion_valid:
             try:
                 with transaction.atomic():
                     informacion_basica = form.save()
@@ -182,6 +188,8 @@ def applicant_edit_view(request, pk):
                     calcular_experiencia_total(informacion_basica)
 
                     # Guardar los demás formsets
+                    basica_formset.save()
+                    superior_formset.save()
                     academica_formset.save()
                     posgrado_formset.save()
                     especializacion_formset.save()
@@ -203,6 +211,10 @@ def applicant_edit_view(request, pk):
                 for idx, form_exp in enumerate(experiencia_formset, 1):
                     if form_exp.errors:
                         messages.error(request, f'Experiencia {idx}: {form_exp.errors}')
+            if not basica_valid:
+                messages.error(request, 'Por favor corrija los errores en Educación Básica.')
+            if not superior_valid:
+                messages.error(request, 'Por favor corrija los errores en Educación Superior.')
             if not academica_valid:
                 messages.error(request, 'Por favor corrija los errores en Formación Académica.')
             if not posgrado_valid:
@@ -215,6 +227,8 @@ def applicant_edit_view(request, pk):
         antecedentes_form = AntecedentesForm(instance=antecedentes)
         anexos_form = AnexosAdicionalesForm(instance=anexos_adicionales)
         experiencia_formset = ExperienciaLaboralFormSet(instance=applicant)
+        basica_formset = EducacionBasicaFormSet(instance=applicant)
+        superior_formset = EducacionSuperiorFormSet(instance=applicant)
         academica_formset = InformacionAcademicaFormSet(instance=applicant)
         posgrado_formset = PosgradoFormSet(instance=applicant)
         especializacion_formset = EspecializacionFormSet(instance=applicant)
@@ -225,6 +239,8 @@ def applicant_edit_view(request, pk):
         'antecedentes_form': antecedentes_form,
         'anexos_form': anexos_form,
         'experiencia_formset': experiencia_formset,
+        'basica_formset': basica_formset,
+        'superior_formset': superior_formset,
         'academica_formset': academica_formset,
         'posgrado_formset': posgrado_formset,
         'especializacion_formset': especializacion_formset,

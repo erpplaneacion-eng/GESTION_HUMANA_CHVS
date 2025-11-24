@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales
+from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales, EducacionBasica, EducacionSuperior
 
 class ExperienciaLaboralInline(admin.TabularInline):
     model = ExperienciaLaboral
@@ -10,6 +10,16 @@ class ExperienciaLaboralInline(admin.TabularInline):
         'objeto_contractual', 'funciones', 'certificado_laboral'
     )
     readonly_fields = ('meses_experiencia', 'dias_experiencia')
+
+class EducacionBasicaInline(admin.TabularInline):
+    model = EducacionBasica
+    extra = 1
+    fields = ('institucion', 'anio_grado', 'titulo', 'acta_grado_diploma')
+
+class EducacionSuperiorInline(admin.TabularInline):
+    model = EducacionSuperior
+    extra = 1
+    fields = ('nivel', 'institucion', 'titulo', 'fecha_grado', 'tarjeta_profesional', 'documento_soporte')
 
 class InformacionAcademicaInline(admin.TabularInline):
     model = InformacionAcademica
@@ -130,6 +140,8 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
         AntecedentesInline,
         AnexosAdicionalesInline,
         ExperienciaLaboralInline,
+        EducacionBasicaInline,
+        EducacionSuperiorInline,
         InformacionAcademicaInline,
         PosgradoInline,
         EspecializacionInline,
@@ -157,6 +169,17 @@ class InformacionBasicaAdmin(admin.ModelAdmin):
             obj = form.instance
             if obj.experiencias_laborales.exists():
                 calcular_experiencia_total(obj)
+
+@admin.register(EducacionBasica)
+class EducacionBasicaAdmin(admin.ModelAdmin):
+    list_display = ('informacion_basica', 'institucion', 'anio_grado', 'titulo')
+    search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'titulo')
+
+@admin.register(EducacionSuperior)
+class EducacionSuperiorAdmin(admin.ModelAdmin):
+    list_display = ('informacion_basica', 'nivel', 'institucion', 'titulo', 'fecha_grado')
+    list_filter = ('nivel',)
+    search_fields = ('informacion_basica__nombre_completo', 'informacion_basica__cedula', 'titulo')
 
 @admin.register(ExperienciaLaboral)
 class ExperienciaLaboralAdmin(admin.ModelAdmin):

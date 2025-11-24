@@ -338,6 +338,93 @@
         {% endif %}
     </div>
 
+    <!-- Educación Básica (Bachiller) -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-school"></i> Educación Básica (Bachiller)
+        </h3>
+        {% if applicant.educacion_basica.all %}
+            <div class="row">
+                {% for basica in applicant.educacion_basica.all %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100" style="border-left: 4px solid #1abc9c;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #1abc9c;">
+                                <i class="fas fa-certificate"></i> {{ basica.titulo }}
+                            </h5>
+                            <p class="mb-2">
+                                <i class="fas fa-school"></i>
+                                <strong>Institución:</strong> {{ basica.institucion }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar-check"></i>
+                                <strong>Año de Grado:</strong> {{ basica.anio_grado }}
+                            </p>
+                            {% if basica.acta_grado_diploma %}
+                                <a href="{{ basica.acta_grado_diploma.url }}" target="_blank" class="btn btn-sm btn-outline-success mt-2">
+                                    <i class="fas fa-file-pdf"></i> Ver Diploma/Acta
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay educación básica registrada.
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Educación Superior (Técnico/Tecnólogo) -->
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-cogs"></i> Educación Superior (Técnico/Tecnólogo)
+        </h3>
+        {% if applicant.educacion_superior.all %}
+            <div class="row">
+                {% for superior in applicant.educacion_superior.all %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100" style="border-left: 4px solid #e67e22;">
+                        <div class="card-body">
+                            <h5 class="card-title" style="color: #e67e22;">
+                                <i class="fas fa-user-graduate"></i> {{ superior.titulo }}
+                            </h5>
+                            <p class="mb-2">
+                                <span class="badge bg-secondary">{{ superior.nivel }}</span>
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-university"></i>
+                                <strong>Institución:</strong> {{ superior.institucion }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-calendar-check"></i>
+                                <strong>Fecha Grado:</strong> {{ superior.fecha_grado|date:"d/m/Y" }}
+                            </p>
+                            {% if superior.tarjeta_profesional %}
+                            <p class="mb-2">
+                                <i class="fas fa-id-card"></i>
+                                <strong>Tarjeta Prof:</strong> {{ superior.tarjeta_profesional }}
+                            </p>
+                            {% endif %}
+                            {% if superior.documento_soporte %}
+                                <a href="{{ superior.documento_soporte.url }}" target="_blank" class="btn btn-sm btn-outline-success mt-2">
+                                    <i class="fas fa-file-pdf"></i> Ver Soporte
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No hay educación superior técnica/tecnológica registrada.
+            </div>
+        {% endif %}
+    </div>
+
     <!-- Información Académica -->
     <div class="detail-section">
         <h3>
