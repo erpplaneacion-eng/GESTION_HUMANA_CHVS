@@ -1,0 +1,433 @@
+{
+  "meta": {
+    "project": "Sistema de Gestión Humana CHVS",
+    "date": "2025-11-19",
+    "prepared_by": "Software Development Manager"
+  },
+  "product_overview": "La aplicación Sistema de Gestión Humana CHVS es una solución web desarrollada en Django para la Secretaría de Bienestar Social de Cali, que permite la gestión integral de recursos humanos, incluyendo el registro público de candidatos, administración de documentación laboral y académica, cálculo automático de experiencia laboral, generación de reportes en Excel y PDF oficiales, y distribución masiva de documentación mediante archivos ZIP.",
+  "core_goals": [
+    "Digitalizar y centralizar el proceso de registro y gestión de candidatos para contratos públicos.",
+    "Automatizar cálculos relacionados con la experiencia laboral y generación de documentos oficiales.",
+    "Garantizar la gestión segura y validada de documentos personales y profesionales de los candidatos.",
+    "Proveer un panel administrativo eficiente con funciones de búsqueda, edición y estadísticas.",
+    "Facilitar la generación y descarga de reportes detallados y consolidados en formatos Excel y PDF.",
+    "Implementar comunicación automática con los candidatos mediante correos electrónicos de confirmación."
+  ],
+  "key_features": [
+    "Formulario público multisección para registro de candidatos con validación estricta de datos personales y profesionales.",
+    "Gestión avanzada de experiencia laboral con cálculo automático de tiempo y validación de certificados laborales.",
+    "Panel administrativo con paginación, búsqueda, edición y dashboard estadístico para supervisión y gestión del personal.",
+    "Generación de reportes Excel tanto individuales (6 hojas detalladas) como consolidados para todo el personal.",
+    "Creación de documentos PDF ANEXO 11 con formato oficial y firmas digitales de profesionales y representante legal.",
+    "Descarga de archivos comprimidos ZIP para candidatos individuales y para todo el personal, organizados en carpetas temáticas.",
+    "Envío asíncrono de correos electrónicos de confirmación tras registro exitoso utilizando Gmail API."
+  ],
+  "user_flow_summary": [
+    "El candidato accede al formulario público y completa las 8 secciones con sus datos personales, experiencia laboral, formación académica y anexos.",
+    "El sistema valida todos los campos y archivos adjuntos, calcula automáticamente la experiencia laboral total y genera un registro consolidado.",
+    "Al finalizar el registro, el candidato recibe un correo electrónico de confirmación con los datos ingresados.",
+    "El personal administrativo accede al panel protegido por login, donde puede buscar, filtrar, y editar registros de candidatos.",
+    "Desde el panel, el personal puede generar reportes individuales o consolidados en Excel y documentos PDF ANEXO 11.",
+    "Para distribución o respaldo, el personal puede descargar archivos ZIP individuales o masivos conteniendo todos los documentos y reportes relevantes.",
+    "Todos los procesos críticos se ejecutan con validaciones, transacciones atómicas y manejo seguro de archivos en almacenamiento cloud."
+  ],
+  "validation_criteria": [
+    "Validación única y correcta de la cédula, teléfono y correo electrónico en todos los registros públicos.",
+    "Cumplimiento del límite de tamaño (10MB) y tipos de archivo (PDF, JPG, PNG) con validación de MIME type para documentos adjuntos.",
+    "Cálculo preciso y automático de experiencia laboral por periodo y total con coherencia en fechas de inicio y término.",
+    "Autenticación segura mediante Django LoginRequiredMixin en accesos administrativos.",
+    "Generación correcta y formato conforme de reportes Excel y PDF ANEXO 11 según especificaciones.",
+    "Descarga eficiente y completa de archivos ZIP organizados, con manejo adecuado de errores individuales.",
+    "Envío exitoso de correos de confirmación con información exacta y registro de logs de envío, sin bloquear la experiencia del usuario.",
+    "Resguardo de integridad de datos con uso de transacciones atómicas y rollback ante errores de validación o guardado."
+  ],
+  "code_summary": {
+    "project_name": "Sistema de Gestión Humana CHVS",
+    "description": "Aplicación web Django para gestión de recursos humanos, registro de candidatos, documentación laboral y generación de reportes para la Secretaría de Bienestar Social de Cali",
+    "tech_stack": {
+      "framework": "Django 5.2.7",
+      "language": "Python 3.13",
+      "database": "PostgreSQL (producción) / SQLite (desarrollo)",
+      "frontend": "HTML Templates con Django Template Engine",
+      "file_storage": "Cloudinary",
+      "email": "Gmail API",
+      "server": "Gunicorn + WhiteNoise",
+      "libraries": [
+        "openpyxl (generación Excel)",
+        "reportlab (generación PDF)",
+        "python-magic (validación MIME)",
+        "pytz (zona horaria Colombia)",
+        "google-api-python-client (envío emails)"
+      ]
+    },
+    "architecture": {
+      "type": "Monolithic MVC (Django MVT)",
+      "structure": [
+        "gestion_humana/ (proyecto Django principal)",
+        "formapp/ (aplicación de formularios y gestión)",
+        "models.py (9 modelos de datos relacionados)",
+        "views.py (vistas basadas en funciones y clases)",
+        "forms.py (formularios y formsets)",
+        "templates/ (plantillas HTML)",
+        "media/ (archivos subidos por usuarios)",
+        "migrations/ (23 migraciones de base de datos)"
+      ]
+    },
+    "features": [
+      {
+        "name": "Registro Público de Candidatos",
+        "description": "Formulario público multi-sección con validación de campos (cédula única, teléfono, correo)",
+        "endpoints": [
+          "/formapp/registro/"
+        ],
+        "critical": true
+      },
+      {
+        "name": "Gestión de Experiencia Laboral",
+        "description": "Cálculo automático de meses y días de experiencia entre fechas. Validación de certificados laborales",
+        "models": [
+          "ExperienciaLaboral",
+          "CalculoExperiencia"
+        ],
+        "critical": true
+      },
+      {
+        "name": "Gestión de Información Académica",
+        "description": "Títulos universitarios, especializaciones y posgrados con documentación adjunta",
+        "models": [
+          "InformacionAcademica",
+          "Especializacion",
+          "Posgrado"
+        ],
+        "critical": true
+      },
+      {
+        "name": "Gestión de Documentos",
+        "description": "Documentos de identidad (cédula al 150%, libreta militar según género), antecedentes (Procuraduría, Contraloría, Policía, Medidas Correctivas, Delitos Sexuales), anexos adicionales",
+        "models": [
+          "DocumentosIdentidad",
+          "Antecedentes",
+          "AnexosAdicionales"
+        ],
+        "validation": "Tamaño máximo 10MB, formatos PDF/JPG/PNG, validación MIME type",
+        "critical": true
+      },
+      {
+        "name": "Panel Administrativo",
+        "description": "Lista de candidatos con búsqueda por cédula/nombre, paginación (20 por página), estadísticas",
+        "endpoints": [
+          "/formapp/lista/",
+          "/formapp/detalle/<pk>/",
+          "/formapp/editar/<pk>/"
+        ],
+        "authentication": "LoginRequiredMixin",
+        "critical": true
+      },
+      {
+        "name": "Generación de Reportes Excel",
+        "description": "Excel individual por candidato con 6 hojas (Info Básica, Experiencia, Académica, Posgrados, Especializaciones, Cálculo) y Excel consolidado de todo el personal",
+        "library": "openpyxl",
+        "styling": "Headers azules, bordes, alineación",
+        "critical": true
+      },
+      {
+        "name": "Generación PDF ANEXO 11",
+        "description": "Documento oficial 'Carta de Compromiso Personal' con 2 páginas: carta de compromiso y relación de experiencia profesional",
+        "library": "reportlab",
+        "features": [
+          "Fecha dinámica en español",
+          "Firma del profesional y representante legal",
+          "Tabla de estudios consolidada"
+        ],
+        "critical": true
+      },
+      {
+        "name": "Descarga de Archivos ZIP",
+        "description": "ZIP individual con todos los documentos de un candidato (Excel, PDF ANEXO 11, certificados, antecedentes) o ZIP completo de todo el personal",
+        "endpoints": [
+          "/formapp/descargar/<pk>/",
+          "/formapp/descargar-todo/"
+        ],
+        "critical": true
+      },
+      {
+        "name": "Envío de Correos de Confirmación",
+        "description": "Email automático mediante Gmail API en thread separado tras registro exitoso. Zona horaria Colombia",
+        "async": true,
+        "template": "formapp/email_confirmacion.html",
+        "critical": false
+      }
+    ],
+    "data_models": [
+      {
+        "name": "InformacionBasica",
+        "purpose": "Datos personales del candidato",
+        "fields": [
+          "nombre_completo (auto-generado en mayúsculas)",
+          "cedula (único, 5-10 dígitos)",
+          "genero (choices: Femenino/Masculino/Otro)",
+          "dirección (subdividida: tipo_via, numero_via, numero_casa, complemento, barrio)",
+          "telefono (10 dígitos)",
+          "correo (email)",
+          "perfil (117 choices + Otro)",
+          "area_del_conocimiento (22 choices + Otro)",
+          "profesion (101 choices + Otro)",
+          "contrato",
+          "observacion"
+        ],
+        "relationships": "1-N con ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion. 1-1 con CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales"
+      },
+      {
+        "name": "ExperienciaLaboral",
+        "purpose": "Registro de experiencia laboral con cálculo automático",
+        "fields": [
+          "fecha_inicial",
+          "fecha_terminacion",
+          "meses_experiencia (calculado, readonly)",
+          "dias_experiencia (calculado, readonly)",
+          "cargo",
+          "cargo_anexo_11 (default: 'Profesional')",
+          "objeto_contractual",
+          "funciones",
+          "certificado_laboral (FileField, validado)"
+        ],
+        "validation": "Fecha inicial < fecha terminación. Certificado obligatorio para nuevos registros, opcional en edición"
+      },
+      {
+        "name": "InformacionAcademica",
+        "purpose": "Estudios universitarios",
+        "fields": [
+          "fecha_expedicion",
+          "tarjeta_profesional (choices: Tarjeta/Resolución/No Aplica)",
+          "profesion",
+          "universidad",
+          "numero_tarjeta_resolucion",
+          "fecha_grado",
+          "fotocopia_titulo",
+          "fotocopia_tarjeta_profesional",
+          "certificado_vigencia_tarjeta",
+          "fecha_vigencia_tarjeta"
+        ]
+      },
+      {
+        "name": "Posgrado",
+        "purpose": "Estudios de posgrado (maestrías, doctorados)",
+        "fields": [
+          "nombre_posgrado",
+          "universidad",
+          "fecha_terminacion"
+        ]
+      },
+      {
+        "name": "Especializacion",
+        "purpose": "Estudios de especialización",
+        "fields": [
+          "nombre_especializacion",
+          "universidad",
+          "fecha_terminacion"
+        ]
+      },
+      {
+        "name": "CalculoExperiencia",
+        "purpose": "Cálculo consolidado de experiencia total",
+        "fields": [
+          "total_meses_experiencia",
+          "total_dias_experiencia",
+          "total_experiencia_anos (decimal 2 decimales)",
+          "anos_y_meses_experiencia (texto legible)"
+        ],
+        "auto_calculated": true
+      },
+      {
+        "name": "DocumentosIdentidad",
+        "purpose": "Documentos de identificación",
+        "fields": [
+          "fotocopia_cedula (obligatorio, 150%)",
+          "hoja_de_vida (obligatorio)",
+          "libreta_militar (opcional)",
+          "numero_libreta_militar",
+          "distrito_militar",
+          "clase_libreta (choices: Primera/Segunda)"
+        ],
+        "validation": "Libreta militar condicional según género (actualizado a opcional para todos)"
+      },
+      {
+        "name": "Antecedentes",
+        "purpose": "Certificados de antecedentes legales",
+        "fields": [
+          "certificado_procuraduria + fecha",
+          "certificado_contraloria + fecha",
+          "certificado_policia + fecha",
+          "certificado_medidas_correctivas + fecha",
+          "certificado_delitos_sexuales + fecha"
+        ],
+        "required_all": true
+      },
+      {
+        "name": "AnexosAdicionales",
+        "purpose": "Documentos adicionales opcionales",
+        "fields": [
+          "anexo_03_datos_personales (opcional)",
+          "carta_intencion (opcional)",
+          "otros_documentos (opcional)",
+          "descripcion_otros (TextField)"
+        ]
+      }
+    ],
+    "security": {
+      "authentication": "Django built-in LoginRequiredMixin para vistas administrativas",
+      "validation": [
+        "Validación de cédula única",
+        "Validación de formato de archivos (PDF, JPG, PNG)",
+        "Validación de tamaño de archivos (10MB máx)",
+        "Validación MIME type con python-magic",
+        "Validación de fechas (fecha inicial < fecha final)",
+        "Validación de teléfono (10 dígitos)",
+        "Validación de correo electrónico"
+      ],
+      "transactions": "Uso de transaction.atomic() para operaciones críticas",
+      "file_handling": "Cloudinary para almacenamiento seguro"
+    },
+    "deployment": {
+      "environment": "Dual (Railway producción + desarrollo local)",
+      "configuration": [
+        "Variables de entorno con python-decouple",
+        "GMAIL_TOKEN_JSON para Railway o token.json local",
+        "Zona horaria: America/Bogota",
+        "WhiteNoise para archivos estáticos",
+        "Gunicorn como servidor WSGI"
+      ],
+      "database": "PostgreSQL en producción con dj-database-url, SQLite en desarrollo"
+    },
+    "issues_and_concerns": [
+      {
+        "category": "Code Quality",
+        "severity": "medium",
+        "description": "views.py muy extenso (1501 líneas). Podría beneficiarse de refactorización en múltiples archivos o servicios",
+        "impact": "Mantenibilidad"
+      },
+      {
+        "category": "Performance",
+        "severity": "low",
+        "description": "Generación de ZIP completo carga todos los candidatos en memoria. Podría ser problemático con miles de registros",
+        "impact": "Escalabilidad"
+      },
+      {
+        "category": "Error Handling",
+        "severity": "medium",
+        "description": "Varios try-except con logger.error pero continúan la ejecución. Algunos errores podrían necesitar rollback",
+        "impact": "Integridad de datos"
+      },
+      {
+        "category": "Validation",
+        "severity": "high",
+        "description": "Bug corregido: validación de formsets antes de guardar para evitar que se guarde información incompleta",
+        "status": "resolved",
+        "impact": "Integridad de datos"
+      },
+      {
+        "category": "File Management",
+        "severity": "medium",
+        "description": "Lógica compleja de manejo de archivos en formsets (edición vs creación). Requiere validadores customizados",
+        "impact": "Experiencia de usuario"
+      },
+      {
+        "category": "Database",
+        "severity": "low",
+        "description": "23 migraciones aplicadas. Historial extenso de cambios en modelos. Última migración sin aplicar (0023)",
+        "impact": "Gestión de base de datos"
+      },
+      {
+        "category": "Email Service",
+        "severity": "medium",
+        "description": "Envío de correos en thread separado sin manejo robusto de fallos. No hay reintento automático",
+        "impact": "Comunicación con usuarios"
+      },
+      {
+        "category": "Frontend",
+        "severity": "low",
+        "description": "No hay JavaScript framework. Toda la lógica está en Django templates. Limitado para interactividad",
+        "impact": "Experiencia de usuario"
+      },
+      {
+        "category": "Testing",
+        "severity": "high",
+        "description": "tests.py existe pero está vacío. No hay tests unitarios, de integración ni E2E",
+        "status": "critical",
+        "impact": "Confiabilidad y mantenimiento"
+      }
+    ],
+    "recommendations": [
+      {
+        "priority": "high",
+        "category": "Testing",
+        "recommendation": "Implementar suite completa de tests: unitarios (modelos, formularios, validadores), integración (vistas, generación de reportes), E2E (flujo completo de registro)"
+      },
+      {
+        "priority": "high",
+        "category": "Code Organization",
+        "recommendation": "Refactorizar views.py en múltiples archivos: views_public.py (formulario público), views_admin.py (panel admin), views_reports.py (generación Excel/PDF/ZIP), services.py (lógica de negocio)"
+      },
+      {
+        "priority": "medium",
+        "category": "Error Handling",
+        "recommendation": "Implementar manejo de errores más robusto con rollback explícito y notificaciones al usuario de errores críticos"
+      },
+      {
+        "priority": "medium",
+        "category": "Performance",
+        "recommendation": "Implementar paginación o generación en streaming para descarga de ZIP completo. Considerar procesamiento asíncrono con Celery"
+      },
+      {
+        "priority": "medium",
+        "category": "Email",
+        "recommendation": "Implementar cola de emails con Celery + Redis/RabbitMQ para manejo robusto con reintentos y logging de fallos"
+      },
+      {
+        "priority": "low",
+        "category": "Documentation",
+        "recommendation": "Agregar docstrings completos a funciones complejas y documentación de API endpoints"
+      },
+      {
+        "priority": "low",
+        "category": "Security",
+        "recommendation": "Implementar rate limiting en formulario público para prevenir spam/abuso"
+      },
+      {
+        "priority": "low",
+        "category": "Monitoring",
+        "recommendation": "Implementar logging estructurado y monitoreo de aplicación (Sentry, New Relic, etc.)"
+      }
+    ],
+    "migration_status": {
+      "applied": 22,
+      "pending": 1,
+      "latest": "0023_alter_documentosidentidad_fotocopia_cedula_and_more.py"
+    },
+    "git_status": {
+      "branch": "main",
+      "modified_files": [
+        "carpeta md/DUAL_ENVIRONMENT_SETUP.md",
+        "carpeta md/ENVIRONMENTS.md",
+        "carpeta md/QUICK_START.md",
+        "carpeta md/README.md",
+        "carpeta md/README_LOCAL.md",
+        "gestion_humana/db.sqlite3",
+        "gestion_humana/formapp/models.py"
+      ],
+      "untracked_files": [
+        "gestion_humana/formapp/migrations/0023_alter_documentosidentidad_fotocopia_cedula_and_more.py",
+        "gestion_humana/venv_wsl/"
+      ],
+      "recent_commits": [
+        "8ea18fe - se actualiza proceso para trabajar en produciion y desarrollo",
+        "10d684e - se agregan campos para validar2",
+        "ba08aaf - se agregan campos para validar2",
+        "18b5629 - se agregan campos para validar"
+      ]
+    },
+    "estimated_complexity": "medium-high",
+    "lines_of_code_approx": 5000,
+    "maintenance_level": "active"
+  }
+}
