@@ -1,357 +1,777 @@
 {
-  "project_name": "Sistema de Gestión Humana CHVS",
-  "description": "Aplicación web Django para gestión de recursos humanos, registro de candidatos, documentación laboral y generación de reportes para la Secretaría de Bienestar Social de Cali",
-  "tech_stack": {
-    "framework": "Django 5.2.7",
-    "language": "Python 3.13",
-    "database": "PostgreSQL (producción) / SQLite (desarrollo)",
-    "frontend": "HTML Templates con Django Template Engine",
-    "file_storage": "Cloudinary",
-    "email": "Gmail API",
-    "server": "Gunicorn + WhiteNoise",
-    "libraries": [
-      "openpyxl (generación Excel)",
-      "reportlab (generación PDF)",
-      "python-magic (validación MIME)",
-      "pytz (zona horaria Colombia)",
-      "google-api-python-client (envío emails)"
-    ]
-  },
-  "architecture": {
-    "type": "Monolithic MVC (Django MVT)",
-    "structure": [
-      "gestion_humana/ (proyecto Django principal)",
-      "formapp/ (aplicación de formularios y gestión)",
-      "models.py (9 modelos de datos relacionados)",
-      "views.py (vistas basadas en funciones y clases)",
-      "forms.py (formularios y formsets)",
-      "templates/ (plantillas HTML)",
-      "media/ (archivos subidos por usuarios)",
-      "migrations/ (23 migraciones de base de datos)"
-    ]
-  },
+  "tech_stack": [
+    "Python 3.x",
+    "Django 5.2.7",
+    "PostgreSQL",
+    "SQLite",
+    "Cloudinary",
+    "WhiteNoise",
+    "Gunicorn",
+    "openpyxl",
+    "reportlab",
+    "Google API (Gmail)",
+    "dj-database-url",
+    "python-decouple",
+    "python-magic"
+  ],
   "features": [
     {
-      "name": "Registro Público de Candidatos",
-      "description": "Formulario público multi-sección con validación de campos (cédula única, teléfono, correo)",
-      "endpoints": ["/formapp/registro/"],
-      "critical": true
+      "name": "Public Candidate Registration",
+      "description": "Formulario público multi-sección para registro de candidatos. Incluye información básica, experiencia laboral con cálculo automático de fechas, formación académica (títulos, especializaciones, posgrados), documentos de identidad (cédula 150%, hoja de vida, libreta militar condicional), antecedentes (Procuraduría, Contraloría, Policía, Medidas Correctivas, Delitos Sexuales) y anexos adicionales. Validación exhaustiva de archivos (tamaño máx 10MB, formatos PDF/JPG/PNG, MIME type). Envío asíncrono de correo de confirmación mediante Gmail API.",
+      "files": [
+        "gestion_humana/formapp/views/views_public.py",
+        "gestion_humana/formapp/models.py",
+        "gestion_humana/formapp/forms.py",
+        "gestion_humana/formapp/services.py",
+        "gestion_humana/formapp/validators.py",
+        "gestion_humana/formapp/templates/formapp/public_form.html"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Public Registration API",
+          "version": "1.0.0",
+          "description": "API para registro público de candidatos con validación completa"
+        },
+        "servers": [
+          {
+            "url": "https://gestion-humana-chvs.railway.app",
+            "description": "Producción"
+          },
+          {
+            "url": "http://localhost:8000",
+            "description": "Desarrollo"
+          }
+        ],
+        "paths": {
+          "/formapp/registro/": {
+            "get": {
+              "summary": "Mostrar formulario de registro público",
+              "description": "Muestra el formulario multi-sección para registro de candidatos",
+              "tags": ["Público"],
+              "responses": {
+                "200": {
+                  "description": "Formulario mostrado exitosamente",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "post": {
+              "summary": "Enviar registro de candidato",
+              "description": "Procesa y guarda el registro completo del candidato incluyendo documentos, experiencia laboral, formación académica y antecedentes. Valida todos los formsets antes de guardar usando transaction.atomic(). Envía correo de confirmación de forma asíncrona.",
+              "tags": ["Público"],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "multipart/form-data": {
+                    "schema": {
+                      "type": "object",
+                      "required": ["nombre_completo", "cedula", "genero", "telefono", "correo", "fotocopia_cedula"],
+                      "properties": {
+                        "nombre_completo": {
+                          "type": "string",
+                          "maxLength": 200,
+                          "description": "Nombre completo (auto-convertido a mayúsculas)"
+                        },
+                        "cedula": {
+                          "type": "string",
+                          "pattern": "^[0-9]{5,10}$",
+                          "description": "Cédula única (5-10 dígitos)"
+                        },
+                        "genero": {
+                          "type": "string",
+                          "enum": ["Femenino", "Masculino", "Otro"]
+                        },
+                        "tipo_via": {
+                          "type": "string",
+                          "default": "Calle",
+                          "description": "Tipo de vía (Calle/Avenida/Carrera)"
+                        },
+                        "numero_via": {
+                          "type": "string"
+                        },
+                        "numero_casa": {
+                          "type": "string"
+                        },
+                        "complemento_direccion": {
+                          "type": "string",
+                          "description": "Apto, Interior, etc."
+                        },
+                        "barrio": {
+                          "type": "string"
+                        },
+                        "telefono": {
+                          "type": "string",
+                          "pattern": "^[0-9]{10}$",
+                          "description": "Teléfono (10 dígitos)"
+                        },
+                        "correo": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "fotocopia_cedula": {
+                          "type": "string",
+                          "format": "binary",
+                          "description": "Cédula al 150% (PDF/JPG/PNG, máx 10MB)"
+                        },
+                        "hoja_de_vida": {
+                          "type": "string",
+                          "format": "binary",
+                          "description": "Hoja de vida (PDF/JPG/PNG, máx 10MB, opcional)"
+                        },
+                        "libreta_militar": {
+                          "type": "string",
+                          "format": "binary",
+                          "description": "Libreta militar (opcional para todos)"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "302": {
+                  "description": "Registro exitoso, redirige al formulario con mensaje de éxito",
+                  "headers": {
+                    "Location": {
+                      "schema": {
+                        "type": "string",
+                        "example": "/formapp/registro/"
+                      }
+                    }
+                  }
+                },
+                "400": {
+                  "description": "Errores de validación",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "errors": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Gestión de Experiencia Laboral",
-      "description": "Cálculo automático de meses y días de experiencia entre fechas. Validación de certificados laborales",
-      "models": ["ExperienciaLaboral", "CalculoExperiencia"],
-      "critical": true
+      "name": "Administrative Management Panel",
+      "description": "Panel administrativo completo para gestión de candidatos registrados. Incluye lista paginada (20 registros por página) con búsqueda por cédula/nombre, estadísticas (total personal, con experiencia, profesionales, con posgrado), vista detallada de cada candidato con toda su información, edición completa de registros existentes con validación y recálculo automático de experiencia, y eliminación de registros. Requiere autenticación con LoginRequiredMixin.",
+      "files": [
+        "gestion_humana/formapp/views/views_admin.py",
+        "gestion_humana/formapp/models.py",
+        "gestion_humana/formapp/forms.py",
+        "gestion_humana/formapp/templates/formapp/applicant_list.html",
+        "gestion_humana/formapp/templates/formapp/applicant_detail.html",
+        "gestion_humana/formapp/templates/formapp/applicant_edit.html"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Admin Management API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/formapp/lista/": {
+            "get": {
+              "summary": "Listar candidatos",
+              "description": "Muestra lista paginada de candidatos con búsqueda y estadísticas",
+              "tags": ["Administración"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "search",
+                  "in": "query",
+                  "schema": {"type": "string"},
+                  "description": "Buscar por cédula o nombre"
+                },
+                {
+                  "name": "page",
+                  "in": "query",
+                  "schema": {"type": "integer", "default": 1},
+                  "description": "Número de página (20 por página)"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Lista de candidatos"
+                },
+                "401": {
+                  "description": "Autenticación requerida"
+                }
+              }
+            }
+          },
+          "/formapp/detalle/{pk}/": {
+            "get": {
+              "summary": "Ver detalle de candidato",
+              "tags": ["Administración"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "pk",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "integer"}
+                }
+              ],
+              "responses": {
+                "200": {"description": "Detalle del candidato"},
+                "404": {"description": "Candidato no encontrado"}
+              }
+            }
+          },
+          "/formapp/editar/{pk}/": {
+            "get": {
+              "summary": "Mostrar formulario de edición",
+              "tags": ["Administración"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "pk",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "integer"}
+                }
+              ],
+              "responses": {
+                "200": {"description": "Formulario de edición"}
+              }
+            },
+            "post": {
+              "summary": "Actualizar candidato",
+              "description": "Actualiza información completa del candidato con validación exhaustiva y recálculo automático de experiencia",
+              "tags": ["Administración"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "pk",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "integer"}
+                }
+              ],
+              "responses": {
+                "302": {"description": "Actualización exitosa"},
+                "400": {"description": "Errores de validación"}
+              }
+            }
+          },
+          "/formapp/eliminar/{pk}/": {
+            "post": {
+              "summary": "Eliminar candidato",
+              "tags": ["Administración"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "pk",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "integer"}
+                }
+              ],
+              "responses": {
+                "302": {"description": "Eliminación exitosa"},
+                "404": {"description": "Candidato no encontrado"}
+              }
+            }
+          }
+        },
+        "components": {
+          "securitySchemes": {
+            "sessionAuth": {
+              "type": "apiKey",
+              "in": "cookie",
+              "name": "sessionid"
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Gestión de Información Académica",
-      "description": "Títulos universitarios, especializaciones y posgrados con documentación adjunta",
-      "models": ["InformacionAcademica", "Especializacion", "Posgrado"],
-      "critical": true
+      "name": "Report Generation - Individual ZIP Download",
+      "description": "Genera y descarga archivo ZIP completo de un candidato individual que incluye: Excel con información completa en 6 hojas (Info Básica, Experiencia Laboral, Formación Académica, Posgrados, Especializaciones, Cálculo Experiencia) con estilos (headers azules, bordes, alignment), PDF del ANEXO 11 (Carta de Compromiso Personal con firma y tabla de estudios), todos los certificados laborales organizados por cargo, documentos de identidad (cédula, hoja de vida, libreta militar), certificados de antecedentes (Procuraduría, Contraloría, Policía, Medidas Correctivas, Delitos Sexuales), documentos académicos (títulos, tarjetas profesionales, certificados de vigencia) y anexos adicionales (ANEXO 03, carta de intención, otros). Manejo robusto de extensiones de archivo (.pdf, .jpg, .png) con detección automática por MIME type.",
+      "files": [
+        "gestion_humana/formapp/views/views_reports.py",
+        "gestion_humana/formapp/report_generators.py",
+        "gestion_humana/formapp/models.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Individual Reports API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/formapp/descargar/{pk}/": {
+            "get": {
+              "summary": "Descargar reporte individual en ZIP",
+              "description": "Genera ZIP con Excel, PDF ANEXO 11 y todos los documentos del candidato",
+              "tags": ["Reportes"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "pk",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "integer"},
+                  "description": "ID del candidato"
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "ZIP generado exitosamente",
+                  "content": {
+                    "application/zip": {
+                      "schema": {
+                        "type": "string",
+                        "format": "binary"
+                      }
+                    }
+                  },
+                  "headers": {
+                    "Content-Disposition": {
+                      "schema": {
+                        "type": "string",
+                        "example": "attachment; filename=\"Juan_Perez_Completo.zip\""
+                      }
+                    }
+                  }
+                },
+                "404": {
+                  "description": "Candidato no encontrado"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Gestión de Documentos",
-      "description": "Documentos de identidad (cédula al 150%, libreta militar según género), antecedentes (Procuraduría, Contraloría, Policía, Medidas Correctivas, Delitos Sexuales), anexos adicionales",
-      "models": ["DocumentosIdentidad", "Antecedentes", "AnexosAdicionales"],
-      "validation": "Tamaño máximo 10MB, formatos PDF/JPG/PNG, validación MIME type",
-      "critical": true
+      "name": "Report Generation - Bulk ZIP Download",
+      "description": "Genera reporte masivo de todo el personal en un único archivo ZIP. Incluye: Excel consolidado con todos los registros (cédula, nombre, género, teléfono, correo, perfil, área, profesión, contrato, observaciones) en formato tabla con headers azules y bordes, carpetas individuales por cada persona con estructura: {Nombre_Persona}/Informacion.xlsx (6 hojas), {Nombre_Persona}/ANEXO_11.pdf, {Nombre_Persona}/Certificados_Laborales/ (organizados por cargo con índice), {Nombre_Persona}/Documentos_Identidad/ (cédula, hoja de vida, libreta militar), {Nombre_Persona}/Antecedentes/ (5 certificados), {Nombre_Persona}/Documentos_Academicos/ (títulos, tarjetas profesionales, vigencias por índice), {Nombre_Persona}/Anexos/ (ANEXO 03, carta intención, otros). Nombre de archivo incluye timestamp (Personal_Completo_YYYYMMDD_HHMMSS.zip).",
+      "files": [
+        "gestion_humana/formapp/views/views_reports.py",
+        "gestion_humana/formapp/report_generators.py",
+        "gestion_humana/formapp/models.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Bulk Reports API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/formapp/descargar-todo/": {
+            "get": {
+              "summary": "Descargar reporte completo de todo el personal",
+              "description": "Genera ZIP masivo con Excel consolidado y carpetas individuales por persona",
+              "tags": ["Reportes"],
+              "security": [{"sessionAuth": []}],
+              "responses": {
+                "200": {
+                  "description": "ZIP completo generado con timestamp",
+                  "content": {
+                    "application/zip": {
+                      "schema": {
+                        "type": "string",
+                        "format": "binary"
+                      }
+                    }
+                  },
+                  "headers": {
+                    "Content-Disposition": {
+                      "schema": {
+                        "type": "string",
+                        "example": "attachment; filename=\"Personal_Completo_20250124_143022.zip\""
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Panel Administrativo",
-      "description": "Lista de candidatos con búsqueda por cédula/nombre, paginación (20 por página), estadísticas",
-      "endpoints": ["/formapp/lista/", "/formapp/detalle/<pk>/", "/formapp/editar/<pk>/"],
-      "authentication": "LoginRequiredMixin",
-      "critical": true
+      "name": "Experience Calculation Service",
+      "description": "Servicio interno que calcula automáticamente la experiencia laboral total del candidato. Se ejecuta automáticamente al crear o editar experiencias laborales. Calcula: (1) Meses completos de experiencia entre fecha_inicial y fecha_terminacion para cada registro ExperienciaLaboral, (2) Total de días calendario de experiencia, (3) Total de años con 2 decimales (días/365.25), (4) Representación legible (ej: '5 años y 3 meses'). Usa datetime para cálculos precisos manejando años bisiestos y diferencias de días en meses. Guarda resultados en modelo CalculoExperiencia con relación OneToOne a InformacionBasica.",
+      "files": [
+        "gestion_humana/formapp/services.py",
+        "gestion_humana/formapp/models.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Experience Calculation Service",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "ExperienciaLaboral": {
+              "type": "object",
+              "properties": {
+                "fecha_inicial": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "fecha_terminacion": {
+                  "type": "string",
+                  "format": "date"
+                },
+                "meses_experiencia": {
+                  "type": "integer",
+                  "readOnly": true,
+                  "description": "Calculado automáticamente"
+                },
+                "dias_experiencia": {
+                  "type": "integer",
+                  "readOnly": true,
+                  "description": "Total días calendario"
+                }
+              }
+            },
+            "CalculoExperiencia": {
+              "type": "object",
+              "properties": {
+                "total_meses_experiencia": {
+                  "type": "integer"
+                },
+                "total_dias_experiencia": {
+                  "type": "integer"
+                },
+                "total_experiencia_anos": {
+                  "type": "number",
+                  "format": "float",
+                  "description": "Años con 2 decimales"
+                },
+                "anos_y_meses_experiencia": {
+                  "type": "string",
+                  "example": "5 años y 3 meses"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Generación de Reportes Excel",
-      "description": "Excel individual por candidato con 6 hojas (Info Básica, Experiencia, Académica, Posgrados, Especializaciones, Cálculo) y Excel consolidado de todo el personal",
-      "library": "openpyxl",
-      "styling": "Headers azules, bordes, alineación",
-      "critical": true
+      "name": "Authentication System",
+      "description": "Sistema de autenticación integrado de Django para proteger vistas administrativas. Usa LoginRequiredMixin para vistas basadas en clase y @login_required decorator para vistas basadas en función. Configuración de URLs: LOGIN_URL='/login/', LOGIN_REDIRECT_URL='/formapp/lista/', LOGOUT_REDIRECT_URL='/login/'. Sesiones con cookies: CSRF_COOKIE_SAMESITE='Lax', SESSION_COOKIE_HTTPONLY=True. En producción: SESSION_COOKIE_SECURE=True, CSRF_COOKIE_SECURE=True con HTTPS. Vista pública (/formapp/registro/) accesible sin autenticación.",
+      "files": [
+        "gestion_humana/gestion_humana/settings.py",
+        "gestion_humana/gestion_humana/urls.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Authentication API",
+          "version": "1.0.0"
+        },
+        "paths": {
+          "/login/": {
+            "get": {
+              "summary": "Mostrar formulario de login",
+              "tags": ["Autenticación"],
+              "responses": {
+                "200": {"description": "Formulario de login"}
+              }
+            },
+            "post": {
+              "summary": "Autenticar usuario",
+              "tags": ["Autenticación"],
+              "requestBody": {
+                "content": {
+                  "application/x-www-form-urlencoded": {
+                    "schema": {
+                      "type": "object",
+                      "required": ["username", "password"],
+                      "properties": {
+                        "username": {"type": "string"},
+                        "password": {"type": "string", "format": "password"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "302": {"description": "Login exitoso, redirige a /formapp/lista/"},
+                "401": {"description": "Credenciales inválidas"}
+              }
+            }
+          },
+          "/logout/": {
+            "post": {
+              "summary": "Cerrar sesión",
+              "tags": ["Autenticación"],
+              "security": [{"sessionAuth": []}],
+              "responses": {
+                "302": {"description": "Logout exitoso, redirige a /login/"}
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Generación PDF ANEXO 11",
-      "description": "Documento oficial 'Carta de Compromiso Personal' con 2 páginas: carta de compromiso y relación de experiencia profesional",
-      "library": "reportlab",
-      "features": ["Fecha dinámica en español", "Firma del profesional y representante legal", "Tabla de estudios consolidada"],
-      "critical": true
+      "name": "File Validation Service",
+      "description": "Servicio de validación exhaustiva de archivos subidos. Incluye 3 validadores: (1) validate_file_size: máximo 10MB (10485760 bytes), (2) validate_file_extension: permite solo .pdf, .jpg, .jpeg, .png, (3) validate_file_mime: verifica tipo MIME real usando python-magic para prevenir subida de archivos maliciosos con extensión falsa. Mensajes de error claros y específicos. Aplicado a todos los FileField en modelos: DocumentosIdentidad, Antecedentes, AnexosAdicionales, ExperienciaLaboral, InformacionAcademica.",
+      "files": [
+        "gestion_humana/formapp/validators.py",
+        "gestion_humana/formapp/models.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "File Validation Service",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "FileValidationRules": {
+              "type": "object",
+              "properties": {
+                "max_size": {
+                  "type": "integer",
+                  "default": 10485760,
+                  "description": "10 MB máximo"
+                },
+                "allowed_extensions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["pdf", "jpg", "jpeg", "png"]
+                  }
+                },
+                "allowed_mime_types": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["application/pdf", "image/jpeg", "image/png"]
+                  }
+                },
+                "validation_order": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "example": ["size", "extension", "mime_type"]
+                }
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Descarga de Archivos ZIP",
-      "description": "ZIP individual con todos los documentos de un candidato (Excel, PDF ANEXO 11, certificados, antecedentes) o ZIP completo de todo el personal",
-      "endpoints": ["/formapp/descargar/<pk>/", "/formapp/descargar-todo/"],
-      "critical": true
+      "name": "Email Notification Service",
+      "description": "Servicio asíncrono de notificación por correo usando Gmail API. Envía correo de confirmación al candidato después de registro exitoso. Configuración: usa GMAIL_TOKEN_JSON en Railway (producción) o token.json local (desarrollo). Ejecuta en thread separado (daemon=True) para no bloquear respuesta del formulario. Zona horaria: America/Bogota (pytz). Template HTML: formapp/email_confirmacion.html. Manejo de errores con logging pero sin afectar registro (silently fails). DEFAULT_FROM_EMAIL: erp.planeacion@vallesolidario.com.",
+      "files": [
+        "gestion_humana/formapp/services.py",
+        "gestion_humana/gestion_humana/settings.py",
+        "gestion_humana/formapp/templates/formapp/email_confirmacion.html"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Email Notification Service",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "EmailConfig": {
+              "type": "object",
+              "properties": {
+                "provider": {
+                  "type": "string",
+                  "default": "Gmail API"
+                },
+                "from_email": {
+                  "type": "string",
+                  "default": "erp.planeacion@vallesolidario.com"
+                },
+                "timezone": {
+                  "type": "string",
+                  "default": "America/Bogota"
+                },
+                "async": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Ejecuta en thread separado"
+                },
+                "fail_silently": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "No interrumpe registro si falla"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     {
-      "name": "Envío de Correos de Confirmación",
-      "description": "Email automático mediante Gmail API en thread separado tras registro exitoso. Zona horaria Colombia",
-      "async": true,
-      "template": "formapp/email_confirmacion.html",
-      "critical": false
+      "name": "Cloud Storage Service",
+      "description": "Integración con Cloudinary para almacenamiento en la nube de archivos multimedia. Configuración mediante variables de entorno: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET. Uso del storage backend 'cloudinary_storage.storage.MediaCloudinaryStorage' para todos los FileField. Ventajas: compartir almacenamiento entre local y producción, CDN integrado, transformaciones de imagen, backups automáticos. WhiteNoise para archivos estáticos (CSS/JS). Validación: verifica credenciales al inicio, warning en DEBUG, error en producción.",
+      "files": [
+        "gestion_humana/gestion_humana/settings.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Cloud Storage Service",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "CloudinaryConfig": {
+              "type": "object",
+              "required": ["cloud_name", "api_key", "api_secret"],
+              "properties": {
+                "cloud_name": {
+                  "type": "string",
+                  "description": "Cloudinary cloud name"
+                },
+                "api_key": {
+                  "type": "string",
+                  "description": "Cloudinary API key"
+                },
+                "api_secret": {
+                  "type": "string",
+                  "description": "Cloudinary API secret (sensible)"
+                },
+                "secure": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "Usar HTTPS"
+                },
+                "storage_backend": {
+                  "type": "string",
+                  "default": "cloudinary_storage.storage.MediaCloudinaryStorage"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Excel Report Generation",
+      "description": "Generación de reportes Excel usando openpyxl. Función create_excel_for_person(applicant) genera workbook con 6 hojas: (1) Información General: datos personales, perfil, área, profesión, contrato, dirección completa, (2) Experiencia Laboral: tabla con cargo, objeto contractual, funciones, fechas, meses/días calculados, (3) Formación Académica: profesión, universidad, fecha grado, tarjeta profesional, (4) Posgrados: nombre, universidad, fecha terminación, (5) Especializaciones: nombre, universidad, fecha terminación, (6) Cálculo Experiencia: total meses, días, años (decimal), representación legible. Estilos: headers con fondo azul (#366092), texto blanco, bordes thin en todas las celdas, merge cells para títulos, alignment center/left según columna. Anchos de columna ajustados automáticamente.",
+      "files": [
+        "gestion_humana/formapp/report_generators.py",
+        "gestion_humana/formapp/models.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "Excel Report Service",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "ExcelWorkbook": {
+              "type": "object",
+              "properties": {
+                "sheets": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "enum": ["Información General", "Experiencia Laboral", "Formación Académica", "Posgrados", "Especializaciones", "Cálculo Experiencia"]
+                      },
+                      "header_fill": {
+                        "type": "string",
+                        "default": "#366092"
+                      },
+                      "header_font_color": {
+                        "type": "string",
+                        "default": "#FFFFFF"
+                      },
+                      "border_style": {
+                        "type": "string",
+                        "default": "thin"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "PDF ANEXO 11 Generation",
+      "description": "Generación de PDF oficial 'ANEXO 11 - Carta de Compromiso Personal' usando reportlab. Función generar_anexo11_pdf(applicant) genera documento de 2 páginas: (1) Página 1: Carta formal con membrete CAVIJUP, fecha actual en español (datetime con pytz America/Bogota), párrafos de compromiso profesional, tabla consolidada de estudios (nivel, título, universidad, fecha grado, tarjeta/resolución), espacio para firmas (profesional y representante legal CAVIJUP con líneas), (2) Página 2: Tabla detallada 'RELACION DE EXPERIENCIA PROFESIONAL' con cargo ANEXO 11, objeto contractual, actividades, fecha inicial/final, meses/días de experiencia por registro. Estilos: fuente Helvetica, tamaños 10-12pt, alignment justify para párrafos, tablas con grid, margenes: 1cm superior/inferior, 2cm laterales.",
+      "files": [
+        "gestion_humana/formapp/report_generators.py",
+        "gestion_humana/formapp/models.py"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "info": {
+          "title": "PDF ANEXO 11 Service",
+          "version": "1.0.0"
+        },
+        "components": {
+          "schemas": {
+            "ANEXO11PDF": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "default": "ANEXO 11 - CARTA DE COMPROMISO PERSONAL"
+                },
+                "pages": {
+                  "type": "integer",
+                  "default": 2
+                },
+                "sections": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["Carta de Compromiso", "Tabla de Estudios", "Firmas", "Relación de Experiencia"]
+                  }
+                },
+                "font": {
+                  "type": "string",
+                  "default": "Helvetica"
+                },
+                "margins": {
+                  "type": "object",
+                  "properties": {
+                    "top": {"type": "string", "default": "1cm"},
+                    "bottom": {"type": "string", "default": "1cm"},
+                    "left": {"type": "string", "default": "2cm"},
+                    "right": {"type": "string", "default": "2cm"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-  ],
-  "data_models": [
-    {
-      "name": "InformacionBasica",
-      "purpose": "Datos personales del candidato",
-      "fields": [
-        "nombre_completo (auto-generado en mayúsculas)",
-        "cedula (único, 5-10 dígitos)",
-        "genero (choices: Femenino/Masculino/Otro)",
-        "dirección (subdividida: tipo_via, numero_via, numero_casa, complemento, barrio)",
-        "telefono (10 dígitos)",
-        "correo (email)",
-        "perfil (117 choices + Otro)",
-        "area_del_conocimiento (22 choices + Otro)",
-        "profesion (101 choices + Otro)",
-        "contrato",
-        "observacion"
-      ],
-      "relationships": "1-N con ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion. 1-1 con CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales"
-    },
-    {
-      "name": "ExperienciaLaboral",
-      "purpose": "Registro de experiencia laboral con cálculo automático",
-      "fields": [
-        "fecha_inicial",
-        "fecha_terminacion",
-        "meses_experiencia (calculado, readonly)",
-        "dias_experiencia (calculado, readonly)",
-        "cargo",
-        "cargo_anexo_11 (default: 'Profesional')",
-        "objeto_contractual",
-        "funciones",
-        "certificado_laboral (FileField, validado)"
-      ],
-      "validation": "Fecha inicial < fecha terminación. Certificado obligatorio para nuevos registros, opcional en edición"
-    },
-    {
-      "name": "InformacionAcademica",
-      "purpose": "Estudios universitarios",
-      "fields": [
-        "fecha_expedicion",
-        "tarjeta_profesional (choices: Tarjeta/Resolución/No Aplica)",
-        "profesion",
-        "universidad",
-        "numero_tarjeta_resolucion",
-        "fecha_grado",
-        "fotocopia_titulo",
-        "fotocopia_tarjeta_profesional",
-        "certificado_vigencia_tarjeta",
-        "fecha_vigencia_tarjeta"
-      ]
-    },
-    {
-      "name": "Posgrado",
-      "purpose": "Estudios de posgrado (maestrías, doctorados)",
-      "fields": ["nombre_posgrado", "universidad", "fecha_terminacion"]
-    },
-    {
-      "name": "Especializacion",
-      "purpose": "Estudios de especialización",
-      "fields": ["nombre_especializacion", "universidad", "fecha_terminacion"]
-    },
-    {
-      "name": "CalculoExperiencia",
-      "purpose": "Cálculo consolidado de experiencia total",
-      "fields": [
-        "total_meses_experiencia",
-        "total_dias_experiencia",
-        "total_experiencia_anos (decimal 2 decimales)",
-        "anos_y_meses_experiencia (texto legible)"
-      ],
-      "auto_calculated": true
-    },
-    {
-      "name": "DocumentosIdentidad",
-      "purpose": "Documentos de identificación",
-      "fields": [
-        "fotocopia_cedula (obligatorio, 150%)",
-        "hoja_de_vida (obligatorio)",
-        "libreta_militar (opcional)",
-        "numero_libreta_militar",
-        "distrito_militar",
-        "clase_libreta (choices: Primera/Segunda)"
-      ],
-      "validation": "Libreta militar condicional según género (actualizado a opcional para todos)"
-    },
-    {
-      "name": "Antecedentes",
-      "purpose": "Certificados de antecedentes legales",
-      "fields": [
-        "certificado_procuraduria + fecha",
-        "certificado_contraloria + fecha",
-        "certificado_policia + fecha",
-        "certificado_medidas_correctivas + fecha",
-        "certificado_delitos_sexuales + fecha"
-      ],
-      "required_all": true
-    },
-    {
-      "name": "AnexosAdicionales",
-      "purpose": "Documentos adicionales opcionales",
-      "fields": [
-        "anexo_03_datos_personales (opcional)",
-        "carta_intencion (opcional)",
-        "otros_documentos (opcional)",
-        "descripcion_otros (TextField)"
-      ]
-    }
-  ],
-  "security": {
-    "authentication": "Django built-in LoginRequiredMixin para vistas administrativas",
-    "validation": [
-      "Validación de cédula única",
-      "Validación de formato de archivos (PDF, JPG, PNG)",
-      "Validación de tamaño de archivos (10MB máx)",
-      "Validación MIME type con python-magic",
-      "Validación de fechas (fecha inicial < fecha final)",
-      "Validación de teléfono (10 dígitos)",
-      "Validación de correo electrónico"
-    ],
-    "transactions": "Uso de transaction.atomic() para operaciones críticas",
-    "file_handling": "Cloudinary para almacenamiento seguro"
-  },
-  "deployment": {
-    "environment": "Dual (Railway producción + desarrollo local)",
-    "configuration": [
-      "Variables de entorno con python-decouple",
-      "GMAIL_TOKEN_JSON para Railway o token.json local",
-      "Zona horaria: America/Bogota",
-      "WhiteNoise para archivos estáticos",
-      "Gunicorn como servidor WSGI"
-    ],
-    "database": "PostgreSQL en producción con dj-database-url, SQLite en desarrollo"
-  },
-  "issues_and_concerns": [
-    {
-      "category": "Code Quality",
-      "severity": "medium",
-      "description": "views.py muy extenso (1501 líneas). Podría beneficiarse de refactorización en múltiples archivos o servicios",
-      "impact": "Mantenibilidad"
-    },
-    {
-      "category": "Performance",
-      "severity": "low",
-      "description": "Generación de ZIP completo carga todos los candidatos en memoria. Podría ser problemático con miles de registros",
-      "impact": "Escalabilidad"
-    },
-    {
-      "category": "Error Handling",
-      "severity": "medium",
-      "description": "Varios try-except con logger.error pero continúan la ejecución. Algunos errores podrían necesitar rollback",
-      "impact": "Integridad de datos"
-    },
-    {
-      "category": "Validation",
-      "severity": "high",
-      "description": "Bug corregido: validación de formsets antes de guardar para evitar que se guarde información incompleta",
-      "status": "resolved",
-      "impact": "Integridad de datos"
-    },
-    {
-      "category": "File Management",
-      "severity": "medium",
-      "description": "Lógica compleja de manejo de archivos en formsets (edición vs creación). Requiere validadores customizados",
-      "impact": "Experiencia de usuario"
-    },
-    {
-      "category": "Database",
-      "severity": "low",
-      "description": "23 migraciones aplicadas. Historial extenso de cambios en modelos. Última migración sin aplicar (0023)",
-      "impact": "Gestión de base de datos"
-    },
-    {
-      "category": "Email Service",
-      "severity": "medium",
-      "description": "Envío de correos en thread separado sin manejo robusto de fallos. No hay reintento automático",
-      "impact": "Comunicación con usuarios"
-    },
-    {
-      "category": "Frontend",
-      "severity": "low",
-      "description": "No hay JavaScript framework. Toda la lógica está en Django templates. Limitado para interactividad",
-      "impact": "Experiencia de usuario"
-    },
-    {
-      "category": "Testing",
-      "severity": "high",
-      "description": "tests.py existe pero está vacío. No hay tests unitarios, de integración ni E2E",
-      "status": "critical",
-      "impact": "Confiabilidad y mantenimiento"
-    }
-  ],
-  "recommendations": [
-    {
-      "priority": "high",
-      "category": "Testing",
-      "recommendation": "Implementar suite completa de tests: unitarios (modelos, formularios, validadores), integración (vistas, generación de reportes), E2E (flujo completo de registro)"
-    },
-    {
-      "priority": "high",
-      "category": "Code Organization",
-      "recommendation": "Refactorizar views.py en múltiples archivos: views_public.py (formulario público), views_admin.py (panel admin), views_reports.py (generación Excel/PDF/ZIP), services.py (lógica de negocio)"
-    },
-    {
-      "priority": "medium",
-      "category": "Error Handling",
-      "recommendation": "Implementar manejo de errores más robusto con rollback explícito y notificaciones al usuario de errores críticos"
-    },
-    {
-      "priority": "medium",
-      "category": "Performance",
-      "recommendation": "Implementar paginación o generación en streaming para descarga de ZIP completo. Considerar procesamiento asíncrono con Celery"
-    },
-    {
-      "priority": "medium",
-      "category": "Email",
-      "recommendation": "Implementar cola de emails con Celery + Redis/RabbitMQ para manejo robusto con reintentos y logging de fallos"
-    },
-    {
-      "priority": "low",
-      "category": "Documentation",
-      "recommendation": "Agregar docstrings completos a funciones complejas y documentación de API endpoints"
-    },
-    {
-      "priority": "low",
-      "category": "Security",
-      "recommendation": "Implementar rate limiting en formulario público para prevenir spam/abuso"
-    },
-    {
-      "priority": "low",
-      "category": "Monitoring",
-      "recommendation": "Implementar logging estructurado y monitoreo de aplicación (Sentry, New Relic, etc.)"
-    }
-  ],
-  "migration_status": {
-    "applied": 22,
-    "pending": 1,
-    "latest": "0023_alter_documentosidentidad_fotocopia_cedula_and_more.py"
-  },
-  "git_status": {
-    "branch": "main",
-    "modified_files": [
-      "carpeta md/DUAL_ENVIRONMENT_SETUP.md",
-      "carpeta md/ENVIRONMENTS.md",
-      "carpeta md/QUICK_START.md",
-      "carpeta md/README.md",
-      "carpeta md/README_LOCAL.md",
-      "gestion_humana/db.sqlite3",
-      "gestion_humana/formapp/models.py"
-    ],
-    "untracked_files": [
-      "gestion_humana/formapp/migrations/0023_alter_documentosidentidad_fotocopia_cedula_and_more.py",
-      "gestion_humana/venv_wsl/"
-    ],
-    "recent_commits": [
-      "8ea18fe - se actualiza proceso para trabajar en produciion y desarrollo",
-      "10d684e - se agregan campos para validar2",
-      "ba08aaf - se agregan campos para validar2",
-      "18b5629 - se agregan campos para validar"
-    ]
-  },
-  "estimated_complexity": "medium-high",
-  "lines_of_code_approx": 5000,
-  "maintenance_level": "active"
+  ]
 }

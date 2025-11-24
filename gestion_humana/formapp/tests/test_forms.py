@@ -171,10 +171,10 @@ class ExperienciaLaboralFormTest(TestCase):
             correo='test@test.com',
         )
 
-        # Crear un archivo PDF de prueba
+        # Crear un archivo PDF de prueba con cabecera válida
         self.test_pdf = SimpleUploadedFile(
             "certificado.pdf",
-            b"PDF content",
+            b"%PDF-1.4 content",
             content_type="application/pdf"
         )
 
@@ -230,11 +230,15 @@ class ExperienciaLaboralFormTest(TestCase):
 
     def test_certificado_laboral_opcional_en_edicion(self):
         """Test que certificado es opcional al editar"""
-        # Primero crear una experiencia con certificado
-        exp = ExperienciaLaboral.objects.create(
-            informacion_basica=self.persona,
-            **self.valid_data
-        )
+        # Mock de Cloudinary para evitar error en save()
+        from unittest.mock import patch
+        with patch('cloudinary.uploader.upload', return_value={'public_id': 'test', 'format': 'pdf', 'resource_type': 'raw'}):
+            # Primero crear una experiencia con certificado
+            exp = ExperienciaLaboral.objects.create(
+                informacion_basica=self.persona,
+                **self.valid_data,
+                certificado_laboral=self.test_pdf
+            )
 
         # Editar sin proporcionar nuevo certificado
         data = self.valid_data.copy()
@@ -271,12 +275,12 @@ class DocumentosIdentidadFormTest(TestCase):
         """Configuración inicial"""
         self.test_pdf = SimpleUploadedFile(
             "cedula.pdf",
-            b"PDF content",
+            b"%PDF-1.4 content",
             content_type="application/pdf"
         )
         self.test_pdf_hv = SimpleUploadedFile(
             "hoja_vida.pdf",
-            b"PDF content",
+            b"%PDF-1.4 content",
             content_type="application/pdf"
         )
 
@@ -323,19 +327,19 @@ class AntecedentesFormTest(TestCase):
     def create_test_files(self):
         """Crear archivos de prueba"""
         self.cert_procuraduria = SimpleUploadedFile(
-            "procuraduria.pdf", b"PDF", content_type="application/pdf"
+            "procuraduria.pdf", b"%PDF-1.4 content", content_type="application/pdf"
         )
         self.cert_contraloria = SimpleUploadedFile(
-            "contraloria.pdf", b"PDF", content_type="application/pdf"
+            "contraloria.pdf", b"%PDF-1.4 content", content_type="application/pdf"
         )
         self.cert_policia = SimpleUploadedFile(
-            "policia.pdf", b"PDF", content_type="application/pdf"
+            "policia.pdf", b"%PDF-1.4 content", content_type="application/pdf"
         )
         self.cert_medidas = SimpleUploadedFile(
-            "medidas.pdf", b"PDF", content_type="application/pdf"
+            "medidas.pdf", b"%PDF-1.4 content", content_type="application/pdf"
         )
         self.cert_delitos = SimpleUploadedFile(
-            "delitos.pdf", b"PDF", content_type="application/pdf"
+            "delitos.pdf", b"%PDF-1.4 content", content_type="application/pdf"
         )
 
     def test_formulario_valido_con_todos_los_certificados(self):
@@ -438,7 +442,7 @@ class AnexosAdicionalesFormTest(TestCase):
     def test_formulario_valido_con_anexos(self):
         """Test formulario válido con anexos"""
         anexo_pdf = SimpleUploadedFile(
-            "anexo.pdf", b"PDF", content_type="application/pdf"
+            "anexo.pdf", b"%PDF-1.4 content", content_type="application/pdf"
         )
         form = AnexosAdicionalesForm(
             data={'descripcion_otros': 'Certificado de idiomas'},
@@ -487,3 +491,51 @@ class EspecializacionFormTest(TestCase):
         self.assertIn('nombre_especializacion', form.errors)
         self.assertIn('universidad', form.errors)
         self.assertIn('fecha_terminacion', form.errors)
+
+
+class InformacionAcademicaFormTest(TestCase):
+    """Tests para InformacionAcademicaForm"""
+
+    def test_formulario_valido_minimo(self):
+        """Test formulario válido con campos mínimos requeridos"""
+        form = InformacionAcademicaForm(data={
+            'profesion': 'Ingeniero de Sistemas',
+            'universidad': 'Universidad Nacional',
+            'fecha_grado': date(2020, 12, 1),
+            'tarjeta_profesional': 'No Aplica',
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_formulario_valido_completo(self):
+        """Test formulario válido con todos los campos"""
+        form = InformacionAcademicaForm(data={
+            'profesion': 'Abogado',
+            'universidad': 'Universidad Libre',
+            'fecha_grado': date(2019, 6, 1),
+            'tarjeta_profesional': 'Tarjeta Profesional',
+            'numero_tarjeta_resolucion': 'TP-123456',
+            'fecha_expedicion': date(2019, 7, 1),
+            'fecha_vigencia_tarjeta': date(2029, 7, 1),
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_campos_obligatorios(self):
+        """Test campos obligatorios"""
+        form = InformacionAcademicaForm(data={})
+        self.assertFalse(form.is_valid())
+        self.assertIn('profesion', form.errors)
+        self.assertIn('universidad', form.errors)
+        self.assertIn('fecha_grado', form.errors)
+
+    def test_archivos_opcionales(self):
+        """Test que los archivos son opcionales en el formulario"""
+        # El modelo define estos campos como blank=True, null=True
+        form = InformacionAcademicaForm(data={
+            'profesion': 'Ingeniero',
+            'universidad': 'U. Andes',
+            'fecha_grado': date(2020, 1, 1),
+            'tarjeta_profesional': 'No Aplica',
+        })
+        self.assertTrue(form.is_valid())
+        # Verificar que no hay errores relacionados con archivos
+        self.assertNotIn('fotocopia_titulo', form.errors)

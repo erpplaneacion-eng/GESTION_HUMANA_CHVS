@@ -53,17 +53,19 @@ class InformacionBasicaModelTest(TestCase):
 
     def test_campos_obligatorios(self):
         """Test que los campos obligatorios no pueden estar vacíos"""
-        # Crear sin cédula
-        with self.assertRaises(IntegrityError):
-            InformacionBasica.objects.create(
-                nombre_completo='TEST',
-                genero='Masculino',
-                tipo_via='Calle',
-                numero_via='10',
-                numero_casa='20',
-                telefono='3001234567',
-                correo='test@test.com',
-            )
+        # Crear instancia sin cédula
+        info = InformacionBasica(
+            nombre_completo='TEST',
+            genero='Masculino',
+            tipo_via='Calle',
+            numero_via='10',
+            numero_casa='20',
+            telefono='3001234567',
+            correo='test@test.com',
+        )
+        # Debe fallar validación por falta de cédula
+        with self.assertRaises(ValidationError):
+            info.full_clean()
 
     def test_campos_opcionales(self):
         """Test que los campos opcionales pueden estar vacíos"""
