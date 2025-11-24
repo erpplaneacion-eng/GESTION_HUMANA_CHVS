@@ -9,6 +9,7 @@ class InformacionBasica(models.Model):
     GENERO_CHOICES = [
         ('Femenino', 'Femenino'),
         ('Masculino', 'Masculino'),
+        ('Otro', 'Otro'),
     ]
 
     # Choices para Area del Conocimiento
@@ -161,7 +162,7 @@ class ExperienciaLaboral(models.Model):
     cargo = models.CharField(max_length=200, verbose_name='Cargo')
     cargo_anexo_11 = models.CharField(max_length=200, verbose_name='Cargo Anexo 11', blank=True, default='Profesional')
     objeto_contractual = models.TextField(verbose_name='Objeto Contractual')
-    funciones = models.TextField(verbose_name='Funciones')     
+    funciones = models.TextField(verbose_name='Actividades Desarrolladas')     
     
     informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='experiencias_laborales')
     certificado_laboral = models.FileField(
@@ -280,7 +281,7 @@ class DocumentosIdentidad(models.Model):
         upload_to='documentos_identidad/cedulas/',
         verbose_name='Fotocopia Cédula de Ciudadanía',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
+        help_text='Se requiere al 150%. Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
         max_length=200
     )
 
