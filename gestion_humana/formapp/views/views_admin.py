@@ -204,6 +204,11 @@ def applicant_edit_view(request, pk):
             # Si hay errores, mostrar mensajes específicos
             if not form_valid:
                 messages.error(request, 'Por favor corrija los errores en el formulario principal.')
+                # Mostrar errores específicos del formulario principal
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f'Error en {field}: {error}')
+            
             if not experiencia_valid:
                 error_msg = experiencia_formset.non_form_errors()
                 if error_msg:
