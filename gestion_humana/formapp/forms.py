@@ -343,6 +343,60 @@ class EspecializacionForm(forms.ModelForm):
             raise forms.ValidationError('La fecha de terminación no puede ser futura.')
         return fecha
 
+from .models import EducacionBasica, EducacionSuperior
+
+class EducacionBasicaForm(forms.ModelForm):
+    class Meta:
+        model = EducacionBasica
+        exclude = ['informacion_basica']
+        widgets = {
+            'institucion': forms.TextInput(attrs={'class': 'form-control'}),
+            'anio_grado': forms.NumberInput(attrs={'class': 'form-control', 'min': '1950', 'max': str(date.today().year)}),
+            'titulo': forms.TextInput(attrs={'class': 'form-control'}),
+            'acta_grado_diploma': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+        }
+
+class EducacionSuperiorForm(forms.ModelForm):
+    class Meta:
+        model = EducacionSuperior
+        exclude = ['informacion_basica']
+        widgets = {
+            'nivel': forms.Select(attrs={'class': 'form-control'}),
+            'institucion': forms.TextInput(attrs={'class': 'form-control'}),
+            'titulo': forms.TextInput(attrs={'class': 'form-control'}),
+            'fecha_grado': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'tarjeta_profesional': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
+            'documento_soporte': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+        }
+    
+    def clean_fecha_grado(self):
+        fecha = self.cleaned_data.get('fecha_grado')
+        if fecha and fecha > date.today():
+            raise forms.ValidationError('La fecha de grado no puede ser futura.')
+        return fecha
+
+EducacionBasicaFormSet = inlineformset_factory(
+    InformacionBasica,
+    EducacionBasica,
+    form=EducacionBasicaForm,
+    extra=1,
+    can_delete=True
+)
+
+EducacionSuperiorFormSet = inlineformset_factory(
+    InformacionBasica,
+    EducacionSuperior,
+    form=EducacionSuperiorForm,
+    extra=1,
+    can_delete=True
+)
+
 ExperienciaLaboralFormSet = inlineformset_factory(
     InformacionBasica,
     ExperienciaLaboral,
@@ -568,3 +622,11 @@ class AnexosAdicionalesForm(forms.ModelForm):
                 'placeholder': 'Describa el contenido del documento adicional'
             }),
         }
+        help_texts = {
+            'descripcion_otros': 'Si pertenece a un grupo de población diferencial, adjunte el certificado y colóquelo en las observaciones.'
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Agregar nota aclaratoria para población diferencial en el campo de descripción
+        self.fields['descripcion_otros'].help_text = 'Si pertenece a un grupo de población diferencial, adjunte el certificado y menciónelo aquí.'

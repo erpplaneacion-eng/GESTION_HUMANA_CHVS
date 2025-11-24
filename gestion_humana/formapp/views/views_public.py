@@ -18,6 +18,8 @@ from ..forms import (
     InformacionAcademicaFormSet,
     PosgradoFormSet,
     EspecializacionFormSet,
+    EducacionBasicaFormSet,
+    EducacionSuperiorFormSet,
     DocumentosIdentidadForm,
     AntecedentesForm,
     AnexosAdicionalesForm,
@@ -38,24 +40,27 @@ def public_form_view(request):
         antecedentes_form = AntecedentesForm(request.POST, request.FILES)
         anexos_form = AnexosAdicionalesForm(request.POST, request.FILES)
         experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES)
+        basica_formset = EducacionBasicaFormSet(request.POST, request.FILES)
+        superior_formset = EducacionSuperiorFormSet(request.POST, request.FILES)
         academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES)
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES)
         especializacion_formset = EspecializacionFormSet(request.POST, request.FILES)
 
         # CRÍTICO: Validar TODOS los formularios ANTES de guardar cualquier cosa
-        # Esto previene el bug donde certificados no se guardan pero el usuario ve "éxito"
         if form.is_valid():
             # Validar todos los formsets y formularios primero
             documentos_valid = documentos_form.is_valid()
             antecedentes_valid = antecedentes_form.is_valid()
             anexos_valid = anexos_form.is_valid()
             experiencia_valid = experiencia_formset.is_valid()
+            basica_valid = basica_formset.is_valid()
+            superior_valid = superior_formset.is_valid()
             academica_valid = academica_formset.is_valid()
             posgrado_valid = posgrado_formset.is_valid()
             especializacion_valid = especializacion_formset.is_valid()
 
             # Solo proceder si TODO es válido
-            if documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and academica_valid and posgrado_valid and especializacion_valid:
+            if documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and basica_valid and superior_valid and academica_valid and posgrado_valid and especializacion_valid:
                 try:
                     with transaction.atomic():
                         informacion_basica = form.save()
@@ -80,6 +85,12 @@ def public_form_view(request):
                         experiencia_formset.save()
                         # Calcular experiencia automáticamente
                         calcular_experiencia_total(informacion_basica)
+
+                        basica_formset.instance = informacion_basica
+                        basica_formset.save()
+
+                        superior_formset.instance = informacion_basica
+                        superior_formset.save()
 
                         academica_formset.instance = informacion_basica
                         academica_formset.save()
@@ -116,6 +127,20 @@ def public_form_view(request):
                                 for error in error_list:
                                     messages.error(request, f'Error en Experiencia Laboral #{i+1} - {field}: {error}')
 
+                if not basica_valid:
+                    for i, form_errors in enumerate(basica_formset.errors):
+                        if form_errors:
+                            for field, error_list in form_errors.items():
+                                for error in error_list:
+                                    messages.error(request, f'Error en Educación Básica #{i+1} - {field}: {error}')
+
+                if not superior_valid:
+                    for i, form_errors in enumerate(superior_formset.errors):
+                        if form_errors:
+                            for field, error_list in form_errors.items():
+                                for error in error_list:
+                                    messages.error(request, f'Error en Educación Superior (Técnico/Tecnólogo) #{i+1} - {field}: {error}')
+
                 if not academica_valid:
                     for i, form_errors in enumerate(academica_formset.errors):
                         if form_errors:
@@ -146,6 +171,8 @@ def public_form_view(request):
         antecedentes_form = AntecedentesForm()
         anexos_form = AnexosAdicionalesForm()
         experiencia_formset = ExperienciaLaboralFormSet()
+        basica_formset = EducacionBasicaFormSet()
+        superior_formset = EducacionSuperiorFormSet()
         academica_formset = InformacionAcademicaFormSet()
         posgrado_formset = PosgradoFormSet()
         especializacion_formset = EspecializacionFormSet()
@@ -156,6 +183,8 @@ def public_form_view(request):
         'antecedentes_form': antecedentes_form,
         'anexos_form': anexos_form,
         'experiencia_formset': experiencia_formset,
+        'basica_formset': basica_formset,
+        'superior_formset': superior_formset,
         'academica_formset': academica_formset,
         'posgrado_formset': posgrado_formset,
         'especializacion_formset': especializacion_formset,

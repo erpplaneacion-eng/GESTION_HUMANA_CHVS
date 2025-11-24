@@ -251,6 +251,8 @@ def generar_anexo11_pdf(applicant):
     formaciones_academicas = list(applicant.formacion_academica.all())
     posgrados = list(applicant.posgrados.all())
     especializaciones = list(applicant.especializaciones.all())
+    educacion_basica = list(applicant.educacion_basica.all())
+    educacion_superior = list(applicant.educacion_superior.all())
 
     # Calcular experiencia en años
     try:
@@ -302,22 +304,50 @@ def generar_anexo11_pdf(applicant):
         if fecha:
             contenido_fechas_esp += f'{fecha}<br/>'
     
-    # OTROS (POSGRADOS) - Agrupar todos los posgrados
+    # OTROS (POSGRADOS, BACHILLER, TÉCNICO/TECNÓLOGO) - Agrupar todos en OTROS
     contenido_titulos_otros = ''
     contenido_instituciones_otros = ''
     contenido_fechas_otros = ''
     
+    # 1. Posgrados
     for posgrado in posgrados:
         titulo = posgrado.nombre_posgrado or ''
         institucion = posgrado.universidad or ''
         fecha = posgrado.fecha_terminacion.strftime('%d/%m/%Y') if posgrado.fecha_terminacion else ''
         
         if titulo:
-            contenido_titulos_otros += f'{titulo}<br/>'
+            contenido_titulos_otros += f'<b>(Posgrado)</b> {titulo}<br/>'
         if institucion:
             contenido_instituciones_otros += f'{institucion}<br/>'
         if fecha:
             contenido_fechas_otros += f'{fecha}<br/>'
+
+    # 2. Educación Superior (Técnico/Tecnólogo)
+    for superior in educacion_superior:
+        titulo = superior.titulo or ''
+        institucion = superior.institucion or ''
+        fecha = superior.fecha_grado.strftime('%d/%m/%Y') if superior.fecha_grado else ''
+        nivel = superior.nivel or 'Técnico/Tecnólogo'
+        
+        if titulo:
+            contenido_titulos_otros += f'<b>({nivel})</b> {titulo}<br/>'
+        if institucion:
+            contenido_instituciones_otros += f'{institucion}<br/>'
+        if fecha:
+            contenido_fechas_otros += f'{fecha}<br/>'
+
+    # 3. Educación Básica (Bachiller)
+    for basica in educacion_basica:
+        titulo = basica.titulo or ''
+        institucion = basica.institucion or ''
+        anio = str(basica.anio_grado) if basica.anio_grado else ''
+        
+        if titulo:
+            contenido_titulos_otros += f'<b>(Bachiller)</b> {titulo}<br/>'
+        if institucion:
+            contenido_instituciones_otros += f'{institucion}<br/>'
+        if anio:
+            contenido_fechas_otros += f'{anio}<br/>'
     
     # Si no hay tarjeta profesional, poner "No Aplica"
     if not tarjeta_texto:

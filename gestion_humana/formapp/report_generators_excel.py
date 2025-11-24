@@ -104,6 +104,58 @@ def create_excel_for_person(applicant):
     for col in range(1, 9):
         ws2.column_dimensions[chr(64 + col)].width = 20
 
+    # Hoja 2.1: Educación Básica (Bachiller)
+    ws_basica = wb.create_sheet("Bachiller")
+    ws_basica['A1'] = f"EDUCACIÓN BÁSICA (BACHILLER) - {applicant.nombre_completo}"
+    ws_basica['A1'].font = title_font
+    ws_basica.merge_cells('A1:C1')
+
+    headers_basica = ["Institución", "Año Grado", "Título"]
+    for col, header in enumerate(headers_basica, start=1):
+        cell = ws_basica.cell(row=3, column=col)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.border = border
+
+    row = 4
+    for basica in applicant.educacion_basica.all():
+        ws_basica.cell(row=row, column=1, value=basica.institucion).border = border
+        ws_basica.cell(row=row, column=2, value=basica.anio_grado).border = border
+        ws_basica.cell(row=row, column=3, value=basica.titulo).border = border
+        row += 1
+    
+    for col in range(1, 4):
+        ws_basica.column_dimensions[chr(64 + col)].width = 25
+
+    # Hoja 2.2: Educación Superior (Técnico/Tecnólogo)
+    ws_superior = wb.create_sheet("Técnico y Tecnólogo")
+    ws_superior['A1'] = f"EDUCACIÓN SUPERIOR (TÉCNICO/TECNÓLOGO) - {applicant.nombre_completo}"
+    ws_superior['A1'].font = title_font
+    ws_superior.merge_cells('A1:E1')
+
+    headers_superior = ["Nivel", "Institución", "Título", "Fecha Grado", "Tarjeta Profesional"]
+    for col, header in enumerate(headers_superior, start=1):
+        cell = ws_superior.cell(row=3, column=col)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal='center', vertical='center')
+        cell.border = border
+
+    row = 4
+    for superior in applicant.educacion_superior.all():
+        ws_superior.cell(row=row, column=1, value=superior.nivel).border = border
+        ws_superior.cell(row=row, column=2, value=superior.institucion).border = border
+        ws_superior.cell(row=row, column=3, value=superior.titulo).border = border
+        ws_superior.cell(row=row, column=4, value=superior.fecha_grado.strftime('%Y-%m-%d')).border = border
+        ws_superior.cell(row=row, column=5, value=superior.tarjeta_profesional or "N/A").border = border
+        row += 1
+    
+    for col in range(1, 6):
+        ws_superior.column_dimensions[chr(64 + col)].width = 25
+
     # Hoja 3: Información Académica
     ws3 = wb.create_sheet("Información Académica")
     ws3['A1'] = f"INFORMACIÓN ACADÉMICA - {applicant.nombre_completo}"

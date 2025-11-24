@@ -454,278 +454,303 @@
                 </div>
             </div>
 
-            <!-- SECCIÓN 3: INFORMACIÓN ACADÉMICA -->
+            <!-- SECCIÓN 4: FORMACIÓN ACADÉMICA (Acordeón) -->
             <div class="form-section">
                 <h2 class="section-title">
-                    <i class="fas fa-graduation-cap"></i> Información Académica
+                    <i class="fas fa-graduation-cap"></i> Formación Académica
                 </h2>
                 <p class="text-muted mb-4">
                     <i class="fas fa-university"></i>
-                    Incluya información sobre sus títulos profesionales y tarjetas profesionales
+                    Por favor registre todos sus niveles de formación académica.
                 </p>
 
-                <div id="academica-container">
-                    {{ academica_formset.management_form }}
-                    {% for form in academica_formset %}
-                        <div class="academica-group">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-graduation-cap"></i> Formación {{ forloop.counter }}
-                                </h5>
-                                {% if not forloop.first %}
-                                    <button type="button" class="remove-btn remove-academica">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
-                                {% endif %}
-                            </div>
-
-                            {{ form.id }}
-                            {% if form.DELETE %}
-                                {{ form.DELETE }}
-                            {% endif %}
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.profesion.label }} *</label>
-                                    {{ form.profesion }}
-                                    {% if form.profesion.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.profesion.errors }}</div>
-                                    {% endif %}
+                <div class="accordion" id="accordionAcademic">
+                    
+                    <!-- 1. Educación Básica (Bachiller) -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingBasica">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBasica" aria-expanded="true" aria-controls="collapseBasica">
+                                <i class="fas fa-school me-2"></i> 1. Educación Básica (Bachiller)
+                            </button>
+                        </h2>
+                        <div id="collapseBasica" class="accordion-collapse collapse show" aria-labelledby="headingBasica" data-bs-parent="#accordionAcademic">
+                            <div class="accordion-body">
+                                <div id="basica-container">
+                                    {{ basica_formset.management_form }}
+                                    {% for form in basica_formset %}
+                                        <div class="basica-group border-bottom pb-3 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Bachiller {{ forloop.counter }}</h6>
+                                                {% if not forloop.first %}
+                                                    <button type="button" class="btn btn-danger btn-sm remove-basica"><i class="fas fa-trash"></i></button>
+                                                {% endif %}
+                                            </div>
+                                            {{ form.id }}
+                                            {% if form.DELETE %}{{ form.DELETE }}{% endif %}
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">{{ form.institucion.label }}</label>
+                                                    {{ form.institucion }}
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <label class="form-label">{{ form.anio_grado.label }}</label>
+                                                    {{ form.anio_grado }}
+                                                </div>
+                                                <div class="col-md-3 mb-2">
+                                                    <label class="form-label">{{ form.titulo.label }}</label>
+                                                    {{ form.titulo }}
+                                                </div>
+                                                <div class="col-md-12 mb-2">
+                                                    <label class="form-label">{{ form.acta_grado_diploma.label }}</label>
+                                                    {{ form.acta_grado_diploma }}
+                                                    <small class="text-muted">PDF, JPG, PNG (Max 10MB)</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
-                                    {{ form.universidad }}
-                                    {% if form.universidad.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">{{ form.tarjeta_profesional.label }}</label>
-                                    {{ form.tarjeta_profesional }}
-                                    {% if form.tarjeta_profesional.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.tarjeta_profesional.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">{{ form.numero_tarjeta_resolucion.label }}</label>
-                                    {{ form.numero_tarjeta_resolucion }}
-                                    {% if form.numero_tarjeta_resolucion.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.numero_tarjeta_resolucion.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">{{ form.fecha_expedicion.label }}</label>
-                                    {{ form.fecha_expedicion }}
-                                    {% if form.fecha_expedicion.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_expedicion.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.fecha_grado.label }} *</label>
-                                    {{ form.fecha_grado }}
-                                    {% if form.fecha_grado.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_grado.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <!-- Documentos Académicos -->
-                            <hr class="my-3">
-                            <h6 class="mb-3">
-                                <i class="fas fa-file-pdf"></i> Documentos de Soporte
-                            </h6>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fotocopia_titulo.label }}</label>
-                                    {{ form.fotocopia_titulo }}
-                                    <small class="form-text text-muted">{{ form.fotocopia_titulo.help_text }}</small>
-                                    {% if form.fotocopia_titulo.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fotocopia_titulo.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-6 mb-3 campo-tarjeta-doc">
-                                    <label class="form-label">{{ form.fotocopia_tarjeta_profesional.label }}</label>
-                                    {{ form.fotocopia_tarjeta_profesional }}
-                                    <small class="form-text text-muted">{{ form.fotocopia_tarjeta_profesional.help_text }}</small>
-                                    {% if form.fotocopia_tarjeta_profesional.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fotocopia_tarjeta_profesional.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="row campo-vigencia-doc">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.certificado_vigencia_tarjeta.label }}</label>
-                                    {{ form.certificado_vigencia_tarjeta }}
-                                    <small class="form-text text-muted">{{ form.certificado_vigencia_tarjeta.help_text }}</small>
-                                    {% if form.certificado_vigencia_tarjeta.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.certificado_vigencia_tarjeta.errors }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">{{ form.fecha_vigencia_tarjeta.label }}</label>
-                                    {{ form.fecha_vigencia_tarjeta }}
-                                    {% if form.fecha_vigencia_tarjeta.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_vigencia_tarjeta.errors }}</div>
-                                    {% endif %}
-                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-basica">
+                                    <i class="fas fa-plus"></i> Agregar Otro Bachiller
+                                </button>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
 
-                <div class="text-center mt-3">
-                    <button type="button" class="add-btn" id="add-academica">
-                        <i class="fas fa-plus-circle"></i> Agregar Más Información Académica
-                    </button>
-                </div>
-            </div>
-
-            <!-- SECCIÓN 4: POSGRADOS -->
-            <div class="form-section">
-                <h2 class="section-title">
-                    <i class="fas fa-award"></i> Posgrados (Maestrías, Doctorados)
-                </h2>
-                <p class="text-muted mb-3">
-                    <i class="fas fa-star"></i>
-                    <strong>Opcional:</strong> Agregue información sobre maestrías, doctorados, etc.
-                </p>
-
-                <div id="posgrado-container">
-                    {{ posgrado_formset.management_form }}
-                    {% for form in posgrado_formset %}
-                        <div class="posgrado-group">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-award"></i> Posgrado {{ forloop.counter }}
-                                </h5>
-                                {% if not forloop.first %}
-                                    <button type="button" class="remove-btn remove-posgrado">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
-                                {% endif %}
-                            </div>
-
-                            {{ form.id }}
-                            {% if form.DELETE %}
-                                {{ form.DELETE }}
-                            {% endif %}
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.nombre_posgrado.label }} *</label>
-                                    {{ form.nombre_posgrado }}
-                                    {% if form.nombre_posgrado.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.nombre_posgrado.errors }}</div>
-                                    {% endif %}
+                    <!-- 2. Educación Superior (Técnico / Tecnólogo) -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingSuperior">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSuperior" aria-expanded="false" aria-controls="collapseSuperior">
+                                <i class="fas fa-cogs me-2"></i> 2. Educación Superior (Técnico / Tecnólogo)
+                            </button>
+                        </h2>
+                        <div id="collapseSuperior" class="accordion-collapse collapse" aria-labelledby="headingSuperior" data-bs-parent="#accordionAcademic">
+                            <div class="accordion-body">
+                                <div id="superior-container">
+                                    {{ superior_formset.management_form }}
+                                    {% for form in superior_formset %}
+                                        <div class="superior-group border-bottom pb-3 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Título {{ forloop.counter }}</h6>
+                                                {% if not forloop.first %}
+                                                    <button type="button" class="btn btn-danger btn-sm remove-superior"><i class="fas fa-trash"></i></button>
+                                                {% endif %}
+                                            </div>
+                                            {{ form.id }}
+                                            {% if form.DELETE %}{{ form.DELETE }}{% endif %}
+                                            <div class="row">
+                                                <div class="col-md-3 mb-2">
+                                                    <label class="form-label">{{ form.nivel.label }}</label>
+                                                    {{ form.nivel }}
+                                                </div>
+                                                <div class="col-md-5 mb-2">
+                                                    <label class="form-label">{{ form.institucion.label }}</label>
+                                                    {{ form.institucion }}
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label class="form-label">{{ form.titulo.label }}</label>
+                                                    {{ form.titulo }}
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label class="form-label">{{ form.fecha_grado.label }}</label>
+                                                    {{ form.fecha_grado }}
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label class="form-label">{{ form.tarjeta_profesional.label }}</label>
+                                                    {{ form.tarjeta_profesional }}
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label class="form-label">{{ form.documento_soporte.label }}</label>
+                                                    {{ form.documento_soporte }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
-                                    {{ form.universidad }}
-                                    {% if form.universidad.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
-                                    {{ form.fecha_terminacion }}
-                                    {% if form.fecha_terminacion.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
-                                    {% endif %}
-                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-superior">
+                                    <i class="fas fa-plus"></i> Agregar Técnico/Tecnólogo
+                                </button>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
 
-                <div class="text-center mt-3">
-                    <button type="button" class="add-btn" id="add-posgrado">
-                        <i class="fas fa-plus-circle"></i> Agregar Más Posgrados
-                    </button>
-                </div>
-            </div>
+                    <!-- 3. Pregrado (Universitario) -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingPregrado">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePregrado" aria-expanded="false" aria-controls="collapsePregrado">
+                                <i class="fas fa-user-graduate me-2"></i> 3. Pregrado (Profesional Universitario)
+                            </button>
+                        </h2>
+                        <div id="collapsePregrado" class="accordion-collapse collapse" aria-labelledby="headingPregrado" data-bs-parent="#accordionAcademic">
+                            <div class="accordion-body">
+                                <div id="academica-container">
+                                    {{ academica_formset.management_form }}
+                                    {% for form in academica_formset %}
+                                        <div class="academica-group border-bottom pb-3 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Pregrado {{ forloop.counter }}</h6>
+                                                {% if not forloop.first %}
+                                                    <button type="button" class="btn btn-danger btn-sm remove-academica"><i class="fas fa-trash"></i></button>
+                                                {% endif %}
+                                            </div>
+                                            {{ form.id }}
+                                            {% if form.DELETE %}{{ form.DELETE }}{% endif %}
+                                            
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label required-field">{{ form.profesion.label }} *</label>
+                                                    {{ form.profesion }}
+                                                    {% if form.profesion.errors %}<div class="text-danger">{{ form.profesion.errors }}</div>{% endif %}
+                                                </div>
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
+                                                    {{ form.universidad }}
+                                                    {% if form.universidad.errors %}<div class="text-danger">{{ form.universidad.errors }}</div>{% endif %}
+                                                </div>
+                                            </div>
 
-            <!-- SECCIÓN 5: ESPECIALIZACIONES -->
-            <div class="form-section">
-                <h2 class="section-title">
-                    <i class="fas fa-certificate"></i> Especializaciones
-                </h2>
-                <p class="text-muted mb-3">
-                    <i class="fas fa-star"></i>
-                    <strong>Opcional:</strong> Agregue información sobre especializaciones profesionales.
-                </p>
+                                            <div class="row">
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">{{ form.tarjeta_profesional.label }}</label>
+                                                    {{ form.tarjeta_profesional }}
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">{{ form.numero_tarjeta_resolucion.label }}</label>
+                                                    {{ form.numero_tarjeta_resolucion }}
+                                                </div>
+                                                <div class="col-md-4 mb-3">
+                                                    <label class="form-label">{{ form.fecha_expedicion.label }}</label>
+                                                    {{ form.fecha_expedicion }}
+                                                </div>
+                                            </div>
 
-                <div id="especializacion-container">
-                    {{ especializacion_formset.management_form }}
-                    {% for form in especializacion_formset %}
-                        <div class="especializacion-group">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0">
-                                    <i class="fas fa-certificate"></i> Especialización {{ forloop.counter }}
-                                </h5>
-                                {% if not forloop.first %}
-                                    <button type="button" class="remove-btn remove-especializacion">
-                                        <i class="fas fa-trash"></i> Eliminar
-                                    </button>
-                                {% endif %}
-                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label required-field">{{ form.fecha_grado.label }} *</label>
+                                                    {{ form.fecha_grado }}
+                                                    {% if form.fecha_grado.errors %}<div class="text-danger">{{ form.fecha_grado.errors }}</div>{% endif %}
+                                                </div>
+                                            </div>
 
-                            {{ form.id }}
-                            {% if form.DELETE %}
-                                {{ form.DELETE }}
-                            {% endif %}
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.nombre_especializacion.label }} *</label>
-                                    {{ form.nombre_especializacion }}
-                                    {% if form.nombre_especializacion.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.nombre_especializacion.errors }}</div>
-                                    {% endif %}
+                                            <!-- Documentos Académicos -->
+                                            <div class="row bg-light p-2 rounded">
+                                                <div class="col-md-6 mb-3">
+                                                    <label class="form-label">{{ form.fotocopia_titulo.label }}</label>
+                                                    {{ form.fotocopia_titulo }}
+                                                    <small class="form-text text-muted">Diploma/Acta de Grado</small>
+                                                </div>
+                                                <div class="col-md-6 mb-3 campo-tarjeta-doc">
+                                                    <label class="form-label">{{ form.fotocopia_tarjeta_profesional.label }}</label>
+                                                    {{ form.fotocopia_tarjeta_profesional }}
+                                                </div>
+                                                <div class="col-md-6 mb-3 campo-vigencia-doc">
+                                                    <label class="form-label">{{ form.certificado_vigencia_tarjeta.label }}</label>
+                                                    {{ form.certificado_vigencia_tarjeta }}
+                                                </div>
+                                                <div class="col-md-6 mb-3 campo-vigencia-doc">
+                                                    <label class="form-label">{{ form.fecha_vigencia_tarjeta.label }}</label>
+                                                    {{ form.fecha_vigencia_tarjeta }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
-                                    {{ form.universidad }}
-                                    {% if form.universidad.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.universidad.errors }}</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
-                                    {{ form.fecha_terminacion }}
-                                    {% if form.fecha_terminacion.errors %}
-                                        <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
-                                    {% endif %}
-                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-academica">
+                                    <i class="fas fa-plus"></i> Agregar Pregrado
+                                </button>
                             </div>
                         </div>
-                    {% endfor %}
-                </div>
+                    </div>
 
-                <div class="text-center mt-3">
-                    <button type="button" class="add-btn" id="add-especializacion">
-                        <i class="fas fa-plus-circle"></i> Agregar Más Especializaciones
-                    </button>
+                    <!-- 4. Especializaciones -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingEspecializacion">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEspecializacion" aria-expanded="false" aria-controls="collapseEspecializacion">
+                                <i class="fas fa-certificate me-2"></i> 4. Especializaciones
+                            </button>
+                        </h2>
+                        <div id="collapseEspecializacion" class="accordion-collapse collapse" aria-labelledby="headingEspecializacion" data-bs-parent="#accordionAcademic">
+                            <div class="accordion-body">
+                                <div id="especializacion-container">
+                                    {{ especializacion_formset.management_form }}
+                                    {% for form in especializacion_formset %}
+                                        <div class="especializacion-group border-bottom pb-3 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Especialización {{ forloop.counter }}</h6>
+                                                {% if not forloop.first %}
+                                                    <button type="button" class="btn btn-danger btn-sm remove-especializacion"><i class="fas fa-trash"></i></button>
+                                                {% endif %}
+                                            </div>
+                                            {{ form.id }}
+                                            {% if form.DELETE %}{{ form.DELETE }}{% endif %}
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label required-field">{{ form.nombre_especializacion.label }} *</label>
+                                                    {{ form.nombre_especializacion }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
+                                                    {{ form.universidad }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
+                                                    {{ form.fecha_terminacion }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-especializacion">
+                                    <i class="fas fa-plus"></i> Agregar Especialización
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 5. Posgrados (Maestrías/Doctorados) -->
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingPosgrado">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePosgrado" aria-expanded="false" aria-controls="collapsePosgrado">
+                                <i class="fas fa-award me-2"></i> 5. Posgrados (Maestrías / Doctorados)
+                            </button>
+                        </h2>
+                        <div id="collapsePosgrado" class="accordion-collapse collapse" aria-labelledby="headingPosgrado" data-bs-parent="#accordionAcademic">
+                            <div class="accordion-body">
+                                <div id="posgrado-container">
+                                    {{ posgrado_formset.management_form }}
+                                    {% for form in posgrado_formset %}
+                                        <div class="posgrado-group border-bottom pb-3 mb-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h6 class="mb-0">Posgrado {{ forloop.counter }}</h6>
+                                                {% if not forloop.first %}
+                                                    <button type="button" class="btn btn-danger btn-sm remove-posgrado"><i class="fas fa-trash"></i></button>
+                                                {% endif %}
+                                            </div>
+                                            {{ form.id }}
+                                            {% if form.DELETE %}{{ form.DELETE }}{% endif %}
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label required-field">{{ form.nombre_posgrado.label }} *</label>
+                                                    {{ form.nombre_posgrado }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label required-field">{{ form.universidad.label }} *</label>
+                                                    {{ form.universidad }}
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
+                                                    {{ form.fecha_terminacion }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-posgrado">
+                                    <i class="fas fa-plus"></i> Agregar Posgrado
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -951,264 +976,74 @@
 <script>
     // Script para manejar los formsets dinámicos
     $(document).ready(function() {
-        // Manejar eliminación de experiencia
-        $('.remove-experiencia').on('click', function() {
-            var experienciaGroup = $(this).closest('.experiencia-group');
-            var deleteCheckbox = experienciaGroup.find('input[name$="-DELETE"]');
-            if (deleteCheckbox.length) {
-                deleteCheckbox.prop('checked', true);
-                experienciaGroup.hide();
-            } else {
-                experienciaGroup.remove();
-            }
-        });
-
-        // Manejar eliminación de académica
-        $('.remove-academica').on('click', function() {
-            var academicaGroup = $(this).closest('.academica-group');
-            var deleteCheckbox = academicaGroup.find('input[name$="-DELETE"]');
-            if (deleteCheckbox.length) {
-                deleteCheckbox.prop('checked', true);
-                academicaGroup.hide();
-            } else {
-                academicaGroup.remove();
-            }
-        });
-
-        // Manejar eliminación de posgrado
-        $('.remove-posgrado').on('click', function() {
-            var posgradoGroup = $(this).closest('.posgrado-group');
-            var deleteCheckbox = posgradoGroup.find('input[name$="-DELETE"]');
-            if (deleteCheckbox.length) {
-                deleteCheckbox.prop('checked', true);
-                posgradoGroup.hide();
-            } else {
-                posgradoGroup.remove();
-            }
-        });
-
-        // Manejar eliminación de especialización
-        $('.remove-especializacion').on('click', function() {
-            var especializacionGroup = $(this).closest('.especializacion-group');
-            var deleteCheckbox = especializacionGroup.find('input[name$="-DELETE"]');
-            if (deleteCheckbox.length) {
-                deleteCheckbox.prop('checked', true);
-                especializacionGroup.hide();
-            } else {
-                especializacionGroup.remove();
-            }
-        });
-
-        // Función para agregar más experiencias laborales
-        $('#add-experiencia').on('click', function(e) {
-            e.preventDefault();
-            var formsetContainer = $('#experiencia-container');
-            var totalForms = $('#id_experiencias_laborales-TOTAL_FORMS');
-            var formNum = parseInt(totalForms.val());
-
-            // Buscar el último formulario visible (no oculto), o el último disponible
-            var lastForm = $('.experiencia-group:visible').last();
-            if (lastForm.length === 0) {
-                lastForm = $('.experiencia-group').last();
-            }
-            
-            // Si no hay formularios, usar el primero disponible o crear desde cero
-            if (lastForm.length === 0) {
-                lastForm = $('.experiencia-group').first();
-            }
-
-            var newForm = lastForm.clone();
-
-            // Actualizar los índices en el nuevo formulario
-            newForm.html(newForm.html().replace(/experiencias_laborales-\d+-/g, 'experiencias_laborales-' + formNum + '-'));
-            newForm.find('input, textarea, select').val('');
-            newForm.find('input[type="checkbox"]').prop('checked', false);
-            newForm.find('input[type="file"]').val('');
-            
-            // Asegurar que el nuevo formulario esté visible
-            newForm.show();
-
-            // Agregar botón de eliminar si no existe
-            if (formNum > 0) {
-                newForm.find('.d-flex h5').parent().html(
-                    '<h5 class="mb-0"><i class="fas fa-briefcase"></i> Experiencia ' + (formNum + 1) + '</h5>' +
-                    '<button type="button" class="remove-btn remove-experiencia"><i class="fas fa-trash"></i> Eliminar</button>'
-                );
-            }
-
-            formsetContainer.append(newForm);
-            totalForms.val(formNum + 1);
-
-            // Re-aplicar event listeners
-            setupRemoveButtons();
-        });
-
-        // Función para agregar más información académica
-        $('#add-academica').on('click', function(e) {
-            e.preventDefault();
-            var formsetContainer = $('#academica-container');
-            var totalForms = $('#id_formacion_academica-TOTAL_FORMS');
-            var formNum = parseInt(totalForms.val());
-
-            // Buscar el último formulario visible (no oculto), o el último disponible
-            var lastForm = $('.academica-group:visible').last();
-            if (lastForm.length === 0) {
-                lastForm = $('.academica-group').last();
-            }
-            
-            // Si no hay formularios, usar el primero disponible
-            if (lastForm.length === 0) {
-                lastForm = $('.academica-group').first();
-            }
-
-            var newForm = lastForm.clone();
-
-            newForm.html(newForm.html().replace(/formacion_academica-\d+-/g, 'formacion_academica-' + formNum + '-'));
-            newForm.find('input, textarea, select').val('');
-            newForm.find('input[type="checkbox"]').prop('checked', false);
-            newForm.find('input[type="file"]').val('');
-            
-            // Asegurar que el nuevo formulario esté visible
-            newForm.show();
-
-            if (formNum > 0) {
-                newForm.find('.d-flex h5').parent().html(
-                    '<h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Formación ' + (formNum + 1) + '</h5>' +
-                    '<button type="button" class="remove-btn remove-academica"><i class="fas fa-trash"></i> Eliminar</button>'
-                );
-            }
-
-            formsetContainer.append(newForm);
-            totalForms.val(formNum + 1);
-            setupRemoveButtons();
-        });
-
-        // Función para agregar más posgrados
-        $('#add-posgrado').on('click', function(e) {
-            e.preventDefault();
-            var formsetContainer = $('#posgrado-container');
-            var totalForms = $('#id_posgrados-TOTAL_FORMS');
-            var formNum = parseInt(totalForms.val());
-
-            // Buscar el último formulario visible (no oculto), o el último disponible
-            var lastForm = $('.posgrado-group:visible').last();
-            if (lastForm.length === 0) {
-                lastForm = $('.posgrado-group').last();
-            }
-            
-            // Si no hay formularios, usar el primero disponible
-            if (lastForm.length === 0) {
-                lastForm = $('.posgrado-group').first();
-            }
-
-            var newForm = lastForm.clone();
-
-            newForm.html(newForm.html().replace(/posgrados-\d+-/g, 'posgrados-' + formNum + '-'));
-            newForm.find('input, textarea, select').val('');
-            newForm.find('input[type="checkbox"]').prop('checked', false);
-            
-            // Asegurar que el nuevo formulario esté visible
-            newForm.show();
-
-            if (formNum > 0) {
-                newForm.find('.d-flex h5').parent().html(
-                    '<h5 class="mb-0"><i class="fas fa-award"></i> Posgrado ' + (formNum + 1) + '</h5>' +
-                    '<button type="button" class="remove-btn remove-posgrado"><i class="fas fa-trash"></i> Eliminar</button>'
-                );
-            }
-
-            formsetContainer.append(newForm);
-            totalForms.val(formNum + 1);
-            setupRemoveButtons();
-        });
-
-        // Función para agregar más especializaciones
-        $('#add-especializacion').on('click', function(e) {
-            e.preventDefault();
-            var formsetContainer = $('#especializacion-container');
-            var totalForms = $('#id_especializaciones-TOTAL_FORMS');
-            var formNum = parseInt(totalForms.val());
-
-            // Buscar el último formulario visible (no oculto), o el último disponible
-            var lastForm = $('.especializacion-group:visible').last();
-            if (lastForm.length === 0) {
-                lastForm = $('.especializacion-group').last();
-            }
-            
-            // Si no hay formularios, usar el primero disponible
-            if (lastForm.length === 0) {
-                lastForm = $('.especializacion-group').first();
-            }
-
-            var newForm = lastForm.clone();
-
-            newForm.html(newForm.html().replace(/especializaciones-\d+-/g, 'especializaciones-' + formNum + '-'));
-            newForm.find('input, textarea, select').val('');
-            newForm.find('input[type="checkbox"]').prop('checked', false);
-            
-            // Asegurar que el nuevo formulario esté visible
-            newForm.show();
-
-            if (formNum > 0) {
-                newForm.find('.d-flex h5').parent().html(
-                    '<h5 class="mb-0"><i class="fas fa-certificate"></i> Especialización ' + (formNum + 1) + '</h5>' +
-                    '<button type="button" class="remove-btn remove-especializacion"><i class="fas fa-trash"></i> Eliminar</button>'
-                );
-            }
-
-            formsetContainer.append(newForm);
-            totalForms.val(formNum + 1);
-            setupRemoveButtons();
-        });
-
-        // Función para configurar los botones de eliminar
+        // Función genérica para manejar eliminación
         function setupRemoveButtons() {
-            $(document).off('click', '.remove-experiencia, .remove-academica, .remove-posgrado, .remove-especializacion');
-
-            $(document).on('click', '.remove-experiencia', function() {
-                var experienciaGroup = $(this).closest('.experiencia-group');
-                var deleteCheckbox = experienciaGroup.find('input[name$="-DELETE"]');
+            $('.remove-experiencia, .remove-academica, .remove-posgrado, .remove-especializacion, .remove-basica, .remove-superior').off('click').on('click', function() {
+                var group = $(this).closest('.experiencia-group, .academica-group, .posgrado-group, .especializacion-group, .basica-group, .superior-group');
+                var deleteCheckbox = group.find('input[name$="-DELETE"]');
                 if (deleteCheckbox.length) {
                     deleteCheckbox.prop('checked', true);
-                    experienciaGroup.hide();
+                    group.hide();
                 } else {
-                    experienciaGroup.remove();
-                }
-            });
-
-            $(document).on('click', '.remove-academica', function() {
-                var academicaGroup = $(this).closest('.academica-group');
-                var deleteCheckbox = academicaGroup.find('input[name$="-DELETE"]');
-                if (deleteCheckbox.length) {
-                    deleteCheckbox.prop('checked', true);
-                    academicaGroup.hide();
-                } else {
-                    academicaGroup.remove();
-                }
-            });
-
-            $(document).on('click', '.remove-posgrado', function() {
-                var posgradoGroup = $(this).closest('.posgrado-group');
-                var deleteCheckbox = posgradoGroup.find('input[name$="-DELETE"]');
-                if (deleteCheckbox.length) {
-                    deleteCheckbox.prop('checked', true);
-                    posgradoGroup.hide();
-                } else {
-                    posgradoGroup.remove();
-                }
-            });
-
-            $(document).on('click', '.remove-especializacion', function() {
-                var especializacionGroup = $(this).closest('.especializacion-group');
-                var deleteCheckbox = especializacionGroup.find('input[name$="-DELETE"]');
-                if (deleteCheckbox.length) {
-                    deleteCheckbox.prop('checked', true);
-                    especializacionGroup.hide();
-                } else {
-                    especializacionGroup.remove();
+                    group.remove();
                 }
             });
         }
+
+        // Función genérica para agregar formularios
+        function setupAddButton(btnId, containerId, formPrefix, groupClass, titlePrefix, iconClass) {
+            $('#' + btnId).off('click').on('click', function(e) {
+                e.preventDefault();
+                var container = $('#' + containerId);
+                var totalForms = $('#id_' + formPrefix + '-TOTAL_FORMS');
+                var formNum = parseInt(totalForms.val());
+                
+                // Buscar plantilla
+                var lastForm = container.find('.' + groupClass + ':visible').last();
+                if (lastForm.length === 0) lastForm = container.find('.' + groupClass).last();
+                if (lastForm.length === 0) lastForm = container.find('.' + groupClass).first(); // Fallback
+
+                var newForm = lastForm.clone();
+                
+                // Actualizar índices
+                var regex = new RegExp(formPrefix + '-\\d+-', 'g');
+                newForm.html(newForm.html().replace(regex, formPrefix + '-' + formNum + '-'));
+                
+                // Limpiar campos
+                newForm.find('input, textarea, select').val('');
+                newForm.find('input[type="checkbox"]').prop('checked', false);
+                newForm.find('input[type="file"]').val('');
+                newForm.show();
+
+                // Actualizar título y botón de eliminar
+                var title = newForm.find('h6, h5');
+                if (title.length) {
+                    var newTitle = titlePrefix + ' ' + (formNum + 1);
+                    // Si el título tenía icono, intentar preservarlo o reconstruirlo simple
+                    title.text(newTitle); 
+                }
+                
+                // Asegurar botón de eliminar
+                if (newForm.find('.remove-' + groupClass.split('-')[0]).length === 0) {
+                    var headerDiv = newForm.find('.d-flex');
+                    if(headerDiv.length) {
+                        headerDiv.append('<button type="button" class="btn btn-danger btn-sm remove-' + groupClass.split('-')[0] + '"><i class="fas fa-trash"></i></button>');
+                    }
+                }
+
+                container.append(newForm);
+                totalForms.val(formNum + 1);
+                setupRemoveButtons();
+            });
+        }
+
+        // Configurar botones de agregar
+        setupAddButton('add-experiencia', 'experiencia-container', 'experiencias_laborales', 'experiencia-group', 'Experiencia', 'briefcase');
+        setupAddButton('add-academica', 'academica-container', 'formacion_academica', 'academica-group', 'Pregrado', 'graduation-cap');
+        setupAddButton('add-posgrado', 'posgrado-container', 'posgrados', 'posgrado-group', 'Posgrado', 'award');
+        setupAddButton('add-especializacion', 'especializacion-container', 'especializaciones', 'especializacion-group', 'Especialización', 'certificate');
+        setupAddButton('add-basica', 'basica-container', 'educacion_basica', 'basica-group', 'Bachiller', 'school');
+        setupAddButton('add-superior', 'superior-container', 'educacion_superior', 'superior-group', 'Título', 'cogs');
 
         // Inicializar botones de eliminar
         setupRemoveButtons();
@@ -1270,27 +1105,27 @@
         // Inicializar cálculo de experiencia
         setupCalculoExperiencia();
 
-        // Mostrar/ocultar campo de número de tarjeta y documentos según selección
+        // Mostrar/ocultar campo de número de tarjeta y documentos según selección (para Pregrado)
         $(document).on('change', 'select[id*="tarjeta_profesional"]', function() {
-            var academicaGroup = $(this).closest('.academica-group');
-            var numeroField = academicaGroup.find('input[id*="numero_tarjeta_resolucion"]').closest('.col-md-4');
-            var fechaField = academicaGroup.find('input[id*="fecha_expedicion"]').closest('.col-md-4');
-            // Campos de documentos de tarjeta profesional
-            var campoTarjetaDoc = academicaGroup.find('.campo-tarjeta-doc');
-            var campoVigenciaDoc = academicaGroup.find('.campo-vigencia-doc');
+            var group = $(this).closest('.academica-group, .superior-group'); // Aplica también a técnico/tecnólogo
+            if(group.length === 0) return;
 
-            if ($(this).val() === 'No Aplica') {
-                numeroField.hide();
-                fechaField.hide();
-                campoTarjetaDoc.hide();
-                campoVigenciaDoc.hide();
-                numeroField.find('input').removeAttr('required');
-                fechaField.find('input').removeAttr('required');
-            } else {
-                numeroField.show();
-                fechaField.show();
-                campoTarjetaDoc.show();
-                campoVigenciaDoc.show();
+            var val = $(this).val();
+            // Buscar campos relacionados. Nota: La estructura HTML varía ligeramente entre Pregrado y Técnico
+            // Para Pregrado (academica-group)
+            if(group.hasClass('academica-group')) {
+                var numeroField = group.find('input[id*="numero_tarjeta_resolucion"]').closest('.col-md-4');
+                var fechaField = group.find('input[id*="fecha_expedicion"]').closest('.col-md-4');
+                var campoTarjetaDoc = group.find('.campo-tarjeta-doc');
+                var campoVigenciaDoc = group.find('.campo-vigencia-doc');
+
+                if (val === 'No Aplica') {
+                    numeroField.hide(); fechaField.hide(); campoTarjetaDoc.hide(); campoVigenciaDoc.hide();
+                    numeroField.find('input').removeAttr('required');
+                    fechaField.find('input').removeAttr('required');
+                } else {
+                    numeroField.show(); fechaField.show(); campoTarjetaDoc.show(); campoVigenciaDoc.show();
+                }
             }
         });
 

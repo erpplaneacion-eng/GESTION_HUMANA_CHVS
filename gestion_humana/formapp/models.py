@@ -259,6 +259,50 @@ class InformacionAcademica(models.Model):
     def __str__(self):
         return f'{self.profesion} de {self.informacion_basica.cedula}'
 
+class EducacionBasica(models.Model):
+    informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='educacion_basica')
+    institucion = models.CharField(max_length=200, verbose_name='Institución Educativa')
+    anio_grado = models.IntegerField(verbose_name='Año de Grado', validators=[MinValueValidator(1950)])
+    titulo = models.CharField(max_length=200, verbose_name='Título Obtenido', default='Bachiller Académico')
+    acta_grado_diploma = models.FileField(
+        upload_to='educacion_basica/',
+        verbose_name='Acta de Grado o Diploma',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f'Bachiller - {self.informacion_basica.cedula}'
+
+class EducacionSuperior(models.Model):
+    NIVEL_CHOICES = [
+        ('Tecnico', 'Técnico'),
+        ('Tecnologo', 'Tecnólogo'),
+    ]
+    
+    informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='educacion_superior')
+    nivel = models.CharField(max_length=20, choices=NIVEL_CHOICES, verbose_name='Nivel de Formación')
+    institucion = models.CharField(max_length=200, verbose_name='Institución Educativa')
+    titulo = models.CharField(max_length=200, verbose_name='Título Obtenido')
+    fecha_grado = models.DateField(verbose_name='Fecha de Grado')
+    tarjeta_profesional = models.CharField(max_length=50, verbose_name='Tarjeta Profesional (Opcional)', blank=True, null=True)
+    
+    documento_soporte = models.FileField(
+        upload_to='educacion_superior/',
+        verbose_name='Diploma o Acta de Grado',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return f'{self.nivel} - {self.titulo}'
+
 from django.core.validators import MinValueValidator
 class Posgrado(models.Model):
     informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='posgrados')
