@@ -4,6 +4,22 @@
 {% block title %}Formulario de Registro de Personal{% endblock %}
 
 {% block content %}
+<!-- Modal de Carga -->
+<div id="loadingModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center p-4">
+            <div class="modal-body">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+                <h4 class="mb-2">Procesando Registro</h4>
+                <p class="text-muted mb-0">Estamos guardando su información y subiendo los documentos. Esto puede tomar unos momentos dependiendo de su conexión.</p>
+                <p class="text-danger mt-2 fw-bold"><i class="fas fa-exclamation-circle"></i> Por favor NO cierre ni recargue esta página.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="main-container">
     <div class="form-header">
         <h1>
@@ -1369,7 +1385,7 @@
                 errorMessages.push('El correo electrónico debe contener @.');
             }
 
-            // Validar fechas de antecedentes (obligatorias)
+            // Validar fechas de antecedentes (obligatorias y vigencia 30 días)
             var fechasAntecedentes = [
                 { id: 'id_fecha_procuraduria', nombre: 'Fecha de Procuraduría' },
                 { id: 'id_fecha_contraloria', nombre: 'Fecha de Contraloría' },
@@ -1378,14 +1394,55 @@
                 { id: 'id_fecha_delitos_sexuales', nombre: 'Fecha de Delitos Sexuales' }
             ];
 
+            var hoy = new Date();
+            // Resetear horas para comparar solo fechas
+            hoy.setHours(0, 0, 0, 0);
+            var treintaDiasAtras = new Date(hoy);
+            treintaDiasAtras.setDate(hoy.getDate() - 30);
+
             fechasAntecedentes.forEach(function(fecha) {
                 var input = $('input[id*="' + fecha.id.replace('id_', '') + '"]');
-                if (input.length > 0 && !input.val()) {
-                    isValid = false;
-                    input.addClass('is-invalid');
-                    errorMessages.push('La ' + fecha.nombre + ' es obligatoria.');
-                } else {
-                    input.removeClass('is-invalid');
+                if (input.length > 0) {
+                    var valorFecha = input.val();
+                    if (!valorFecha) {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                        errorMessages.push('La ' + fecha.nombre + ' es obligatoria.');
+                    } else {
+                        // Validar vigencia y fecha futura
+                        var fechaIngresada = new Date(valorFecha + 'T00:00:00'); // Agregar hora para evitar problemas de zona horaria
+                        
+                        if (fechaIngresada > hoy) {
+                            isValid = false;
+                            input.addClass('is-invalid');
+                            errorMessages.push('La ' + fecha.nombre + ' no puede ser una fecha futura.');
+                        } else if (fechaIngresada < treintaDiasAtras) {
+                            isValid = false;
+                            input.addClass('is-invalid');
+                            errorMessages.push('El certificado de ' + fecha.nombre + ' tiene más de 30 días de antigüedad.');
+                        } else {
+                            input.removeClass('is-invalid');
+                        }
+                    }
+                }
+            });
+
+            // Validar todas las fechas generales para que no sean futuras
+            $('input[type="date"]').each(function() {
+                var valor = $(this).val();
+                if (valor) {
+                    var fecha = new Date(valor + 'T00:00:00');
+                    var label = $('label[for="' + $(this).attr('id') + '"]').text().replace('*', '').trim();
+                    
+                    if (fecha > hoy) {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                        // Evitar mensajes duplicados si ya se validó arriba
+                        var msg = 'La fecha "' + label + '" no puede ser futura.';
+                        if (errorMessages.indexOf(msg) === -1) {
+                            errorMessages.push(msg);
+                        }
+                    }
                 }
             });
 
@@ -1641,12 +1698,16 @@
 
             if (!isValid) {
                 e.preventDefault();
-                alert('Por favor complete todos los campos obligatorios de archivos:\n\n' + errorMessages.join('\n') + '\n\nIMPORTANTE: Si no adjunta todos los archivos requeridos antes de enviar, deberá volver a seleccionarlos.');
+                alert('Por favor corrija los siguientes errores:\n\n' + errorMessages.join('\n'));
 
                 // Hacer scroll al primer error
                 $('html, body').animate({
                     scrollTop: $('.is-invalid').first().offset().top - 100
                 }, 500);
+            } else {
+                // Si el formulario es válido, mostrar el modal de carga
+                var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
+                loadingModal.show();
             }
         });
 
