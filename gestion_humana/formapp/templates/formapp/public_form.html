@@ -1511,6 +1511,52 @@
                 }
             });
 
+            // Validar campos obligatorios de Educación Básica (Bachiller)
+            $('.basica-group:visible').each(function(index) {
+                var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                if (!deleteCheckbox.prop('checked')) {
+                    var num = index + 1;
+                    var institucion = $(this).find('input[id*="institucion"]');
+                    var anio = $(this).find('input[id*="anio_grado"]');
+                    var fileInput = $(this).find('input[type="file"][id*="acta_grado_diploma"]');
+                    
+                    var tieneTexto = (institucion.val() && institucion.val().trim()) || (anio.val() && anio.val().trim());
+                    
+                    if (tieneTexto) {
+                        if (!fileInput.val()) {
+                            isValid = false;
+                            fileInput.addClass('is-invalid');
+                            errorMessages.push('Bachiller ' + num + ': Debe adjuntar el acta de grado o diploma.');
+                        } else {
+                            fileInput.removeClass('is-invalid');
+                        }
+                    }
+                }
+            });
+
+            // Validar campos obligatorios de Educación Superior (Técnico/Tecnólogo)
+            $('.superior-group:visible').each(function(index) {
+                var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
+                if (!deleteCheckbox.prop('checked')) {
+                    var num = index + 1;
+                    var institucion = $(this).find('input[id*="institucion"]');
+                    var titulo = $(this).find('input[id*="titulo"]');
+                    var fileInput = $(this).find('input[type="file"][id*="documento_soporte"]');
+                    
+                    var tieneTexto = (institucion.val() && institucion.val().trim()) || (titulo.val() && titulo.val().trim());
+                    
+                    if (tieneTexto) {
+                        if (!fileInput.val()) {
+                            isValid = false;
+                            fileInput.addClass('is-invalid');
+                            errorMessages.push('Técnico/Tecnólogo ' + num + ': Debe adjuntar el diploma o acta de grado.');
+                        } else {
+                            fileInput.removeClass('is-invalid');
+                        }
+                    }
+                }
+            });
+
             // Validar certificados de antecedentes (todos obligatorios)
             var antecedentes = [
                 { campo: 'certificado_procuraduria', nombre: 'Certificado de Procuraduría' },

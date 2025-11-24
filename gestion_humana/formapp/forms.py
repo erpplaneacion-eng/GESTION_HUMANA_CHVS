@@ -358,6 +358,18 @@ class EducacionBasicaForm(forms.ModelForm):
                 'accept': '.pdf,.jpg,.jpeg,.png',
             }),
         }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        institucion = cleaned_data.get('institucion')
+        anio_grado = cleaned_data.get('anio_grado')
+        acta_grado = cleaned_data.get('acta_grado_diploma')
+        
+        # Si se llenó algún campo de texto, el archivo es obligatorio (si es un registro nuevo)
+        if (institucion or anio_grado) and not acta_grado and not self.instance.pk:
+            self.add_error('acta_grado_diploma', 'Debe adjuntar el acta de grado o diploma si registra esta formación.')
+            
+        return cleaned_data
 
 class EducacionSuperiorForm(forms.ModelForm):
     class Meta:
@@ -380,6 +392,18 @@ class EducacionSuperiorForm(forms.ModelForm):
         if fecha and fecha > date.today():
             raise forms.ValidationError('La fecha de grado no puede ser futura.')
         return fecha
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        institucion = cleaned_data.get('institucion')
+        titulo = cleaned_data.get('titulo')
+        documento = cleaned_data.get('documento_soporte')
+        
+        # Si se llenó algún campo de texto, el archivo es obligatorio (si es un registro nuevo)
+        if (institucion or titulo) and not documento and not self.instance.pk:
+            self.add_error('documento_soporte', 'Debe adjuntar el diploma o acta de grado si registra esta formación.')
+            
+        return cleaned_data
 
 EducacionBasicaFormSet = inlineformset_factory(
     InformacionBasica,
