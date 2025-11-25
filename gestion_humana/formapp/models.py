@@ -1,8 +1,30 @@
+import uuid
 from django.db import models
 from django.core.validators import MinValueValidator
 from .validators import validate_file_size, validate_file_extension, validate_file_mime
 
 class InformacionBasica(models.Model):
+    # Estados del proceso de selección
+    ESTADO_CHOICES = [
+        ('RECIBIDO', 'Recibido'),
+        ('EN_REVISION', 'En Revisión'),
+        ('PENDIENTE_CORRECCION', 'Pendiente de Corrección'),
+        ('CORREGIDO', 'Corregido por Candidato'),
+        ('VERIFICADO', 'Verificado / Aprobado'),
+        ('RECHAZADO', 'Rechazado'),
+    ]
+
+    estado = models.CharField(
+        max_length=50,
+        choices=ESTADO_CHOICES,
+        default='RECIBIDO',
+        verbose_name='Estado del Proceso'
+    )
+    
+    # Tokens para corrección segura (sin login)
+    token_correccion = models.UUIDField(default=uuid.uuid4, editable=False, blank=True, null=True)
+    token_expiracion = models.DateTimeField(blank=True, null=True, verbose_name='Expiración del Token')
+
     # campos datos personales
 
     # campos q son de selecccion multipple, respuestas cerradas

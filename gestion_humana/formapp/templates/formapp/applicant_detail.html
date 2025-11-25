@@ -15,6 +15,13 @@
                 <p class="mb-1"><i class="fas fa-id-card"></i> <strong>Cédula:</strong> {{ applicant.cedula }}</p>
                 <p class="mb-1"><i class="fas fa-briefcase"></i> <strong>Profesión:</strong> {{ applicant.profesion }}</p>
                 <p class="mb-0"><i class="fas fa-graduation-cap"></i> <strong>Área:</strong> {{ applicant.area_del_conocimiento }}</p>
+                
+                <!-- Badge de Estado -->
+                <div class="mt-2">
+                    <span class="badge {% if applicant.estado == 'RECIBIDO' %}bg-info{% elif applicant.estado == 'EN_REVISION' %}bg-primary{% elif applicant.estado == 'PENDIENTE_CORRECCION' %}bg-warning{% elif applicant.estado == 'CORREGIDO' %}bg-success{% elif applicant.estado == 'VERIFICADO' %}bg-success{% else %}bg-secondary{% endif %}">
+                        Estado: {{ applicant.get_estado_display }}
+                    </span>
+                </div>
             </div>
             <div class="text-end">
                 <a href="{% url 'formapp:applicant_list' %}" class="btn btn-light btn-lg">
@@ -24,7 +31,39 @@
                 <a href="{% url 'formapp:applicant_edit' applicant.pk %}" class="btn btn-warning btn-lg">
                     <i class="fas fa-edit"></i> Editar
                 </a>
+                <!-- Botón para abrir modal de corrección -->
+                <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#correctionModal">
+                    <i class="fas fa-exclamation-triangle"></i> Solicitar Corrección
+                </button>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Solicitud de Corrección -->
+    <div class="modal fade" id="correctionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-envelope-open-text"></i> Solicitar Corrección al Candidato</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form method="post" action="{% url 'formapp:solicitar_correccion' applicant.pk %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-info-circle"></i> Esta acción enviará un correo electrónico al candidato con un enlace seguro para que corrija la información.
+                        </div>
+                        <div class="mb-3">
+                            <label for="mensaje_observacion" class="form-label"><strong>Motivo de la solicitud / Observaciones:</strong></label>
+                            <textarea class="form-control" id="mensaje_observacion" name="mensaje_observacion" rows="5" required placeholder="Ej: El diploma de pregrado no es legible. Por favor adjuntar nuevamente en formato PDF."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger">Enviar Solicitud</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

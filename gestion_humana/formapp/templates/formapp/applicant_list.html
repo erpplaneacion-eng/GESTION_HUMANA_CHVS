@@ -109,8 +109,7 @@
                                         <th>Nombre Completo</th>
                                         <th>Profesión</th>
                                         <th>Área de Conocimiento</th>
-                                        <th>Teléfono</th>
-                                        <th>Correo</th>
+                                        <th>Estado</th>
                                         <th>Acciones</th>
                                     </tr>
                                 </thead>
@@ -120,13 +119,16 @@
                                         <td><strong>{{ applicant.cedula }}</strong></td>
                                         <td>{{ applicant.nombre_completo }}</td>
                                         <td>
-                                            <span class="badge bg-info">
+                                            <span class="badge bg-info text-dark">
                                                 {{ applicant.profesion }}
                                             </span>
                                         </td>
                                         <td>{{ applicant.area_del_conocimiento }}</td>
-                                        <td>{{ applicant.telefono }}</td>
-                                        <td>{{ applicant.correo }}</td>
+                                        <td>
+                                            <span class="badge {% if applicant.estado == 'RECIBIDO' %}bg-info{% elif applicant.estado == 'EN_REVISION' %}bg-primary{% elif applicant.estado == 'PENDIENTE_CORRECCION' %}bg-warning text-dark{% elif applicant.estado == 'CORREGIDO' %}bg-success{% elif applicant.estado == 'VERIFICADO' %}bg-success{% else %}bg-secondary{% endif %}">
+                                                {{ applicant.get_estado_display }}
+                                            </span>
+                                        </td>
                                         <td>
                                             <a href="{% url 'formapp:applicant_detail' applicant.pk %}"
                                                class="btn btn-sm btn-info"

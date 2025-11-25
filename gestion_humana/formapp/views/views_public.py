@@ -3,17 +3,20 @@ Vista pública de registro de candidatos.
 Formulario multi-sección accesible sin autenticación.
 Refactorizado desde views.py para mejor organización.
 """
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
+from django.utils import timezone
 
 from ..models import (
+    InformacionBasica,
     DocumentosIdentidad,
     Antecedentes,
     AnexosAdicionales,
 )
 from ..forms import (
     InformacionBasicaPublicForm,
+    InformacionBasicaForm,
     ExperienciaLaboralFormSet,
     InformacionAcademicaFormSet,
     PosgradoFormSet,
@@ -190,3 +193,154 @@ def public_form_view(request):
         'especializacion_formset': especializacion_formset,
     }
     return render(request, 'formapp/public_form.html', context)
+
+
+def public_update_view(request, token):
+    """
+    Vista pública para corregir información mediante token seguro.
+    """
+    # 1. Validar existencia del token
+    try:
+        applicant = InformacionBasica.objects.get(token_correccion=token)
+    except InformacionBasica.DoesNotExist:
+        messages.error(request, 'El enlace de corrección no es válido o no existe.')
+        return redirect('formapp:public_form')
+
+    # 2. Validar expiración del token
+    if not applicant.token_expiracion or applicant.token_expiracion < timezone.now():
+        messages.error(request, 'Este enlace de corrección ha expirado. Por favor comunícate con Gestión Humana.')
+        return redirect('formapp:public_form')
+
+    # Obtener instancias relacionadas
+    try:
+        documentos_identidad = applicant.documentos_identidad
+    except DocumentosIdentidad.DoesNotExist:
+        documentos_identidad = None
+
+    try:
+        antecedentes = applicant.antecedentes
+    except Antecedentes.DoesNotExist:
+        antecedentes = None
+
+    try:
+        anexos_adicionales = applicant.anexos_adicionales
+    except AnexosAdicionales.DoesNotExist:
+        anexos_adicionales = None
+
+    if request.method == 'POST':
+        # Usamos InformacionBasicaForm (el mismo del admin) para permitir edición completa
+        form = InformacionBasicaForm(request.POST, request.FILES, instance=applicant)
+        genero = request.POST.get('genero', applicant.genero)
+        documentos_form = DocumentosIdentidadForm(request.POST, request.FILES, instance=documentos_identidad, genero=genero)
+        antecedentes_form = AntecedentesForm(request.POST, request.FILES, instance=antecedentes)
+        anexos_form = AnexosAdicionalesForm(request.POST, request.FILES, instance=anexos_adicionales)
+        experiencia_formset = ExperienciaLaboralFormSet(request.POST, request.FILES, instance=applicant)
+        basica_formset = EducacionBasicaFormSet(request.POST, request.FILES, instance=applicant)
+        superior_formset = EducacionSuperiorFormSet(request.POST, request.FILES, instance=applicant)
+        academica_formset = InformacionAcademicaFormSet(request.POST, request.FILES, instance=applicant)
+        posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
+        especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=applicant)
+
+        if form.is_valid() and documentos_form.is_valid() and antecedentes_form.is_valid() and \
+           anexos_form.is_valid() and experiencia_formset.is_valid() and basica_formset.is_valid() and \
+           superior_formset.is_valid() and academica_formset.is_valid() and posgrado_formset.is_valid() and \
+           especializacion_formset.is_valid():
+            
+            try:
+                with transaction.atomic():
+                    informacion_basica = form.save(commit=False)
+                    # Actualizar estado y limpiar token para seguridad (un solo uso)
+                    informacion_basica.estado = 'CORREGIDO'
+                    informacion_basica.token_correccion = None
+                    informacion_basica.token_expiracion = None
+                    informacion_basica.save()
+
+                    documentos = documentos_form.save(commit=False)
+                    documentos.informacion_basica = informacion_basica
+                    documentos.save()
+
+                    antecedentes_obj = antecedentes_form.save(commit=False)
+                    antecedentes_obj.informacion_basica = informacion_basica
+                    antecedentes_obj.save()
+
+                    anexos = anexos_form.save(commit=False)
+                    anexos.informacion_basica = informacion_basica
+                    anexos.save()
+
+                    experiencia_formset.save()
+                    
+                    # Recalcular experiencia (lógica idéntica a admin)
+                    from datetime import datetime as dt
+                    experiencias_modificadas = []
+                    for form_exp in experiencia_formset:
+                        if form_exp.instance.pk and not form_exp.cleaned_data.get('DELETE', False):
+                            if form_exp.has_changed() and ('fecha_inicial' in form_exp.changed_data or 'fecha_terminacion' in form_exp.changed_data):
+                                experiencia = form_exp.instance
+                                if experiencia.fecha_inicial and experiencia.fecha_terminacion:
+                                    fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
+                                    fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
+                                    delta = fecha_fin - fecha_inicio
+                                    total_dias = delta.days
+                                    anos = fecha_fin.year - fecha_inicio.year
+                                    meses = fecha_fin.month - fecha_inicio.month
+                                    dias = fecha_fin.day - fecha_inicio.day
+                                    if dias < 0:
+                                        meses -= 1
+                                        if fecha_inicio.month == 1:
+                                            ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
+                                        else:
+                                            ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
+                                        dias += ultimo_dia
+                                    if meses < 0:
+                                        anos -= 1
+                                        meses += 12
+                                    total_meses = (anos * 12) + meses
+                                    experiencia.meses_experiencia = total_meses
+                                    experiencia.dias_experiencia = total_dias
+                                    experiencias_modificadas.append(experiencia)
+                    
+                    if experiencias_modificadas:
+                        from ..models import ExperienciaLaboral
+                        ExperienciaLaboral.objects.bulk_update(experiencias_modificadas, ['meses_experiencia', 'dias_experiencia'])
+
+                    calcular_experiencia_total(informacion_basica)
+                    basica_formset.save()
+                    superior_formset.save()
+                    academica_formset.save()
+                    posgrado_formset.save()
+                    especializacion_formset.save()
+
+                    messages.success(request, '¡Información corregida y enviada exitosamente! Gracias por tu gestión.')
+                    return redirect('formapp:public_form')
+
+            except Exception as e:
+                messages.error(request, f'Error al guardar las correcciones: {str(e)}')
+        else:
+            messages.error(request, 'Por favor corrige los errores en el formulario.')
+    else:
+        form = InformacionBasicaForm(instance=applicant)
+        documentos_form = DocumentosIdentidadForm(instance=documentos_identidad, genero=applicant.genero)
+        antecedentes_form = AntecedentesForm(instance=antecedentes)
+        anexos_form = AnexosAdicionalesForm(instance=anexos_adicionales)
+        experiencia_formset = ExperienciaLaboralFormSet(instance=applicant)
+        basica_formset = EducacionBasicaFormSet(instance=applicant)
+        superior_formset = EducacionSuperiorFormSet(instance=applicant)
+        academica_formset = InformacionAcademicaFormSet(instance=applicant)
+        posgrado_formset = PosgradoFormSet(instance=applicant)
+        especializacion_formset = EspecializacionFormSet(instance=applicant)
+
+    context = {
+        'form': form,
+        'documentos_form': documentos_form,
+        'antecedentes_form': antecedentes_form,
+        'anexos_form': anexos_form,
+        'experiencia_formset': experiencia_formset,
+        'basica_formset': basica_formset,
+        'superior_formset': superior_formset,
+        'academica_formset': academica_formset,
+        'posgrado_formset': posgrado_formset,
+        'especializacion_formset': especializacion_formset,
+        'applicant': applicant,
+        'is_public_correction': True, # Flag para ajustar el template
+    }
+    return render(request, 'formapp/applicant_edit.html', context)

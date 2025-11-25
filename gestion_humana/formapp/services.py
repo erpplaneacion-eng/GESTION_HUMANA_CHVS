@@ -7,8 +7,10 @@ import json
 import base64
 import logging
 import threading
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 from django.conf import settings
+from django.utils import timezone
 from django.template.loader import render_to_string
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -119,54 +121,27 @@ def calcular_experiencia_total(informacion_basica):
     return calculo
 
 
-def enviar_correo_confirmacion(informacion_basica):
-    """
-    Envía correo de confirmación al usuario que completó el formulario usando Gmail API.
-
-    Args:
-        informacion_basica: Instancia de InformacionBasica
-
-    Returns:
-        bool: True si el correo se envió exitosamente, False si falló
-
-    Esta función:
-    1. Carga credenciales desde variable de entorno (Railway) o archivo local
-    2. Renderiza un template HTML personalizado
-    3. Envía el correo mediante Gmail API
-    4. Maneja el refresh automático de tokens
-    """
+def get_gmail_service():
+    """Helper para obtener servicio autenticado de Gmail"""
     try:
-        # Cargar credenciales: primero de variable de entorno (Railway) o archivo (desarrollo local)
         token_data = None
-
-        # Intentar cargar desde variable de entorno (Railway)
         gmail_token_json = os.getenv('GMAIL_TOKEN_JSON')
+        
         if gmail_token_json:
             try:
                 token_data = json.loads(gmail_token_json)
-                logger.info('Credenciales de Gmail cargadas desde variable de entorno')
-            except json.JSONDecodeError as e:
-                logger.error(f'Error parseando GMAIL_TOKEN_JSON: {str(e)}')
-                return False
+            except json.JSONDecodeError:
+                return None
 
-        # Si no hay variable de entorno, intentar cargar desde archivo (desarrollo local)
         if not token_data:
             BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             token_path = os.path.join(BASE_DIR, 'token.json')
-
             if os.path.exists(token_path):
-                try:
-                    with open(token_path, 'r') as token_file:
-                        token_data = json.load(token_file)
-                    logger.info(f'Credenciales de Gmail cargadas desde {token_path}')
-                except Exception as e:
-                    logger.error(f'Error leyendo token.json: {str(e)}')
-                    return False
+                with open(token_path, 'r') as token_file:
+                    token_data = json.load(token_file)
             else:
-                logger.error(f'No se encontró token.json en {token_path} ni variable GMAIL_TOKEN_JSON')
-                return False
+                return None
 
-        # Crear credenciales desde el token
         creds = Credentials(
             token=token_data.get('token'),
             refresh_token=token_data.get('refresh_token'),
@@ -176,14 +151,25 @@ def enviar_correo_confirmacion(informacion_basica):
             scopes=token_data.get('scopes', SCOPES)
         )
 
-        # Refrescar el token si es necesario
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
 
-        # Construir el servicio de Gmail
-        service = build('gmail', 'v1', credentials=creds)
+        return build('gmail', 'v1', credentials=creds)
+    except Exception as e:
+        logger.error(f'Error obteniendo servicio Gmail: {str(e)}')
+        return None
 
-        # Preparar contexto para el template - usar zona horaria de Colombia
+
+def enviar_correo_confirmacion(informacion_basica):
+    """
+    Envía correo de confirmación al usuario que completó el formulario usando Gmail API.
+    """
+    try:
+        service = get_gmail_service()
+        if not service:
+            logger.error("No se pudo inicializar el servicio de Gmail")
+            return False
+
         fecha_colombia = datetime.now(COLOMBIA_TZ)
         context = {
             'nombre_completo': informacion_basica.nombre_completo,
@@ -193,30 +179,85 @@ def enviar_correo_confirmacion(informacion_basica):
             'fecha_registro': fecha_colombia.strftime('%d/%m/%Y %H:%M'),
         }
 
-        # Renderizar template HTML
         html_message = render_to_string('formapp/email_confirmacion.html', context)
 
-        # Crear mensaje de correo con nombre del remitente
         message = MIMEMultipart('alternative')
         message['To'] = informacion_basica.correo
         message['From'] = f'Gestión Humana CAVJP <{settings.DEFAULT_FROM_EMAIL}>'
         message['Subject'] = 'Confirmación de Registro - Gestión Humana CAVJP'
-        # Adjuntar contenido HTML
         html_part = MIMEText(html_message, 'html', 'utf-8')
         message.attach(html_part)
 
-        # Codificar el mensaje en base64
         raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
         send_message = {'raw': raw_message}
 
-        # Enviar correo
         service.users().messages().send(userId='me', body=send_message).execute()
-
-        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo} vía Gmail API')
+        logger.info(f'Correo enviado exitosamente a {informacion_basica.correo}')
         return True
 
     except Exception as e:
         logger.error(f'Error al enviar correo a {informacion_basica.correo}: {str(e)}')
+        return False
+
+
+def enviar_correo_solicitud_correccion(informacion_basica, mensaje_observacion, request=None):
+    """
+    Genera un token, actualiza el estado y envía correo solicitando corrección.
+    
+    Args:
+        informacion_basica: Instancia del modelo
+        mensaje_observacion: Texto con las instrucciones de corrección
+        request: Objeto request para construir la URL absoluta
+    """
+    try:
+        # 1. Generar token y expiración (48 horas)
+        token = uuid.uuid4()
+        expiracion = timezone.now() + timedelta(hours=48)
+        
+        # 2. Actualizar registro
+        informacion_basica.token_correccion = token
+        informacion_basica.token_expiracion = expiracion
+        informacion_basica.estado = 'PENDIENTE_CORRECCION'
+        informacion_basica.save(update_fields=['token_correccion', 'token_expiracion', 'estado'])
+        
+        # 3. Construir enlace
+        if request:
+            scheme = request.scheme
+            host = request.get_host()
+            enlace = f"{scheme}://{host}/formapp/actualizar-datos/{token}/"
+        else:
+            # Fallback si no hay request (ej. tarea programada)
+            enlace = f"https://gestionhumanacavijup.up.railway.app/formapp/actualizar-datos/{token}/"
+
+        # 4. Enviar correo
+        service = get_gmail_service()
+        if not service:
+            return False
+
+        context = {
+            'nombre_completo': informacion_basica.nombre_completo,
+            'mensaje_observacion': mensaje_observacion,
+            'enlace_correccion': enlace,
+        }
+
+        html_message = render_to_string('formapp/email_solicitud_correccion.html', context)
+
+        message = MIMEMultipart('alternative')
+        message['To'] = informacion_basica.correo
+        message['From'] = f'Gestión Humana CAVJP <{settings.DEFAULT_FROM_EMAIL}>'
+        message['Subject'] = 'Solicitud de Corrección - Gestión Humana CAVJP'
+        html_part = MIMEText(html_message, 'html', 'utf-8')
+        message.attach(html_part)
+
+        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+        send_message = {'raw': raw_message}
+
+        service.users().messages().send(userId='me', body=send_message).execute()
+        logger.info(f'Correo de corrección enviado a {informacion_basica.correo}')
+        return True
+
+    except Exception as e:
+        logger.error(f'Error enviando solicitud de corrección: {str(e)}')
         return False
 
 

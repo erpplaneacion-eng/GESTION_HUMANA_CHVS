@@ -31,7 +31,7 @@ from ..forms import (
     AntecedentesForm,
     AnexosAdicionalesForm,
 )
-from ..services import calcular_experiencia_total
+from ..services import calcular_experiencia_total, enviar_correo_solicitud_correccion
 
 import logging
 import traceback
@@ -284,3 +284,27 @@ def applicant_delete_view(request, pk):
 
     # Si no es POST, redirigir a la lista
     return redirect('formapp:applicant_list')
+
+@login_required
+def solicitar_correccion_view(request, pk):
+    """
+    Procesa la solicitud de corrección del administrador.
+    Genera token y envía correo.
+    """
+    if request.method != 'POST':
+        return redirect('formapp:applicant_detail', pk=pk)
+
+    applicant = get_object_or_404(InformacionBasica, pk=pk)
+    mensaje = request.POST.get('mensaje_observacion')
+
+    if not mensaje:
+        messages.error(request, 'Debes ingresar una observación para el candidato.')
+        return redirect('formapp:applicant_detail', pk=pk)
+
+    # Enviar correo y actualizar estado
+    if enviar_correo_solicitud_correccion(applicant, mensaje, request):
+        messages.success(request, f'Se ha enviado la solicitud de corrección a {applicant.nombre_completo}.')
+    else:
+        messages.error(request, 'Hubo un error al enviar el correo. Por favor verifica la configuración.')
+
+    return redirect('formapp:applicant_detail', pk=pk)
