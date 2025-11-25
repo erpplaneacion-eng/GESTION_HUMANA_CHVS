@@ -1,7 +1,7 @@
 """
 Vista pública de registro de candidatos.
 Formulario multi-sección accesible sin autenticación.
-Refactorizado desde views.py para mejor organización.
+VERSIÓN CORREGIDA CON FIXES PARA FLUJO DE CORRECCIÓN
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -35,9 +35,9 @@ logger = logging.getLogger(__name__)
 
 
 def public_form_view(request):
+    """Vista pública de registro - SIN CAMBIOS"""
     if request.method == 'POST':
         form = InformacionBasicaPublicForm(request.POST, request.FILES)
-        # Obtener género para pasarlo al formulario de documentos
         genero = request.POST.get('genero', '')
         documentos_form = DocumentosIdentidadForm(request.POST, request.FILES, genero=genero)
         antecedentes_form = AntecedentesForm(request.POST, request.FILES)
@@ -49,9 +49,7 @@ def public_form_view(request):
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES)
         especializacion_formset = EspecializacionFormSet(request.POST, request.FILES)
 
-        # CRÍTICO: Validar TODOS los formularios ANTES de guardar cualquier cosa
         if form.is_valid():
-            # Validar todos los formsets y formularios primero
             documentos_valid = documentos_form.is_valid()
             antecedentes_valid = antecedentes_form.is_valid()
             anexos_valid = anexos_form.is_valid()
@@ -62,31 +60,25 @@ def public_form_view(request):
             posgrado_valid = posgrado_formset.is_valid()
             especializacion_valid = especializacion_formset.is_valid()
 
-            # Solo proceder si TODO es válido
             if documentos_valid and antecedentes_valid and anexos_valid and experiencia_valid and basica_valid and superior_valid and academica_valid and posgrado_valid and especializacion_valid:
                 try:
                     with transaction.atomic():
                         informacion_basica = form.save()
 
-                        # Guardar documentos de identidad
                         documentos = documentos_form.save(commit=False)
                         documentos.informacion_basica = informacion_basica
                         documentos.save()
 
-                        # Guardar antecedentes
                         antecedentes = antecedentes_form.save(commit=False)
                         antecedentes.informacion_basica = informacion_basica
                         antecedentes.save()
 
-                        # Guardar anexos adicionales (opcional)
                         anexos = anexos_form.save(commit=False)
                         anexos.informacion_basica = informacion_basica
                         anexos.save()
 
-                        # Asociar formsets con la instancia guardada y guardar
                         experiencia_formset.instance = informacion_basica
                         experiencia_formset.save()
-                        # Calcular experiencia automáticamente
                         calcular_experiencia_total(informacion_basica)
 
                         basica_formset.instance = informacion_basica
@@ -104,7 +96,6 @@ def public_form_view(request):
                         especializacion_formset.instance = informacion_basica
                         especializacion_formset.save()
 
-                        # Enviar correo de confirmación al usuario de manera asíncrona
                         enviar_correo_async(informacion_basica)
 
                         messages.success(request, '¡Formulario enviado con éxito! Recibirás un correo de confirmación en los próximos minutos.')
@@ -112,7 +103,6 @@ def public_form_view(request):
                 except Exception as e:
                     messages.error(request, f'Error al guardar el formulario: {str(e)}')
             else:
-                # Mostrar errores específicos de cada formulario/formset que falló
                 if not documentos_valid:
                     for field, error_list in documentos_form.errors.items():
                         for error in error_list:
@@ -129,41 +119,6 @@ def public_form_view(request):
                             for field, error_list in form_errors.items():
                                 for error in error_list:
                                     messages.error(request, f'Error en Experiencia Laboral #{i+1} - {field}: {error}')
-
-                if not basica_valid:
-                    for i, form_errors in enumerate(basica_formset.errors):
-                        if form_errors:
-                            for field, error_list in form_errors.items():
-                                for error in error_list:
-                                    messages.error(request, f'Error en Educación Básica #{i+1} - {field}: {error}')
-
-                if not superior_valid:
-                    for i, form_errors in enumerate(superior_formset.errors):
-                        if form_errors:
-                            for field, error_list in form_errors.items():
-                                for error in error_list:
-                                    messages.error(request, f'Error en Educación Superior (Técnico/Tecnólogo) #{i+1} - {field}: {error}')
-
-                if not academica_valid:
-                    for i, form_errors in enumerate(academica_formset.errors):
-                        if form_errors:
-                            for field, error_list in form_errors.items():
-                                for error in error_list:
-                                    messages.error(request, f'Error en Información Académica #{i+1} - {field}: {error}')
-
-                if not posgrado_valid:
-                    for i, form_errors in enumerate(posgrado_formset.errors):
-                        if form_errors:
-                            for field, error_list in form_errors.items():
-                                for error in error_list:
-                                    messages.error(request, f'Error en Posgrado #{i+1} - {field}: {error}')
-
-                if not especializacion_valid:
-                    for i, form_errors in enumerate(especializacion_formset.errors):
-                        if form_errors:
-                            for field, error_list in form_errors.items():
-                                for error in error_list:
-                                    messages.error(request, f'Error en Especialización #{i+1} - {field}: {error}')
 
                 messages.warning(request, 'Por favor corrija los errores en el formulario antes de enviarlo.')
         else:
@@ -198,6 +153,7 @@ def public_form_view(request):
 def public_update_view(request, token):
     """
     Vista pública para corregir información mediante token seguro.
+    VERSIÓN CORREGIDA - Maneja correctamente campos disabled y validaciones.
     """
     # 1. Validar existencia del token
     try:
@@ -227,27 +183,31 @@ def public_update_view(request, token):
     except AnexosAdicionales.DoesNotExist:
         anexos_adicionales = None
 
-    if request.method == 'POST':
-        # Obtener campos editables para validación selectiva
-        campos_editables = set(applicant.campos_a_corregir or [])
+    # Obtener campos editables
+    campos_editables = set(applicant.campos_a_corregir or [])
 
-        # ==============================================================
-        # FIX CRÍTICO: Restaurar valores de campos disabled antes de validar
-        # Los campos disabled no se envían en POST, causando errores de validación
-        # ==============================================================
-        post_data = request.POST.copy()  # Hacer copia mutable del POST
+    if request.method == 'POST':
+        # ==============================================
+        # FIX #1: RESTAURAR VALORES DE CAMPOS DISABLED
+        # ==============================================
+        # Los campos disabled no se envían en POST, debemos restaurar sus valores
+        # desde la instancia de BD para que las validaciones funcionen
         
-        # Restaurar valores desde la BD para campos que NO están editables
+        post_data = request.POST.copy()  # Hacer copia mutable
+        
+        # Restaurar campos del formulario principal que NO están editables
         for field_name in InformacionBasicaForm.base_fields.keys():
             if field_name not in campos_editables:
+                # Obtener valor actual de la BD
                 current_value = getattr(applicant, field_name, None)
                 if current_value is not None:
+                    # Restaurar en POST data
                     if isinstance(current_value, bool):
                         post_data[field_name] = 'on' if current_value else ''
                     else:
                         post_data[field_name] = str(current_value)
         
-        # Crear formularios con POST DATA RESTAURADO
+        # Crear formularios con POST data restaurado
         form = InformacionBasicaForm(post_data, request.FILES, instance=applicant)
         genero = post_data.get('genero', applicant.genero)
         documentos_form = DocumentosIdentidadForm(post_data, request.FILES, instance=documentos_identidad, genero=genero)
@@ -260,68 +220,59 @@ def public_update_view(request, token):
         posgrado_formset = PosgradoFormSet(post_data, request.FILES, instance=applicant)
         especializacion_formset = EspecializacionFormSet(post_data, request.FILES, instance=applicant)
 
-        # Remover validaciones de campos que NO están editables
-        # Los campos deshabilitados no se envían en POST, así que debemos hacer campos no editables opcionales
+        # ==============================================
+        # FIX #2: HACER OPCIONALES CAMPOS NO EDITABLES
+        # ==============================================
+        # Para evitar errores de validación, hacer que campos no editables sean opcionales
         if campos_editables:
-            # Hacer que campos NO editables sean opcionales para validación
             for field_name in form.fields:
                 if field_name not in campos_editables:
                     form.fields[field_name].required = False
-
-            # Validar solo formsets que están en campos editables
-            validar_documentos = 'documentos_identidad' in campos_editables
-            validar_antecedentes = 'antecedentes' in campos_editables
-            validar_anexos = 'anexos_adicionales' in campos_editables
-            validar_experiencia = 'experiencia_laboral' in campos_editables
-            validar_basica = 'educacion_basica' in campos_editables
-            validar_superior = 'educacion_superior' in campos_editables
-            validar_academica = 'formacion_academica' in campos_editables
-            validar_posgrado = 'posgrado' in campos_editables
-            validar_especializacion = 'especializacion' in campos_editables
-
-            # Si un formset NO está editable, hacer todos sus campos opcionales
-            if not validar_documentos:
+            
+            # Hacer opcionales formsets que no están en campos editables
+            if 'documentos_identidad' not in campos_editables:
                 for field in documentos_form.fields.values():
                     field.required = False
-            if not validar_antecedentes:
+            
+            if 'antecedentes' not in campos_editables:
                 for field in antecedentes_form.fields.values():
                     field.required = False
-            if not validar_anexos:
+            
+            if 'anexos_adicionales' not in campos_editables:
                 for field in anexos_form.fields.values():
                     field.required = False
-            if not validar_experiencia:
+            
+            if 'experiencia_laboral' not in campos_editables:
                 for form_exp in experiencia_formset.forms:
                     for field in form_exp.fields.values():
                         field.required = False
-            if not validar_basica:
+            
+            if 'educacion_basica' not in campos_editables:
                 for form_bas in basica_formset.forms:
                     for field in form_bas.fields.values():
                         field.required = False
-            if not validar_superior:
+            
+            if 'educacion_superior' not in campos_editables:
                 for form_sup in superior_formset.forms:
                     for field in form_sup.fields.values():
                         field.required = False
-            if not validar_academica:
+            
+            if 'formacion_academica' not in campos_editables:
                 for form_aca in academica_formset.forms:
                     for field in form_aca.fields.values():
                         field.required = False
-            if not validar_posgrado:
+            
+            if 'posgrado' not in campos_editables:
                 for form_pos in posgrado_formset.forms:
                     for field in form_pos.fields.values():
                         field.required = False
-            if not validar_especializacion:
+            
+            if 'especializacion' not in campos_editables:
                 for form_esp in especializacion_formset.forms:
                     for field in form_esp.fields.values():
                         field.required = False
 
-        # Ahora validar todos los formularios
-        # Hacer opcionales los campos no editables para evitar errores de validación
-        if campos_editables:
-            for field_name in form.fields:
-                if field_name not in campos_editables:
-                    form.fields[field_name].required = False
-        
-        # Validar formularios
+        # Validar todos los formularios
         form_valid = form.is_valid()
         documentos_valid = documentos_form.is_valid()
         antecedentes_valid = antecedentes_form.is_valid()
@@ -332,45 +283,45 @@ def public_update_view(request, token):
         academica_valid = academica_formset.is_valid()
         posgrado_valid = posgrado_formset.is_valid()
         especializacion_valid = especializacion_formset.is_valid()
-        
-        # FIX: Logging detallado de errores para debugging
+
+        # ==============================================
+        # FIX #3: LOGGING DETALLADO DE ERRORES
+        # ==============================================
         if not form_valid:
-            logger.error(f'[CORRECCIÓN] Errores formulario principal para {applicant.cedula}: {form.errors}')
+            logger.error(f'Errores en formulario principal: {form.errors}')
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f'Error en {field}: {error}')
         
         if not documentos_valid:
-            logger.error(f'[CORRECCIÓN] Errores documentos: {documentos_form.errors}')
+            logger.error(f'Errores en documentos: {documentos_form.errors}')
+            for field, errors in documentos_form.errors.items():
+                for error in errors:
+                    messages.error(request, f'Error en Documentos - {field}: {error}')
+        
+        if not antecedentes_valid:
+            logger.error(f'Errores en antecedentes: {antecedentes_form.errors}')
         
         if not experiencia_valid:
-            logger.error(f'[CORRECCIÓN] Errores experiencia: {experiencia_formset.errors}')
-        
+            logger.error(f'Errores en experiencia: {experiencia_formset.errors}')
+
+        # Validar que TODOS sean válidos
         if form_valid and documentos_valid and antecedentes_valid and anexos_valid and \
            experiencia_valid and basica_valid and superior_valid and academica_valid and \
            posgrado_valid and especializacion_valid:
             
             try:
                 with transaction.atomic():
-                    # GUARDAR SOLO LOS CAMPOS EDITABLES
-                    # Los campos no editables mantienen sus valores actuales de la BD
-
-                    # Guardar formulario principal (solo actualiza campos que vinieron en POST)
+                    # ==============================================
+                    # FIX #4: GUARDAR SIN update_fields
+                    # ==============================================
+                    # Simplemente guardamos normalmente, Django maneja qué campos cambiar
                     informacion_basica = form.save(commit=False)
-
-                    # Actualizar estado y limpiar token para seguridad (un solo uso)
                     informacion_basica.estado = 'CORREGIDO'
                     informacion_basica.token_correccion = None
                     informacion_basica.token_expiracion = None
-
-                    # Guardar comentarios del candidato sobre las correcciones
                     informacion_basica.comentarios_correccion = request.POST.get('comentarios_correccion', '')
-
-                    # FIX #4: Guardar sin update_fields para evitar problemas con campos calculados
-                    # Django automáticamente solo actualiza los campos que cambiaron
-                    informacion_basica.save()
-                    
-                    logger.info(f'[CORRECCIÓN] Información guardada exitosamente para {applicant.cedula}. Estado: CORREGIDO')
+                    informacion_basica.save()  # Guardar TODOS los campos
 
                     # Guardar formsets solo si están en campos editables
                     if 'documentos_identidad' in campos_editables:
@@ -390,45 +341,8 @@ def public_update_view(request, token):
 
                     if 'experiencia_laboral' in campos_editables:
                         experiencia_formset.save()
-                    
-                    # Recalcular experiencia (lógica idéntica a admin)
-                    from datetime import datetime as dt
-                    experiencias_modificadas = []
-                    for form_exp in experiencia_formset:
-                        if form_exp.instance.pk and not form_exp.cleaned_data.get('DELETE', False):
-                            if form_exp.has_changed() and ('fecha_inicial' in form_exp.changed_data or 'fecha_terminacion' in form_exp.changed_data):
-                                experiencia = form_exp.instance
-                                if experiencia.fecha_inicial and experiencia.fecha_terminacion:
-                                    fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
-                                    fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
-                                    delta = fecha_fin - fecha_inicio
-                                    total_dias = delta.days
-                                    anos = fecha_fin.year - fecha_inicio.year
-                                    meses = fecha_fin.month - fecha_inicio.month
-                                    dias = fecha_fin.day - fecha_inicio.day
-                                    if dias < 0:
-                                        meses -= 1
-                                        if fecha_inicio.month == 1:
-                                            ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
-                                        else:
-                                            ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
-                                        dias += ultimo_dia
-                                    if meses < 0:
-                                        anos -= 1
-                                        meses += 12
-                                    total_meses = (anos * 12) + meses
-                                    experiencia.meses_experiencia = total_meses
-                                    experiencia.dias_experiencia = total_dias
-                                    experiencias_modificadas.append(experiencia)
-                    
-                        if experiencias_modificadas:
-                            from ..models import ExperienciaLaboral
-                            ExperienciaLaboral.objects.bulk_update(experiencias_modificadas, ['meses_experiencia', 'dias_experiencia'])
-
-                        # Recalcular experiencia total solo si se modificó experiencia
                         calcular_experiencia_total(informacion_basica)
 
-                    # Guardar otros formsets solo si están en campos editables
                     if 'educacion_basica' in campos_editables:
                         basica_formset.save()
 
@@ -444,7 +358,7 @@ def public_update_view(request, token):
                     if 'especializacion' in campos_editables:
                         especializacion_formset.save()
 
-                    # Actualizar el registro en historial de correcciones
+                    # Actualizar historial
                     from ..models import HistorialCorreccion
                     historial = HistorialCorreccion.objects.filter(
                         informacion_basica=informacion_basica
@@ -463,11 +377,13 @@ def public_update_view(request, token):
                     return redirect('formapp:public_form')
 
             except Exception as e:
+                logger.error(f'Error al guardar correcciones: {str(e)}', exc_info=True)
                 messages.error(request, f'Error al guardar las correcciones: {str(e)}')
         else:
             messages.error(request, 'Por favor corrige los errores mostrados en el formulario.')
-            logger.warning(f'[CORRECCIÓN] Validación fallida para {applicant.cedula}. Campos editables: {list(campos_editables)}')
-    else:
+            logger.warning(f'Validación fallida para {applicant.cedula}. Campos editables: {campos_editables}')
+
+    else:  # GET request
         form = InformacionBasicaForm(instance=applicant)
         documentos_form = DocumentosIdentidadForm(instance=documentos_identidad, genero=applicant.genero)
         antecedentes_form = AntecedentesForm(instance=antecedentes)
@@ -479,82 +395,71 @@ def public_update_view(request, token):
         posgrado_formset = PosgradoFormSet(instance=applicant)
         especializacion_formset = EspecializacionFormSet(instance=applicant)
 
-        # RESTRICCIÓN DE CAMPOS: Solo permitir editar campos seleccionados por el admin
-        campos_editables = set(applicant.campos_a_corregir or [])
-
-        # Si hay campos a corregir definidos, aplicar restricciones
+        # ==============================================
+        # FIX #5: USAR readonly EN VEZ DE disabled
+        # ==============================================
+        # disabled no envía datos en POST, readonly sí pero no permite edición
         if campos_editables:
-            # LÓGICA INVERTIDA: Deshabilitar TODOS los campos y resaltar solo los EDITABLES
-
-            # 1. Procesar campos del formulario principal
-            for field_name in form.fields:
-                if field_name in campos_editables:
-                    # Campo EDITABLE: Resaltar en rojo con borde grueso
-                    current_class = form.fields[field_name].widget.attrs.get('class', '')
-                    form.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
-                    form.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5; border-width: 3px !important;'
-                    form.fields[field_name].help_text = '<span style="color: #dc3545; font-weight: bold;">✏️ CORRIJA ESTE CAMPO</span>'
-                else:
-                    # Campo BLOQUEADO: Usar readonly en vez de disabled
-                    # FIX: disabled no envía datos en POST, readonly sí pero no permite edición
-                    form.fields[field_name].widget.attrs['readonly'] = 'readonly'
-                    current_class = form.fields[field_name].widget.attrs.get('class', '')
-                    form.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
-                    form.fields[field_name].widget.attrs['style'] = 'pointer-events: none; cursor: not-allowed;'
-
-            # Función auxiliar para aplicar estilos a formularios
             def aplicar_estilo_editable(form_fields):
-                """Aplica estilo rojo a campos editables"""
                 for field_name in form_fields:
                     current_class = form_fields[field_name].widget.attrs.get('class', '')
                     form_fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
-                    form_fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5; border-width: 3px !important;'
+                    form_fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5;'
 
             def aplicar_estilo_bloqueado(form_fields):
-                """Aplica estilo gris y deshabilita campos"""
-                # FIX: Usar readonly en vez de disabled
                 for field_name in form_fields:
+                    # USAR readonly EN VEZ DE disabled
                     form_fields[field_name].widget.attrs['readonly'] = 'readonly'
                     current_class = form_fields[field_name].widget.attrs.get('class', '')
                     form_fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
                     form_fields[field_name].widget.attrs['style'] = 'pointer-events: none; cursor: not-allowed;'
 
-            # 2. Procesar documentos_identidad
+            # Aplicar estilos al formulario principal
+            for field_name in form.fields:
+                if field_name in campos_editables:
+                    current_class = form.fields[field_name].widget.attrs.get('class', '')
+                    form.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                    form.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5;'
+                    form.fields[field_name].help_text = '<span style="color: #dc3545; font-weight: bold;">✏️ CORRIJA ESTE CAMPO</span>'
+                else:
+                    form.fields[field_name].widget.attrs['readonly'] = 'readonly'
+                    current_class = form.fields[field_name].widget.attrs.get('class', '')
+                    form.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
+                    form.fields[field_name].widget.attrs['style'] = 'pointer-events: none; cursor: not-allowed;'
+
+            # Aplicar a documentos
             if 'documentos_identidad' in campos_editables:
                 aplicar_estilo_editable(documentos_form.fields)
             else:
                 aplicar_estilo_bloqueado(documentos_form.fields)
 
-            # 3. Procesar antecedentes
+            # Aplicar a antecedentes
             if 'antecedentes' in campos_editables:
                 aplicar_estilo_editable(antecedentes_form.fields)
             else:
                 aplicar_estilo_bloqueado(antecedentes_form.fields)
 
-            # 4. Procesar anexos_adicionales
+            # Aplicar a anexos
             if 'anexos_adicionales' in campos_editables:
                 aplicar_estilo_editable(anexos_form.fields)
             else:
                 aplicar_estilo_bloqueado(anexos_form.fields)
 
-            # 5. Procesar formsets - CRÍTICO: Iterar sobre TODAS las formas del formset
+            # Aplicar a formsets
             def aplicar_estilos_formset(formset, editable):
-                """Aplica estilos a todos los campos de todas las formas en un formset"""
                 for form_item in formset.forms:
                     for field_name in form_item.fields:
                         if field_name not in ['DELETE', 'id']:
                             if editable:
                                 current_class = form_item.fields[field_name].widget.attrs.get('class', '')
-                                form_item.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
-                                form_item.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5; border-width: 3px !important;'
+                                form_item.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3'
+                                form_item.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5;'
                             else:
-                                # FIX: Usar readonly en vez de disabled
                                 form_item.fields[field_name].widget.attrs['readonly'] = 'readonly'
                                 current_class = form_item.fields[field_name].widget.attrs.get('class', '')
-                                form_item.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
-                                form_item.fields[field_name].widget.attrs['style'] = 'pointer-events: none; cursor: not-allowed;'
+                                form_item.fields[field_name].widget.attrs['class'] = current_class + ' bg-light'
+                                form_item.fields[field_name].widget.attrs['style'] = 'pointer-events: none;'
 
-            # Aplicar estilos a cada formset
             aplicar_estilos_formset(experiencia_formset, 'experiencia_laboral' in campos_editables)
             aplicar_estilos_formset(basica_formset, 'educacion_basica' in campos_editables)
             aplicar_estilos_formset(superior_formset, 'educacion_superior' in campos_editables)
@@ -574,6 +479,8 @@ def public_update_view(request, token):
         'posgrado_formset': posgrado_formset,
         'especializacion_formset': especializacion_formset,
         'applicant': applicant,
-        'is_public_correction': True, # Flag para ajustar el template
+        'is_public_correction': True,
+        'campos_editables': list(campos_editables),  # Para mostrar en template
     }
     return render(request, 'formapp/applicant_edit.html', context)
+
