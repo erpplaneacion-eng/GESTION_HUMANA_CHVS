@@ -26,7 +26,9 @@ class InformacionBasicaModelTest(TestCase):
     def setUp(self):
         """Configuración inicial para cada test"""
         self.valid_data = {
-            'nombre_completo': 'JUAN PEREZ GOMEZ',
+            'primer_apellido': 'PEREZ',
+            'segundo_apellido': 'GOMEZ',
+            'primer_nombre': 'JUAN',
             'cedula': '1234567890',
             'genero': 'Masculino',
             'tipo_via': 'Calle',
@@ -41,7 +43,7 @@ class InformacionBasicaModelTest(TestCase):
         info = InformacionBasica.objects.create(**self.valid_data)
         self.assertIsNotNone(info.id)
         self.assertEqual(info.cedula, '1234567890')
-        self.assertEqual(info.nombre_completo, 'JUAN PEREZ GOMEZ')
+        self.assertEqual(info.nombre_completo, 'PEREZ GOMEZ JUAN')
 
     def test_cedula_unica(self):
         """Test que la cédula debe ser única"""
@@ -55,7 +57,9 @@ class InformacionBasicaModelTest(TestCase):
         """Test que los campos obligatorios no pueden estar vacíos"""
         # Crear instancia sin cédula
         info = InformacionBasica(
-            nombre_completo='TEST',
+            primer_apellido='TEST',
+            segundo_apellido='APELLIDO',
+            primer_nombre='NOMBRE',
             genero='Masculino',
             tipo_via='Calle',
             numero_via='10',
@@ -83,7 +87,7 @@ class InformacionBasicaModelTest(TestCase):
     def test_str_method(self):
         """Test del método __str__"""
         info = InformacionBasica.objects.create(**self.valid_data)
-        self.assertEqual(str(info), 'JUAN PEREZ GOMEZ')
+        self.assertEqual(str(info), 'PEREZ GOMEZ JUAN')
 
     def test_genero_choices(self):
         """Test que género acepta valores válidos"""
@@ -101,7 +105,9 @@ class ExperienciaLaboralModelTest(TestCase):
     def setUp(self):
         """Configuración inicial"""
         self.persona = InformacionBasica.objects.create(
-            nombre_completo='MARIA LOPEZ',
+            primer_apellido='LOPEZ',
+            segundo_apellido='GARCIA',
+            primer_nombre='MARIA',
             cedula='9876543210',
             genero='Femenino',
             tipo_via='Carrera',
@@ -216,7 +222,9 @@ class CalculoExperienciaModelTest(TestCase):
     def setUp(self):
         """Configuración inicial"""
         self.persona = InformacionBasica.objects.create(
-            nombre_completo='CARLOS RUIZ',
+            primer_apellido='RUIZ',
+            segundo_apellido='MARTINEZ',
+            primer_nombre='CARLOS',
             cedula='1122334455',
             genero='Masculino',
             tipo_via='Avenida',
@@ -291,7 +299,9 @@ class InformacionAcademicaModelTest(TestCase):
     def setUp(self):
         """Configuración inicial"""
         self.persona = InformacionBasica.objects.create(
-            nombre_completo='ANA TORRES',
+            primer_apellido='TORRES',
+            segundo_apellido='MARTINEZ',
+            primer_nombre='ANA',
             cedula='5544332211',
             genero='Femenino',
             tipo_via='Calle',
@@ -357,7 +367,9 @@ class PosgradoModelTest(TestCase):
     def setUp(self):
         """Configuración inicial"""
         self.persona = InformacionBasica.objects.create(
-            nombre_completo='PEDRO SANCHEZ',
+            primer_apellido='SANCHEZ',
+            segundo_apellido='RODRIGUEZ',
+            primer_nombre='PEDRO',
             cedula='6677889900',
             genero='Masculino',
             tipo_via='Carrera',
@@ -412,7 +424,9 @@ class EspecializacionModelTest(TestCase):
     def setUp(self):
         """Configuración inicial"""
         self.persona = InformacionBasica.objects.create(
-            nombre_completo='LAURA MARTINEZ',
+            primer_apellido='MARTINEZ',
+            segundo_apellido='GONZALEZ',
+            primer_nombre='LAURA',
             cedula='9988776655',
             genero='Femenino',
             tipo_via='Avenida',

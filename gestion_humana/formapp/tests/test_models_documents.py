@@ -24,7 +24,9 @@ MOCK_CLOUDINARY_RESPONSE = {
 class DocumentosIdentidadModelTest(TestCase):
     def setUp(self):
         self.info_basica = InformacionBasica.objects.create(
-            nombre_completo="Juan Perez",
+            primer_apellido="PEREZ",
+            segundo_apellido="GARCIA",
+            primer_nombre="JUAN",
             cedula="12345",
             correo="juan@example.com",
             telefono="3001234567",
@@ -34,7 +36,7 @@ class DocumentosIdentidadModelTest(TestCase):
             numero_casa="45-67",
             barrio="Centro"
         )
-        self.archivo_dummy = SimpleUploadedFile("test.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        self.archivo_dummy = SimpleUploadedFile("test.pdf", b"%PDF-1.4 content here", content_type="application/pdf")
 
     def test_crear_documentos_identidad_minimo(self, mock_upload):
         """Test creating with only required fields"""
@@ -78,7 +80,9 @@ class DocumentosIdentidadModelTest(TestCase):
 class AntecedentesModelTest(TestCase):
     def setUp(self):
         self.info_basica = InformacionBasica.objects.create(
-            nombre_completo="Maria Gomez",
+            primer_apellido="GOMEZ",
+            segundo_apellido="MARTINEZ",
+            primer_nombre="MARIA",
             cedula="67890",
             correo="maria@example.com",
             telefono="3009876543",
@@ -88,7 +92,7 @@ class AntecedentesModelTest(TestCase):
             numero_casa="12-34",
             barrio="Poblado"
         )
-        self.archivo_dummy = SimpleUploadedFile("antecedente.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        self.archivo_dummy = SimpleUploadedFile("antecedente.pdf", b"%PDF-1.4 content here", content_type="application/pdf")
         self.fecha_dummy = date(2025, 1, 1)
 
     def test_crear_antecedentes_completo(self, mock_upload):
@@ -124,13 +128,15 @@ class AntecedentesModelTest(TestCase):
             certificado_delitos_sexuales=self.archivo_dummy,
             fecha_delitos_sexuales=self.fecha_dummy
         )
-        self.assertIn("Antecedentes de Maria Gomez", str(antecedentes))
+        self.assertIn("Antecedentes de GOMEZ MARTINEZ MARIA", str(antecedentes))
 
 @patch('cloudinary.uploader.upload', return_value=MOCK_CLOUDINARY_RESPONSE)
 class AnexosAdicionalesModelTest(TestCase):
     def setUp(self):
         self.info_basica = InformacionBasica.objects.create(
-            nombre_completo="Pedro Rodriguez",
+            primer_apellido="RODRIGUEZ",
+            segundo_apellido="LOPEZ",
+            primer_nombre="PEDRO",
             cedula="54321",
             correo="pedro@example.com",
             telefono="3005556666",
@@ -140,7 +146,7 @@ class AnexosAdicionalesModelTest(TestCase):
             numero_casa="01-02",
             barrio="Norte"
         )
-        self.archivo_dummy = SimpleUploadedFile("anexo.pdf", b"%PDF-1.4 content", content_type="application/pdf")
+        self.archivo_dummy = SimpleUploadedFile("anexo.pdf", b"%PDF-1.4 content here", content_type="application/pdf")
 
     def test_crear_anexos_opcionales(self, mock_upload):
         """Test that AnexosAdicionales can be created even if empty (all fields optional)"""

@@ -81,7 +81,7 @@ class ApplicantListViewTest(TestCase):
         response = self.client.get(self.url)
         # Debe redirigir al login
         self.assertEqual(response.status_code, 302)
-        self.assertIn('/admin/login/', response.url)
+        self.assertIn('/login/', response.url)
 
     def test_applicant_list_get_autenticado(self):
         """Test GET autenticado muestra lista"""
@@ -238,7 +238,7 @@ class ApplicantDeleteViewTest(TestCase):
         """Test que requiere autenticación"""
         response = self.client.post(self.url)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('/admin/login/', response.url)
+        self.assertIn('/login/', response.url)
 
     def test_applicant_delete_post_elimina_candidato(self):
         """Test POST elimina el candidato"""

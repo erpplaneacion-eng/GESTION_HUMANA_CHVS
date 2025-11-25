@@ -1,0 +1,52 @@
+[
+  {
+    "id": "TC001",
+    "title": "public_registration_form_submission_validation",
+    "description": "Test the POST /formapp/registro/ endpoint to ensure that the public candidate registration form validates all required fields, file uploads (size, extension, MIME type), and formsets correctly. Verify that the registration is saved atomically and that a confirmation email is sent asynchronously upon successful submission."
+  },
+  {
+    "id": "TC002",
+    "title": "admin_candidate_list_pagination_and_search",
+    "description": "Test the GET /formapp/lista/ endpoint to verify that the administrative panel lists candidates with correct pagination (20 per page) and supports searching by cedula or name. Ensure authentication is required and the response time is under 2 seconds."
+  },
+  {
+    "id": "TC003",
+    "title": "admin_candidate_detail_view_access",
+    "description": "Test the GET /formapp/detalle/{pk}/ endpoint to confirm that authenticated users can view detailed information of a candidate by primary key. Verify proper handling of non-existent candidate IDs returning 404."
+  },
+  {
+    "id": "TC004",
+    "title": "admin_candidate_edit_and_experience_recalculation",
+    "description": "Test the POST /formapp/editar/{pk}/ endpoint to ensure that candidate information can be updated with full validation and that the experience calculation service recalculates experience automatically. Confirm successful update returns a 302 redirect and validation errors return 400."
+  },
+  {
+    "id": "TC005",
+    "title": "admin_candidate_deletion",
+    "description": "Test the POST /formapp/eliminar/{pk}/ endpoint to verify that authenticated users can delete a candidate record. Confirm successful deletion returns a 302 redirect and attempts to delete non-existent candidates return 404."
+  },
+  {
+    "id": "TC006",
+    "title": "individual_zip_report_generation_and_download",
+    "description": "Test the GET /formapp/descargar/{pk}/ endpoint to verify that an authenticated user can generate and download a ZIP file containing the candidate's Excel report, PDF ANEXO 11, and all related documents. Confirm correct file structure, MIME types, and 404 response for invalid candidate IDs."
+  },
+  {
+    "id": "TC007",
+    "title": "bulk_zip_report_generation_and_download",
+    "description": "Test the GET /formapp/descargar-todo/ endpoint to ensure that an authenticated user can generate and download a consolidated ZIP file with Excel report and individual folders for all candidates. Verify the ZIP filename includes a timestamp and the response contains the correct content disposition header."
+  },
+  {
+    "id": "TC008",
+    "title": "experience_calculation_service_accuracy",
+    "description": "Test the experience calculation service to verify it correctly calculates months, days, and years of experience from multiple work experience records, including leap years and partial months. Confirm that the results are saved in the CalculoExperiencia model and formatted correctly."
+  },
+  {
+    "id": "TC009",
+    "title": "authentication_login_logout_flow",
+    "description": "Test the /login/ GET and POST endpoints to verify that the login form is displayed and that valid credentials authenticate the user redirecting to /formapp/lista/. Test invalid credentials return 401. Test the /logout/ POST endpoint to confirm session termination and redirection to /login/."
+  },
+  {
+    "id": "TC010",
+    "title": "file_upload_validation_service",
+    "description": "Test the file validation service applied to all file uploads to ensure files exceeding 10MB, with invalid extensions, or incorrect MIME types are rejected with clear error messages. Verify that valid files are accepted and saved correctly."
+  }
+]

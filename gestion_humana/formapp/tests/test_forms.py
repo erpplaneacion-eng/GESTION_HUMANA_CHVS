@@ -325,39 +325,60 @@ class AntecedentesFormTest(TestCase):
         self.create_test_files()
 
     def create_test_files(self):
-        """Crear archivos de prueba"""
+        """Crear archivos de prueba con formato PDF válido"""
         self.cert_procuraduria = SimpleUploadedFile(
-            "procuraduria.pdf", b"%PDF-1.4 content", content_type="application/pdf"
+            "procuraduria.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
         )
         self.cert_contraloria = SimpleUploadedFile(
-            "contraloria.pdf", b"%PDF-1.4 content", content_type="application/pdf"
+            "contraloria.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
         )
         self.cert_policia = SimpleUploadedFile(
-            "policia.pdf", b"%PDF-1.4 content", content_type="application/pdf"
+            "policia.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
         )
         self.cert_medidas = SimpleUploadedFile(
-            "medidas.pdf", b"%PDF-1.4 content", content_type="application/pdf"
+            "medidas.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
         )
         self.cert_delitos = SimpleUploadedFile(
-            "delitos.pdf", b"%PDF-1.4 content", content_type="application/pdf"
+            "delitos.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
         )
 
     def test_formulario_valido_con_todos_los_certificados(self):
         """Test formulario válido con todos los certificados"""
+        # Recrear archivos frescos para este test con formato PDF válido
+        cert_procuraduria = SimpleUploadedFile(
+            "procuraduria.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
+        )
+        cert_contraloria = SimpleUploadedFile(
+            "contraloria.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
+        )
+        cert_policia = SimpleUploadedFile(
+            "policia.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
+        )
+        cert_medidas = SimpleUploadedFile(
+            "medidas.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
+        )
+        cert_delitos = SimpleUploadedFile(
+            "delitos.pdf", b"%PDF-1.4 content here", content_type="application/pdf"
+        )
+
+        # Usar fecha reciente (dentro de 30 días)
+        from datetime import datetime, timedelta
+        fecha_reciente = (datetime.now() - timedelta(days=10)).date()
+
         form = AntecedentesForm(
             data={
-                'fecha_procuraduria': date(2024, 1, 1),
-                'fecha_contraloria': date(2024, 1, 1),
-                'fecha_policia': date(2024, 1, 1),
-                'fecha_medidas_correctivas': date(2024, 1, 1),
-                'fecha_delitos_sexuales': date(2024, 1, 1),
+                'fecha_procuraduria': fecha_reciente,
+                'fecha_contraloria': fecha_reciente,
+                'fecha_policia': fecha_reciente,
+                'fecha_medidas_correctivas': fecha_reciente,
+                'fecha_delitos_sexuales': fecha_reciente,
             },
             files={
-                'certificado_procuraduria': self.cert_procuraduria,
-                'certificado_contraloria': self.cert_contraloria,
-                'certificado_policia': self.cert_policia,
-                'certificado_medidas_correctivas': self.cert_medidas,
-                'certificado_delitos_sexuales': self.cert_delitos,
+                'certificado_procuraduria': cert_procuraduria,
+                'certificado_contraloria': cert_contraloria,
+                'certificado_policia': cert_policia,
+                'certificado_medidas_correctivas': cert_medidas,
+                'certificado_delitos_sexuales': cert_delitos,
             }
         )
         self.assertTrue(form.is_valid())
@@ -456,11 +477,21 @@ class PosgradoFormTest(TestCase):
 
     def test_formulario_valido(self):
         """Test formulario válido de posgrado"""
-        form = PosgradoForm(data={
-            'nombre_posgrado': 'Maestría en Ingeniería',
-            'universidad': 'Universidad Nacional',
-            'fecha_terminacion': date(2022, 6, 1),
-        })
+        # Crear archivo de prueba con formato PDF válido
+        diploma_pdf = SimpleUploadedFile(
+            'diploma_posgrado.pdf',
+            b'%PDF-1.4 test content',
+            content_type='application/pdf'
+        )
+
+        form = PosgradoForm(
+            data={
+                'nombre_posgrado': 'Maestría en Ingeniería',
+                'universidad': 'Universidad Nacional',
+                'fecha_terminacion': date(2022, 6, 1),
+            },
+            files={'acta_grado_diploma': diploma_pdf}
+        )
         self.assertTrue(form.is_valid())
 
     def test_campos_obligatorios(self):
@@ -477,11 +508,21 @@ class EspecializacionFormTest(TestCase):
 
     def test_formulario_valido(self):
         """Test formulario válido de especialización"""
-        form = EspecializacionForm(data={
-            'nombre_especializacion': 'Especialización en Gerencia',
-            'universidad': 'Universidad Javeriana',
-            'fecha_terminacion': date(2021, 12, 1),
-        })
+        # Crear archivo de prueba con formato PDF válido
+        diploma_pdf = SimpleUploadedFile(
+            'diploma_especializacion.pdf',
+            b'%PDF-1.4 test content',
+            content_type='application/pdf'
+        )
+
+        form = EspecializacionForm(
+            data={
+                'nombre_especializacion': 'Especialización en Gerencia',
+                'universidad': 'Universidad Javeriana',
+                'fecha_terminacion': date(2021, 12, 1),
+            },
+            files={'acta_grado_diploma': diploma_pdf}
+        )
         self.assertTrue(form.is_valid())
 
     def test_campos_obligatorios(self):
