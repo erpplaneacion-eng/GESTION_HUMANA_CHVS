@@ -523,6 +523,12 @@
                                 <i class="fas fa-clock"></i>
                                 <strong>Experiencia:</strong> {{ posgrado.meses_de_experiencia }} meses
                             </p>
+                            {% if posgrado.acta_grado_diploma %}
+                                <hr class="my-2">
+                                <a href="{{ posgrado.acta_grado_diploma.url }}" target="_blank" class="btn btn-sm btn-outline-success w-100">
+                                    <i class="fas fa-file-pdf"></i> Ver Diploma/Acta
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -561,6 +567,12 @@
                                 <i class="fas fa-clock"></i>
                                 <strong>Experiencia:</strong> {{ especializacion.meses_de_experiencia }} meses
                             </p>
+                            {% if especializacion.acta_grado_diploma %}
+                                <hr class="my-2">
+                                <a href="{{ especializacion.acta_grado_diploma.url }}" target="_blank" class="btn btn-sm btn-outline-success w-100">
+                                    <i class="fas fa-file-pdf"></i> Ver Diploma/Acta
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

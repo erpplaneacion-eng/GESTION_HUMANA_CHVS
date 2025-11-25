@@ -630,6 +630,47 @@
                                             {{ form_aca.meses_experiencia_profesion }}
                                         </div>
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Fotocopia Título</label>
+                                            {{ form_aca.fotocopia_titulo }}
+                                            {% if form_aca.instance.fotocopia_titulo %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_aca.instance.fotocopia_titulo.url }}" target="_blank">Ver documento</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Fotocopia Tarjeta Profesional</label>
+                                            {{ form_aca.fotocopia_tarjeta_profesional }}
+                                            {% if form_aca.instance.fotocopia_tarjeta_profesional %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_aca.instance.fotocopia_tarjeta_profesional.url }}" target="_blank">Ver documento</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Certificado Vigencia</label>
+                                            {{ form_aca.certificado_vigencia_tarjeta }}
+                                            {% if form_aca.instance.certificado_vigencia_tarjeta %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_aca.instance.certificado_vigencia_tarjeta.url }}" target="_blank">Ver documento</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Fecha Vigencia Tarjeta (Opcional)</label>
+                                            {{ form_aca.fecha_vigencia_tarjeta }}
+                                        </div>
+                                    </div>
                                     {{ form_aca.DELETE }}
                                 </div>
                             {% endfor %}
