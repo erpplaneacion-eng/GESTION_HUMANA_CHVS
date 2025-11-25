@@ -11,11 +11,48 @@ import io
 import os
 import logging
 
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
 from ..models import InformacionBasica
-from ..report_generators import create_excel_for_person, generar_anexo11_pdf
+from ..report_generators_excel import create_excel_for_person
+from ..report_generators_pdf import generar_anexo11_pdf
 
 logger = logging.getLogger(__name__)
 
+def get_file_extension(file_field, file_content=None):
+    """Helper para obtener la extensión del archivo"""
+    if not file_field:
+        return '.pdf'
+    
+    ext = os.path.splitext(file_field.name)[1]
+    if not ext and hasattr(file_field, 'url'):
+        url = file_field.url
+        if '.' in url.split('/')[-1]:
+            ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
+            
+    if not ext:
+        # Intentar detectar por contenido magic bytes
+        if file_content:
+             content_start = file_content[:10]
+        else:
+             try:
+                 with file_field.open('rb') as f:
+                     content_start = f.read(10)
+                     file_field.seek(0)
+             except:
+                 content_start = b''
+                 
+        if content_start.startswith(b'%PDF'):
+            ext = '.pdf'
+        elif content_start.startswith(b'\x89PNG'):
+            ext = '.png'
+        elif content_start.startswith(b'\xff\xd8\xff'):
+            ext = '.jpg'
+        else:
+            ext = '.pdf' # Default
+            
+    return ext
 
 @login_required
 def download_individual_zip(request, pk):
@@ -47,24 +84,6 @@ def download_individual_zip(request, pk):
             )
         except Exception as e:
             logger.error(f"Error al generar PDF ANEXO 11: {str(e)}")
-
-        # Función auxiliar para obtener extensión de archivo
-        def get_file_extension(file_field, file_content):
-            ext = os.path.splitext(file_field.name)[1]
-            if not ext and hasattr(file_field, 'url'):
-                url = file_field.url
-                if '.' in url.split('/')[-1]:
-                    ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
-            if not ext:
-                if file_content.startswith(b'%PDF'):
-                    ext = '.pdf'
-                elif file_content.startswith(b'\x89PNG'):
-                    ext = '.png'
-                elif file_content.startswith(b'\xff\xd8\xff'):
-                    ext = '.jpg'
-                else:
-                    ext = '.pdf'
-            return ext
 
         # 3. Agregar certificados laborales
         for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
@@ -275,39 +294,13 @@ def download_all_zip(request):
             except Exception as e:
                 logger.error(f"Error al generar PDF ANEXO 11 para {applicant.nombre_completo}: {str(e)}")
 
-            # Función auxiliar para obtener extensión de archivo
-            def get_file_extension(file_field):
-                if not file_field:
-                    return '.pdf'
-                ext = os.path.splitext(file_field.name)[1]
-                if not ext and hasattr(file_field, 'url'):
-                    url = file_field.url
-                    if '.' in url.split('/')[-1]:
-                        ext = '.' + url.split('/')[-1].split('.')[-1].split('?')[0]
-                if not ext:
-                    try:
-                        with file_field.open('rb') as f:
-                            content = f.read(10)
-                            file_field.seek(0)
-                        if content.startswith(b'%PDF'):
-                            ext = '.pdf'
-                        elif content.startswith(b'\x89PNG'):
-                            ext = '.png'
-                        elif content.startswith(b'\xff\xd8\xff'):
-                            ext = '.jpg'
-                        else:
-                            ext = '.pdf'
-                    except:
-                        ext = '.pdf'
-                return ext
-
             # Función auxiliar para agregar archivo al ZIP
             def add_file_to_zip(file_field, zip_path):
                 if file_field:
                     try:
                         with file_field.open('rb') as f:
                             file_content = f.read()
-                        ext = get_file_extension(file_field)
+                        ext = get_file_extension(file_field, file_content)
                         zip_file.writestr(f"{zip_path}{ext}", file_content)
                     except Exception as e:
                         logger.error(f"Error al agregar archivo {zip_path}: {e}")

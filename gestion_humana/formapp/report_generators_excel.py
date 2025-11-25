@@ -1,3 +1,6 @@
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+
 def create_excel_for_person(applicant):
     """Crea un archivo Excel con toda la información de una persona"""
     wb = Workbook()

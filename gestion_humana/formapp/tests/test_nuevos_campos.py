@@ -1,7 +1,7 @@
 """
 Tests específicos para los nuevos campos de archivo en Posgrado y Especialización.
 """
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from datetime import date
 
@@ -9,6 +9,17 @@ from formapp.forms import PosgradoForm, EspecializacionForm
 from formapp.models import InformacionBasica, Posgrado, Especializacion
 
 
+@override_settings(
+    DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
+    STORAGES={
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+)
 class NuevosCamposPosgradoTest(TestCase):
     """Tests para verificar que los nuevos campos de archivo funcionan en Posgrado"""
 
@@ -96,6 +107,17 @@ class NuevosCamposPosgradoTest(TestCase):
         self.assertTrue(posgrado.acta_grado_diploma)
 
 
+@override_settings(
+    DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage',
+    STORAGES={
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+)
 class NuevosCamposEspecializacionTest(TestCase):
     """Tests para verificar que los nuevos campos de archivo funcionan en Especialización"""
 

@@ -1,3 +1,6 @@
+import io
+from datetime import datetime
+
 def generar_anexo11_pdf(applicant):
     """
     Genera un PDF en formato ANEXO 11 con la información del candidato

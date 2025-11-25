@@ -1679,9 +1679,12 @@
                 alert('Por favor corrija los siguientes errores:\n\n' + errorMessages.join('\n'));
 
                 // Hacer scroll al primer error
-                $('html, body').animate({
-                    scrollTop: $('.is-invalid').first().offset().top - 100
-                }, 500);
+                var firstInvalid = $('.is-invalid').first();
+                if (firstInvalid.length && firstInvalid.offset()) {
+                    $('html, body').animate({
+                        scrollTop: firstInvalid.offset().top - 100
+                    }, 500);
+                }
             } else {
                 // Si el formulario es válido, mostrar el modal de carga
                 var loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
