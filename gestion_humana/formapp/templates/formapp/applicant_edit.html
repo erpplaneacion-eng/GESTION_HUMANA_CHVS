@@ -877,7 +877,7 @@
 
                 <!-- Botones de acción -->
                 <div class="text-center mb-4">
-                    <button type="submit" class="btn btn-warning btn-lg me-2">
+                    <button type="submit" class="btn btn-warning btn-lg me-2" id="btn-guardar-cambios">
                         <i class="fas fa-save"></i> Guardar Cambios
                     </button>
                     {% if not is_public_correction %}
@@ -887,6 +887,34 @@
                     {% endif %}
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Espera al Guardar -->
+<div class="modal fade" id="modalGuardando" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-5">
+                <div class="mb-4">
+                    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;">
+                        <span class="visually-hidden">Guardando...</span>
+                    </div>
+                </div>
+                <h4 class="mb-3">
+                    <i class="fas fa-save text-primary"></i> Guardando tus cambios...
+                </h4>
+                <p class="text-muted mb-2">
+                    Por favor espera un momento mientras procesamos tu información.
+                </p>
+                <p class="text-muted small">
+                    <i class="fas fa-clock"></i> Esto puede tomar unos segundos...
+                </p>
+                <div class="progress mt-4" style="height: 8px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                         role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1230,6 +1258,23 @@ document.addEventListener('DOMContentLoaded', function() {
             formsetContainer.append(newForm);
             totalForms.val(formNum + 1);
         }
+    });
+
+    // ========================================
+    // MODAL DE ESPERA AL GUARDAR
+    // ========================================
+    const form = $('form');
+    const modalGuardando = new bootstrap.Modal(document.getElementById('modalGuardando'));
+    
+    form.on('submit', function(e) {
+        // Mostrar modal de espera
+        modalGuardando.show();
+        
+        // Deshabilitar botón de guardar para evitar doble envío
+        $('#btn-guardar-cambios').prop('disabled', true);
+        
+        // El formulario continúa con su submit normal
+        // El modal se cerrará cuando la página se recargue con la respuesta
     });
 });
 </script>

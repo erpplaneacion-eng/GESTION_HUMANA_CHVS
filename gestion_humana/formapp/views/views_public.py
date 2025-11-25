@@ -4,6 +4,7 @@ Formulario multi-sección accesible sin autenticación.
 Refactorizado desde views.py para mejor organización.
 """
 import json
+import traceback
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
@@ -229,8 +230,13 @@ def public_update_view(request, token):
         anexos_adicionales = None
 
     if request.method == 'POST':
+        import time
+        tiempo_inicio = time.time()
+        logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Inicio del proceso de guardado para {applicant.cedula}')
+        
         # Obtener campos editables para validación selectiva
         campos_editables = set(applicant.campos_a_corregir or [])
+        logger.info(f'[CORRECCIÓN-TIMING] Campos editables: {campos_editables}')
 
         # ==============================================================
         # FIX CRÍTICO: Restaurar valores de campos disabled antes de validar
@@ -254,6 +260,9 @@ def public_update_view(request, token):
                         post_data[field_name] = json.dumps(current_value)
                     else:
                         post_data[field_name] = str(current_value)
+        
+        tiempo_restauracion = time.time()
+        logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Restauración de campos: {tiempo_restauracion - tiempo_inicio:.2f}s')
         
         # Crear formularios con POST DATA RESTAURADO
         form = InformacionBasicaForm(post_data, request.FILES, instance=applicant)
@@ -329,17 +338,51 @@ def public_update_view(request, token):
                 if field_name not in campos_editables:
                     form.fields[field_name].required = False
         
+        tiempo_pre_validacion = time.time()
+        logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Preparación de formularios: {tiempo_pre_validacion - tiempo_restauracion:.2f}s')
+        
+        # ========================================
+        # OPTIMIZACIÓN: Validar SOLO formsets necesarios
+        # ========================================
+        campos_documentos = ['fotocopia_cedula', 'hoja_de_vida', 'libreta_militar', 
+                           'numero_libreta_militar', 'distrito_militar', 'clase_libreta']
+        campos_antecedentes = ['certificado_procuraduria', 'fecha_procuraduria', 
+                             'certificado_contraloria', 'fecha_contraloria',
+                             'certificado_policia', 'fecha_policia',
+                             'certificado_medidas_correctivas', 'fecha_medidas_correctivas',
+                             'certificado_delitos_sexuales', 'fecha_delitos_sexuales']
+        campos_anexos = ['anexo_03_datos_personales', 'carta_intencion', 
+                       'otros_documentos', 'descripcion_otros']
+        
+        necesita_documentos = 'documentos_identidad' in campos_editables or any(c in campos_editables for c in campos_documentos)
+        necesita_antecedentes = 'antecedentes' in campos_editables or any(c in campos_editables for c in campos_antecedentes)
+        necesita_anexos = 'anexos_adicionales' in campos_editables or any(c in campos_editables for c in campos_anexos)
+        necesita_experiencia = 'experiencia_laboral' in campos_editables
+        necesita_basica = 'educacion_basica' in campos_editables
+        necesita_superior = 'educacion_superior' in campos_editables
+        necesita_academica = 'formacion_academica' in campos_editables
+        necesita_posgrado = 'posgrado' in campos_editables
+        necesita_especializacion = 'especializacion' in campos_editables
+        
+        logger.info(f'[CORRECCIÓN-TIMING] Formsets a validar: docs={necesita_documentos}, ant={necesita_antecedentes}, '
+                   f'anx={necesita_anexos}, exp={necesita_experiencia}, bas={necesita_basica}')
+        
         # Validar formularios
         form_valid = form.is_valid()
-        documentos_valid = documentos_form.is_valid()
-        antecedentes_valid = antecedentes_form.is_valid()
-        anexos_valid = anexos_form.is_valid()
-        experiencia_valid = experiencia_formset.is_valid()
-        basica_valid = basica_formset.is_valid()
-        superior_valid = superior_formset.is_valid()
-        academica_valid = academica_formset.is_valid()
-        posgrado_valid = posgrado_formset.is_valid()
-        especializacion_valid = especializacion_formset.is_valid()
+        
+        # OPTIMIZACIÓN: Solo validar formsets que están en campos_editables
+        documentos_valid = documentos_form.is_valid() if necesita_documentos else True
+        antecedentes_valid = antecedentes_form.is_valid() if necesita_antecedentes else True
+        anexos_valid = anexos_form.is_valid() if necesita_anexos else True
+        experiencia_valid = experiencia_formset.is_valid() if necesita_experiencia else True
+        basica_valid = basica_formset.is_valid() if necesita_basica else True
+        superior_valid = superior_formset.is_valid() if necesita_superior else True
+        academica_valid = academica_formset.is_valid() if necesita_academica else True
+        posgrado_valid = posgrado_formset.is_valid() if necesita_posgrado else True
+        especializacion_valid = especializacion_formset.is_valid() if necesita_especializacion else True
+        
+        tiempo_validacion = time.time()
+        logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Validación de formularios: {tiempo_validacion - tiempo_pre_validacion:.2f}s')
         
         # FIX: Logging detallado de errores para debugging
         if not form_valid:
@@ -405,45 +448,52 @@ def public_update_view(request, token):
                         anexos.informacion_basica = informacion_basica
                         anexos.save()
 
+                    # OPTIMIZACIÓN: Solo procesar experiencia si está en campos_editables
                     if 'experiencia_laboral' in campos_editables:
+                        tiempo_pre_exp = time.time()
                         experiencia_formset.save()
-                    
-                    # Recalcular experiencia (lógica idéntica a admin)
-                    from datetime import datetime as dt
-                    experiencias_modificadas = []
-                    for form_exp in experiencia_formset:
-                        if form_exp.instance.pk and not form_exp.cleaned_data.get('DELETE', False):
-                            if form_exp.has_changed() and ('fecha_inicial' in form_exp.changed_data or 'fecha_terminacion' in form_exp.changed_data):
-                                experiencia = form_exp.instance
-                                if experiencia.fecha_inicial and experiencia.fecha_terminacion:
-                                    fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
-                                    fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
-                                    delta = fecha_fin - fecha_inicio
-                                    total_dias = delta.days
-                                    anos = fecha_fin.year - fecha_inicio.year
-                                    meses = fecha_fin.month - fecha_inicio.month
-                                    dias = fecha_fin.day - fecha_inicio.day
-                                    if dias < 0:
-                                        meses -= 1
-                                        if fecha_inicio.month == 1:
-                                            ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
-                                        else:
-                                            ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
-                                        dias += ultimo_dia
-                                    if meses < 0:
-                                        anos -= 1
-                                        meses += 12
-                                    total_meses = (anos * 12) + meses
-                                    experiencia.meses_experiencia = total_meses
-                                    experiencia.dias_experiencia = total_dias
-                                    experiencias_modificadas.append(experiencia)
-                    
+                        
+                        # Recalcular experiencia (lógica idéntica a admin)
+                        from datetime import datetime as dt
+                        experiencias_modificadas = []
+                        for form_exp in experiencia_formset:
+                            if form_exp.instance.pk and not form_exp.cleaned_data.get('DELETE', False):
+                                if form_exp.has_changed() and ('fecha_inicial' in form_exp.changed_data or 'fecha_terminacion' in form_exp.changed_data):
+                                    experiencia = form_exp.instance
+                                    if experiencia.fecha_inicial and experiencia.fecha_terminacion:
+                                        fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
+                                        fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
+                                        delta = fecha_fin - fecha_inicio
+                                        total_dias = delta.days
+                                        anos = fecha_fin.year - fecha_inicio.year
+                                        meses = fecha_fin.month - fecha_inicio.month
+                                        dias = fecha_fin.day - fecha_inicio.day
+                                        if dias < 0:
+                                            meses -= 1
+                                            if fecha_inicio.month == 1:
+                                                ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
+                                            else:
+                                                ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
+                                            dias += ultimo_dia
+                                        if meses < 0:
+                                            anos -= 1
+                                            meses += 12
+                                        total_meses = (anos * 12) + meses
+                                        experiencia.meses_experiencia = total_meses
+                                        experiencia.dias_experiencia = total_dias
+                                        experiencias_modificadas.append(experiencia)
+                        
                         if experiencias_modificadas:
                             from ..models import ExperienciaLaboral
                             ExperienciaLaboral.objects.bulk_update(experiencias_modificadas, ['meses_experiencia', 'dias_experiencia'])
 
                         # Recalcular experiencia total solo si se modificó experiencia
                         calcular_experiencia_total(informacion_basica)
+                        
+                        tiempo_post_exp = time.time()
+                        logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Cálculo de experiencia: {tiempo_post_exp - tiempo_pre_exp:.2f}s')
+                    else:
+                        logger.info(f'[CORRECCIÓN-TIMING] ⏩ Experiencia NO editada, omitiendo cálculos')
 
                     # Guardar otros formsets solo si están en campos editables
                     if 'educacion_basica' in campos_editables:
@@ -461,6 +511,8 @@ def public_update_view(request, token):
                     if 'especializacion' in campos_editables:
                         especializacion_formset.save()
 
+                    tiempo_pre_historial = time.time()
+                    
                     # Actualizar el registro en historial de correcciones
                     from ..models import HistorialCorreccion
                     historial = HistorialCorreccion.objects.filter(
@@ -471,19 +523,30 @@ def public_update_view(request, token):
                         historial.fecha_correccion = timezone.now()
                         historial.comentarios_candidato = informacion_basica.comentarios_correccion
                         historial.save()
+                    
+                    tiempo_post_historial = time.time()
+                    logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Actualización historial: {tiempo_post_historial - tiempo_pre_historial:.2f}s')
 
                     # Enviar notificación al administrador
+                    tiempo_pre_email = time.time()
                     from ..services import enviar_correo_notificacion_admin
                     enviar_correo_notificacion_admin(informacion_basica, informacion_basica.comentarios_correccion)
+                    tiempo_post_email = time.time()
+                    logger.info(f'[CORRECCIÓN-TIMING] ⏱️ Envío de email al admin: {tiempo_post_email - tiempo_pre_email:.2f}s')
+                    
+                    tiempo_total = time.time() - tiempo_inicio
+                    logger.info(f'[CORRECCIÓN-TIMING] ✅ PROCESO COMPLETADO en {tiempo_total:.2f}s')
 
                     messages.success(request, '¡Información corregida y enviada exitosamente! Gracias por tu gestión.')
                     return redirect('formapp:public_form')
 
             except Exception as e:
+                tiempo_error = time.time() - tiempo_inicio
+                logger.error(f'[CORRECCIÓN-TIMING] ❌ ERROR después de {tiempo_error:.2f}s: {str(e)}\n{traceback.format_exc()}')
                 messages.error(request, f'Error al guardar las correcciones: {str(e)}')
         else:
-            messages.error(request, 'Por favor corrige los errores mostrados en el formulario.')
-            logger.warning(f'[CORRECCIÓN] Validación fallida para {applicant.cedula}. Campos editables: {list(campos_editables)}')
+            tiempo_validacion_error = time.time() - tiempo_inicio
+            logger.warning(f'[CORRECCIÓN-TIMING] ⚠️ Validación fallida después de {tiempo_validacion_error:.2f}s para {applicant.cedula}. Campos editables: {list(campos_editables)}')
     else:
         form = InformacionBasicaForm(instance=applicant)
         documentos_form = DocumentosIdentidadForm(instance=documentos_identidad, genero=applicant.genero)

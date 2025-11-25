@@ -278,3 +278,4 @@ Para evitar confusión sobre dónde está cada campo, podrías:
 **Estado:** ✅ CORREGIDO  
 **Listo para:** PROBAR
 
+
