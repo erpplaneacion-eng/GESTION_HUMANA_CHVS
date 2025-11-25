@@ -362,7 +362,7 @@ class DocumentosIdentidad(models.Model):
         upload_to='documentos_identidad/cedulas/',
         verbose_name='Fotocopia Cédula de Ciudadanía',
         validators=[validate_file_size, validate_file_extension, validate_file_mime],
-        help_text='Se requiere al 150%. Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
+        help_text='<strong style="color: #dc3545; font-size: 1.1em;">⚠️ IMPORTANTE: Se requiere al 150% (ampliada)</strong><br>Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB',
         max_length=200
     )
 
