@@ -19,6 +19,31 @@
                 {% endfor %}
             {% endif %}
 
+            {% if is_public_correction %}
+            <!-- Banner de Restricción de Campos -->
+            <div class="alert alert-warning border-start border-warning border-4 mb-4" role="alert">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-lock fa-2x text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Corrección de Campos Específicos</h5>
+                        <p class="mb-2">
+                            <strong>Solo puedes editar los campos que han sido marcados como incorrectos por el administrador.</strong>
+                        </p>
+                        <p class="mb-2">
+                            Los campos que aparecen con fondo gris claro 🔒 están bloqueados y no pueden ser modificados.
+                            Solo los campos editables son los que requieren corrección.
+                        </p>
+                        <hr>
+                        <p class="mb-0">
+                            <i class="fas fa-info-circle"></i> <strong>Tip:</strong> Por favor, explica brevemente los cambios que realizaste en la sección de comentarios al final del formulario.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <form method="post" enctype="multipart/form-data" id="editForm">
                 {% csrf_token %}
 
@@ -797,14 +822,45 @@
                     </div>
                 </div>
 
+                {% if is_public_correction %}
+                <!-- Comentarios del Candidato sobre las Correcciones -->
+                <div class="section-card mb-4">
+                    <div class="section-header">
+                        <h4><i class="fas fa-comment-dots"></i> Comentarios sobre tus Correcciones</h4>
+                    </div>
+                    <div class="section-body">
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Por favor, explica brevemente qué información corregiste o actualizaste.</strong>
+                            Esto ayudará al equipo de Gestión Humana a revisar tus cambios más rápidamente.
+                        </div>
+                        <label for="id_comentarios_correccion" class="form-label">
+                            <strong>Descripción de los cambios realizados:</strong>
+                        </label>
+                        <textarea
+                            name="comentarios_correccion"
+                            id="id_comentarios_correccion"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Ejemplo: Actualicé mi número de teléfono de contacto y adjunté el certificado laboral que faltaba de mi última experiencia..."
+                        >{{ applicant.comentarios_correccion|default:'' }}</textarea>
+                        <small class="form-text text-muted mt-2">
+                            <i class="fas fa-lightbulb"></i> Incluye detalles sobre documentos que actualizaste, datos que corregiste, etc.
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+
                 <!-- Botones de acción -->
                 <div class="text-center mb-4">
                     <button type="submit" class="btn btn-warning btn-lg me-2">
                         <i class="fas fa-save"></i> Guardar Cambios
                     </button>
+                    {% if not is_public_correction %}
                     <a href="{% url 'formapp:applicant_list' %}" class="btn btn-secondary btn-lg">
                         <i class="fas fa-times"></i> Cancelar
                     </a>
+                    {% endif %}
                 </div>
             </form>
         </div>

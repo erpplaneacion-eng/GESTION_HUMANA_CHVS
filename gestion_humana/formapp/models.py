@@ -33,6 +33,14 @@ class InformacionBasica(models.Model):
         help_text='Explicación del candidato sobre qué información corrigió'
     )
 
+    # Campos específicos que necesitan corrección
+    campos_a_corregir = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Campos a Corregir',
+        help_text='Lista de campos que el candidato debe corregir'
+    )
+
     # campos datos personales
 
     # campos q son de selecccion multipple, respuestas cerradas
@@ -632,6 +640,13 @@ class HistorialCorreccion(models.Model):
         blank=True,
         null=True,
         verbose_name='Token Utilizado'
+    )
+
+    campos_a_corregir = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name='Campos a Corregir',
+        help_text='Lista de nombres de campos que el candidato debe corregir'
     )
 
     class Meta:

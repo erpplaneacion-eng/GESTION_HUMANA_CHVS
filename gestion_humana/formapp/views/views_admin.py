@@ -289,29 +289,47 @@ def applicant_delete_view(request, pk):
 def solicitar_correccion_view(request, pk):
     """
     Procesa la solicitud de corrección del administrador.
-    Genera token, envía correo y registra en historial.
+    Genera token, envía correo y registra en historial con campos específicos.
     """
     if request.method != 'POST':
         return redirect('formapp:applicant_detail', pk=pk)
 
     applicant = get_object_or_404(InformacionBasica, pk=pk)
     mensaje = request.POST.get('mensaje_observacion')
+    campos_seleccionados = request.POST.getlist('campos')
 
+    # Validaciones
     if not mensaje:
         messages.error(request, 'Debes ingresar una observación para el candidato.')
         return redirect('formapp:applicant_detail', pk=pk)
 
+    if not campos_seleccionados:
+        messages.error(request, 'Debes seleccionar al menos un campo que el candidato deba corregir.')
+        return redirect('formapp:applicant_detail', pk=pk)
+
+    # Guardar campos a corregir en el modelo principal
+    applicant.campos_a_corregir = campos_seleccionados
+    applicant.save(update_fields=['campos_a_corregir'])
+
     # Enviar correo y actualizar estado
     if enviar_correo_solicitud_correccion(applicant, mensaje, request):
-        # Registrar en historial de correcciones
+        # Registrar en historial de correcciones con campos específicos
         from ..models import HistorialCorreccion
         HistorialCorreccion.objects.create(
             informacion_basica=applicant,
             mensaje_admin=mensaje,
             admin_usuario=request.user.username,
-            token_usado=applicant.token_correccion
+            token_usado=applicant.token_correccion,
+            campos_a_corregir=campos_seleccionados
         )
-        messages.success(request, f'Se ha enviado la solicitud de corrección a {applicant.nombre_completo}.')
+
+        # Mensaje de éxito con campos seleccionados
+        campos_texto = ', '.join(campos_seleccionados)
+        messages.success(
+            request,
+            f'Se ha enviado la solicitud de corrección a {applicant.nombre_completo}. '
+            f'Campos a corregir: {campos_texto}'
+        )
     else:
         messages.error(request, 'Hubo un error al enviar el correo. Por favor verifica la configuración.')
 

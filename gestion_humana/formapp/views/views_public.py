@@ -253,6 +253,8 @@ def public_update_view(request, token):
                     informacion_basica.estado = 'CORREGIDO'
                     informacion_basica.token_correccion = None
                     informacion_basica.token_expiracion = None
+                    # Guardar comentarios del candidato sobre las correcciones
+                    informacion_basica.comentarios_correccion = request.POST.get('comentarios_correccion', '')
                     informacion_basica.save()
 
                     documentos = documentos_form.save(commit=False)
@@ -310,6 +312,21 @@ def public_update_view(request, token):
                     posgrado_formset.save()
                     especializacion_formset.save()
 
+                    # Actualizar el registro en historial de correcciones
+                    from ..models import HistorialCorreccion
+                    historial = HistorialCorreccion.objects.filter(
+                        informacion_basica=informacion_basica
+                    ).order_by('-fecha_solicitud').first()
+
+                    if historial:
+                        historial.fecha_correccion = timezone.now()
+                        historial.comentarios_candidato = informacion_basica.comentarios_correccion
+                        historial.save()
+
+                    # Enviar notificación al administrador
+                    from ..services import enviar_correo_notificacion_admin
+                    enviar_correo_notificacion_admin(informacion_basica, informacion_basica.comentarios_correccion)
+
                     messages.success(request, '¡Información corregida y enviada exitosamente! Gracias por tu gestión.')
                     return redirect('formapp:public_form')
 
@@ -328,6 +345,98 @@ def public_update_view(request, token):
         academica_formset = InformacionAcademicaFormSet(instance=applicant)
         posgrado_formset = PosgradoFormSet(instance=applicant)
         especializacion_formset = EspecializacionFormSet(instance=applicant)
+
+        # RESTRICCIÓN DE CAMPOS: Solo permitir editar campos seleccionados por el admin
+        campos_editables = set(applicant.campos_a_corregir or [])
+
+        # Mapeo de campos a formularios para deshabilitar campos no editables
+        # Campos del formulario principal (InformacionBasica)
+        campos_info_basica = {
+            'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido',
+            'cedula', 'genero', 'tipo_via', 'numero_via', 'numero_casa',
+            'complemento_direccion', 'barrio', 'telefono', 'correo',
+            'poblacion_diferencial', 'acepta_politica'
+        }
+
+        # Si hay campos a corregir definidos, deshabilitar todos los demás
+        if campos_editables:
+            # Deshabilitar campos del formulario principal que NO estén en la lista
+            for field_name in form.fields:
+                if field_name not in campos_editables:
+                    form.fields[field_name].disabled = True
+                    form.fields[field_name].widget.attrs['readonly'] = True
+                    form.fields[field_name].widget.attrs['class'] = form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+                    form.fields[field_name].help_text = '🔒 Este campo no está habilitado para corrección'
+
+            # Deshabilitar documentos_identidad si no está en la lista
+            if 'documentos_identidad' not in campos_editables:
+                for field_name in documentos_form.fields:
+                    documentos_form.fields[field_name].disabled = True
+                    documentos_form.fields[field_name].widget.attrs['readonly'] = True
+                    documentos_form.fields[field_name].widget.attrs['class'] = documentos_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            # Deshabilitar antecedentes si no está en la lista
+            if 'antecedentes' not in campos_editables:
+                for field_name in antecedentes_form.fields:
+                    antecedentes_form.fields[field_name].disabled = True
+                    antecedentes_form.fields[field_name].widget.attrs['readonly'] = True
+                    antecedentes_form.fields[field_name].widget.attrs['class'] = antecedentes_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            # Deshabilitar anexos_adicionales si no está en la lista
+            if 'anexos_adicionales' not in campos_editables:
+                for field_name in anexos_form.fields:
+                    anexos_form.fields[field_name].disabled = True
+                    anexos_form.fields[field_name].widget.attrs['readonly'] = True
+                    anexos_form.fields[field_name].widget.attrs['class'] = anexos_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            # Deshabilitar formsets si no están en la lista
+            if 'experiencia_laboral' not in campos_editables:
+                for exp_form in experiencia_formset:
+                    for field_name in exp_form.fields:
+                        if field_name != 'DELETE':  # Permitir eliminar
+                            exp_form.fields[field_name].disabled = True
+                            exp_form.fields[field_name].widget.attrs['readonly'] = True
+                            exp_form.fields[field_name].widget.attrs['class'] = exp_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            if 'educacion_basica' not in campos_editables:
+                for basica_form in basica_formset:
+                    for field_name in basica_form.fields:
+                        if field_name != 'DELETE':
+                            basica_form.fields[field_name].disabled = True
+                            basica_form.fields[field_name].widget.attrs['readonly'] = True
+                            basica_form.fields[field_name].widget.attrs['class'] = basica_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            if 'educacion_superior' not in campos_editables:
+                for superior_form in superior_formset:
+                    for field_name in superior_form.fields:
+                        if field_name != 'DELETE':
+                            superior_form.fields[field_name].disabled = True
+                            superior_form.fields[field_name].widget.attrs['readonly'] = True
+                            superior_form.fields[field_name].widget.attrs['class'] = superior_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            if 'formacion_academica' not in campos_editables:
+                for academica_form in academica_formset:
+                    for field_name in academica_form.fields:
+                        if field_name != 'DELETE':
+                            academica_form.fields[field_name].disabled = True
+                            academica_form.fields[field_name].widget.attrs['readonly'] = True
+                            academica_form.fields[field_name].widget.attrs['class'] = academica_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            if 'posgrado' not in campos_editables:
+                for posgrado_form in posgrado_formset:
+                    for field_name in posgrado_form.fields:
+                        if field_name != 'DELETE':
+                            posgrado_form.fields[field_name].disabled = True
+                            posgrado_form.fields[field_name].widget.attrs['readonly'] = True
+                            posgrado_form.fields[field_name].widget.attrs['class'] = posgrado_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+
+            if 'especializacion' not in campos_editables:
+                for especializacion_form in especializacion_formset:
+                    for field_name in especializacion_form.fields:
+                        if field_name != 'DELETE':
+                            especializacion_form.fields[field_name].disabled = True
+                            especializacion_form.fields[field_name].widget.attrs['readonly'] = True
+                            especializacion_form.fields[field_name].widget.attrs['class'] = especializacion_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
 
     context = {
         'form': form,
