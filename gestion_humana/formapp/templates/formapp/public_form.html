@@ -998,6 +998,9 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="button" class="btn btn-primary" id="btnAceptarPolitica">
+                                <i class="fas fa-check"></i> Aceptar
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1718,6 +1721,17 @@
             if ($(this).val().trim()) {
                 $(this).removeClass('is-invalid');
             }
+        });
+
+        // Manejar clic en botón Aceptar del modal de política
+        $('#btnAceptarPolitica').on('click', function() {
+            // Marcar el checkbox de aceptación de política
+            $('#id_acepta_politica').prop('checked', true);
+            // Remover el borde de error si existía
+            $('#id_acepta_politica').removeClass('is-invalid');
+            // Cerrar el modal
+            var modal = bootstrap.Modal.getInstance(document.getElementById('politicaModal'));
+            modal.hide();
         });
     });
 </script>
