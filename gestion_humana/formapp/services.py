@@ -261,6 +261,52 @@ def enviar_correo_solicitud_correccion(informacion_basica, mensaje_observacion, 
         return False
 
 
+def enviar_correo_notificacion_admin(informacion_basica, comentarios_candidato=''):
+    """
+    Envía notificación al administrador cuando el candidato corrige su información.
+
+    Args:
+        informacion_basica: Instancia del modelo
+        comentarios_candidato: Comentarios del candidato sobre las correcciones
+    """
+    try:
+        service = get_gmail_service()
+        if not service:
+            logger.error("No se pudo inicializar el servicio de Gmail")
+            return False
+
+        # Email del administrador (desde settings o configuración)
+        admin_email = getattr(settings, 'ADMIN_EMAIL', settings.DEFAULT_FROM_EMAIL)
+
+        context = {
+            'nombre_completo': informacion_basica.nombre_completo,
+            'cedula': informacion_basica.cedula,
+            'correo': informacion_basica.correo,
+            'comentarios_candidato': comentarios_candidato,
+            'enlace_revision': f'https://gestionhumanacavijup.up.railway.app/formapp/admin/applicants/{informacion_basica.pk}/',
+        }
+
+        html_message = render_to_string('formapp/email_notificacion_admin.html', context)
+
+        message = MIMEMultipart('alternative')
+        message['To'] = admin_email
+        message['From'] = f'Sistema Gestión Humana <{settings.DEFAULT_FROM_EMAIL}>'
+        message['Subject'] = f'Corrección Completada - {informacion_basica.nombre_completo}'
+        html_part = MIMEText(html_message, 'html', 'utf-8')
+        message.attach(html_part)
+
+        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+        send_message = {'raw': raw_message}
+
+        service.users().messages().send(userId='me', body=send_message).execute()
+        logger.info(f'Notificación enviada al admin sobre corrección de {informacion_basica.nombre_completo}')
+        return True
+
+    except Exception as e:
+        logger.error(f'Error enviando notificación al admin: {str(e)}')
+        return False
+
+
 def enviar_correo_async(informacion_basica):
     """
     Envía correo de confirmación de manera asíncrona en un thread separado.

@@ -289,7 +289,7 @@ def applicant_delete_view(request, pk):
 def solicitar_correccion_view(request, pk):
     """
     Procesa la solicitud de corrección del administrador.
-    Genera token y envía correo.
+    Genera token, envía correo y registra en historial.
     """
     if request.method != 'POST':
         return redirect('formapp:applicant_detail', pk=pk)
@@ -303,6 +303,14 @@ def solicitar_correccion_view(request, pk):
 
     # Enviar correo y actualizar estado
     if enviar_correo_solicitud_correccion(applicant, mensaje, request):
+        # Registrar en historial de correcciones
+        from ..models import HistorialCorreccion
+        HistorialCorreccion.objects.create(
+            informacion_basica=applicant,
+            mensaje_admin=mensaje,
+            admin_usuario=request.user.username,
+            token_usado=applicant.token_correccion
+        )
         messages.success(request, f'Se ha enviado la solicitud de corrección a {applicant.nombre_completo}.')
     else:
         messages.error(request, 'Hubo un error al enviar el correo. Por favor verifica la configuración.')

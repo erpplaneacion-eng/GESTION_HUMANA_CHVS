@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrección Completada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .success-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✅ Corrección Completada</h1>
+        <p>Un candidato ha actualizado su información</p>
+    </div>
+
+    <div class="content">
+        <p><strong>Hola, Administrador de Gestión Humana</strong></p>
+
+        <p>Te informamos que el candidato <strong>{{ nombre_completo }}</strong> ha completado las correcciones solicitadas a su información.</p>
+
+        <div class="info-box">
+            <h3 style="margin-top: 0;">📋 Información del Candidato</h3>
+            <p><strong>Nombre:</strong> {{ nombre_completo }}</p>
+            <p><strong>Cédula:</strong> {{ cedula }}</p>
+            <p><strong>Correo:</strong> {{ correo }}</p>
+            <p><strong>Estado:</strong> <span class="success-badge">CORREGIDO</span></p>
+        </div>
+
+        {% if comentarios_candidato %}
+        <div class="info-box" style="border-left-color: #ffc107;">
+            <h3 style="margin-top: 0;">💬 Comentarios del Candidato</h3>
+            <p style="font-style: italic; background: #fff3cd; padding: 15px; border-radius: 5px;">
+                "{{ comentarios_candidato }}"
+            </p>
+        </div>
+        {% endif %}
+
+        <p style="text-align: center;">
+            <a href="{{ enlace_revision }}" class="button">
+                👁️ Revisar Información Actualizada
+            </a>
+        </p>
+
+        <p style="font-size: 14px; color: #6c757d;">
+            ℹ️ Por favor revisa la información actualizada y cambia el estado según corresponda.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>Este es un correo automático del Sistema de Gestión Humana - CAVJP</p>
+        <p>Por favor no respondas a este correo</p>
+    </div>
+</body>
+</html>

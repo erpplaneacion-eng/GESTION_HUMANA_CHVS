@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales, EducacionBasica, EducacionSuperior
+from .models import InformacionBasica, ExperienciaLaboral, InformacionAcademica, Posgrado, Especializacion, CalculoExperiencia, DocumentosIdentidad, Antecedentes, AnexosAdicionales, EducacionBasica, EducacionSuperior, HistorialCorreccion
 
 class ExperienciaLaboralInline(admin.TabularInline):
     model = ExperienciaLaboral
@@ -347,3 +347,29 @@ class AntecedentesAdmin(admin.ModelAdmin):
         ])
     tiene_todos_certificados.boolean = True
     tiene_todos_certificados.short_description = 'Completo'
+
+
+@admin.register(HistorialCorreccion)
+class HistorialCorreccionAdmin(admin.ModelAdmin):
+    list_display = ['informacion_basica', 'fecha_solicitud', 'admin_usuario', 'fue_corregido', 'fecha_correccion']
+    list_filter = ['fecha_solicitud', 'fecha_correccion', 'admin_usuario']
+    search_fields = ['informacion_basica__nombre_completo', 'informacion_basica__cedula', 'admin_usuario']
+    readonly_fields = ['fecha_solicitud', 'fecha_correccion', 'token_usado']
+    
+    fieldsets = (
+        ('Información General', {
+            'fields': ('informacion_basica', 'admin_usuario', 'token_usado')
+        }),
+        ('Solicitud', {
+            'fields': ('fecha_solicitud', 'mensaje_admin')
+        }),
+        ('Corrección del Candidato', {
+            'fields': ('fecha_correccion', 'comentarios_candidato')
+        }),
+    )
+    
+    def fue_corregido(self, obj):
+        return obj.fue_corregido
+    fue_corregido.boolean = True
+    fue_corregido.short_description = 'Corregido'
+

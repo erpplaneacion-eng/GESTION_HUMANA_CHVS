@@ -25,6 +25,14 @@ class InformacionBasica(models.Model):
     token_correccion = models.UUIDField(default=uuid.uuid4, editable=False, blank=True, null=True)
     token_expiracion = models.DateTimeField(blank=True, null=True, verbose_name='Expiración del Token')
 
+    # Comentarios del candidato sobre correcciones realizadas
+    comentarios_correccion = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Comentarios de Corrección del Candidato',
+        help_text='Explicación del candidato sobre qué información corrigió'
+    )
+
     # campos datos personales
 
     # campos q son de selecccion multipple, respuestas cerradas
@@ -577,3 +585,64 @@ class AnexosAdicionales(models.Model):
 
     def __str__(self):
         return f'Anexos de {self.informacion_basica.nombre_completo}'
+
+
+class HistorialCorreccion(models.Model):
+    """
+    Modelo para registrar el historial de solicitudes de corrección
+    y las respuestas del candidato.
+    """
+    informacion_basica = models.ForeignKey(
+        InformacionBasica,
+        on_delete=models.CASCADE,
+        related_name='historial_correcciones',
+        verbose_name='Información Básica'
+    )
+
+    fecha_solicitud = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Fecha de Solicitud'
+    )
+
+    mensaje_admin = models.TextField(
+        verbose_name='Mensaje del Administrador',
+        help_text='Observaciones enviadas al candidato'
+    )
+
+    admin_usuario = models.CharField(
+        max_length=150,
+        verbose_name='Usuario Administrador',
+        help_text='Usuario que solicitó la corrección'
+    )
+
+    fecha_correccion = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Fecha de Corrección'
+    )
+
+    comentarios_candidato = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name='Comentarios del Candidato',
+        help_text='Explicación del candidato sobre las correcciones realizadas'
+    )
+
+    token_usado = models.UUIDField(
+        blank=True,
+        null=True,
+        verbose_name='Token Utilizado'
+    )
+
+    class Meta:
+        verbose_name = 'Historial de Corrección'
+        verbose_name_plural = 'Historial de Correcciones'
+        ordering = ['-fecha_solicitud']
+
+    def __str__(self):
+        return f'Corrección para {self.informacion_basica.nombre_completo} - {self.fecha_solicitud.strftime("%d/%m/%Y")}'
+
+    @property
+    def fue_corregido(self):
+        """Retorna True si el candidato ya corrigió la información"""
+        return self.fecha_correccion is not None
