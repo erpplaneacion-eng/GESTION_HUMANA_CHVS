@@ -148,41 +148,56 @@ def applicant_edit_view(request, pk):
                     # Guardar todos los formsets
                     # Guardar experiencia laboral - usar save() que maneja automáticamente todo
                     experiencia_formset.save()
-                    
-                    # Recalcular meses y días para cada experiencia guardada
-                    for experiencia in informacion_basica.experiencias_laborales.all():
-                        if experiencia.fecha_inicial and experiencia.fecha_terminacion:
-                            from datetime import datetime as dt
-                            fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
-                            fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
-                            
-                            # Calcular diferencia
-                            delta = fecha_fin - fecha_inicio
-                            total_dias = delta.days
-                            
-                            # Calcular meses
-                            anos = fecha_fin.year - fecha_inicio.year
-                            meses = fecha_fin.month - fecha_inicio.month
-                            dias = fecha_fin.day - fecha_inicio.day
-                            
-                            if dias < 0:
-                                meses -= 1
-                                # Obtener días del mes anterior
-                                if fecha_inicio.month == 1:
-                                    ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
-                                else:
-                                    ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
-                                dias += ultimo_dia
-                            
-                            if meses < 0:
-                                anos -= 1
-                                meses += 12
-                            
-                            total_meses = (anos * 12) + meses
-                            
-                            experiencia.meses_experiencia = total_meses
-                            experiencia.dias_experiencia = total_dias
-                            experiencia.save()
+
+                    # Recalcular meses y días SOLO para experiencias que cambiaron sus fechas
+                    from datetime import datetime as dt
+                    experiencias_modificadas = []
+
+                    for form_exp in experiencia_formset:
+                        # Solo procesar si el formulario tiene una instancia guardada (no eliminada)
+                        if form_exp.instance.pk and not form_exp.cleaned_data.get('DELETE', False):
+                            # Verificar si cambió alguna de las fechas
+                            if form_exp.has_changed() and ('fecha_inicial' in form_exp.changed_data or 'fecha_terminacion' in form_exp.changed_data):
+                                experiencia = form_exp.instance
+                                if experiencia.fecha_inicial and experiencia.fecha_terminacion:
+                                    fecha_inicio = dt.combine(experiencia.fecha_inicial, dt.min.time())
+                                    fecha_fin = dt.combine(experiencia.fecha_terminacion, dt.min.time())
+
+                                    # Calcular diferencia
+                                    delta = fecha_fin - fecha_inicio
+                                    total_dias = delta.days
+
+                                    # Calcular meses
+                                    anos = fecha_fin.year - fecha_inicio.year
+                                    meses = fecha_fin.month - fecha_inicio.month
+                                    dias = fecha_fin.day - fecha_inicio.day
+
+                                    if dias < 0:
+                                        meses -= 1
+                                        # Obtener días del mes anterior
+                                        if fecha_inicio.month == 1:
+                                            ultimo_dia = dt(fecha_inicio.year - 1, 12, 31).day
+                                        else:
+                                            ultimo_dia = dt(fecha_inicio.year, fecha_inicio.month - 1, 1).day
+                                        dias += ultimo_dia
+
+                                    if meses < 0:
+                                        anos -= 1
+                                        meses += 12
+
+                                    total_meses = (anos * 12) + meses
+
+                                    experiencia.meses_experiencia = total_meses
+                                    experiencia.dias_experiencia = total_dias
+                                    experiencias_modificadas.append(experiencia)
+
+                    # Guardar solo las experiencias que se modificaron (bulk update)
+                    if experiencias_modificadas:
+                        from formapp.models import ExperienciaLaboral
+                        ExperienciaLaboral.objects.bulk_update(
+                            experiencias_modificadas,
+                            ['meses_experiencia', 'dias_experiencia']
+                        )
                     
                     # Calcular experiencia total automáticamente
                     calcular_experiencia_total(informacion_basica)
