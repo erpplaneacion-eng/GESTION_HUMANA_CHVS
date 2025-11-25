@@ -88,7 +88,7 @@
                         </div>
                         <hr>
                         <p class="mb-0">
-                            <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Por favor, explica brevemente los cambios que realizaste en la sección de comentarios al final del formulario.
+                            <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Corrige únicamente los campos marcados en rojo y oprime "Guardar Cambios" cuando termines.
                         </p>
                     </div>
                 </div>
@@ -874,35 +874,6 @@
                         </div>
                     </div>
                 </div>
-
-                {% if is_public_correction %}
-                <!-- Comentarios del Candidato de las Correcciones -->
-                <div class="section-card mb-4">
-                    <div class="section-header">
-                        <h4><i class="fas fa-comment-dots"></i> Comentarios de tus Correcciones</h4>
-                    </div>
-                    <div class="section-body">
-                        <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle"></i>
-                            <strong>Por favor, explica brevemente qué información corregiste o actualizaste.</strong>
-                            Esto ayudará al equipo de Gestión Humana a revisar tus cambios más rápidamente.
-                        </div>
-                        <label for="id_comentarios_correccion" class="form-label">
-                            <strong>Descripción de los cambios realizados:</strong>
-                        </label>
-                        <textarea
-                            name="comentarios_correccion"
-                            id="id_comentarios_correccion"
-                            class="form-control"
-                            rows="4"
-                            placeholder="Ejemplo: Actualicé mi número de teléfono de contacto y adjunté el certificado laboral que faltaba de mi última experiencia..."
-                        >{{ applicant.comentarios_correccion|default:'' }}</textarea>
-                        <small class="form-text text-muted mt-2">
-                            <i class="fas fa-lightbulb"></i> Incluye detalles sobre documentos que actualizaste, datos que corregiste, etc.
-                        </small>
-                    </div>
-                </div>
-                {% endif %}
 
                 <!-- Botones de acción -->
                 <div class="text-center mb-4">
