@@ -228,7 +228,13 @@ def public_update_view(request, token):
         anexos_adicionales = None
 
     if request.method == 'POST':
-        # Usamos InformacionBasicaForm (el mismo del admin) para permitir edición completa
+        # Obtener campos editables para validación selectiva
+        campos_editables = set(applicant.campos_a_corregir or [])
+
+        # ESTRATEGIA: Solo validar y actualizar los campos que el admin marcó como editables
+        # Los demás campos mantienen sus valores actuales de la base de datos
+
+        # Crear formularios con los datos POST
         form = InformacionBasicaForm(request.POST, request.FILES, instance=applicant)
         genero = request.POST.get('genero', applicant.genero)
         documentos_form = DocumentosIdentidadForm(request.POST, request.FILES, instance=documentos_identidad, genero=genero)
@@ -241,6 +247,61 @@ def public_update_view(request, token):
         posgrado_formset = PosgradoFormSet(request.POST, request.FILES, instance=applicant)
         especializacion_formset = EspecializacionFormSet(request.POST, request.FILES, instance=applicant)
 
+        # Remover validaciones de campos que NO están editables
+        # Los campos deshabilitados no se envían en POST, así que debemos hacer campos no editables opcionales
+        if campos_editables:
+            # Hacer que campos NO editables sean opcionales para validación
+            for field_name in form.fields:
+                if field_name not in campos_editables:
+                    form.fields[field_name].required = False
+
+            # Validar solo formsets que están en campos editables
+            validar_documentos = 'documentos_identidad' in campos_editables
+            validar_antecedentes = 'antecedentes' in campos_editables
+            validar_anexos = 'anexos_adicionales' in campos_editables
+            validar_experiencia = 'experiencia_laboral' in campos_editables
+            validar_basica = 'educacion_basica' in campos_editables
+            validar_superior = 'educacion_superior' in campos_editables
+            validar_academica = 'formacion_academica' in campos_editables
+            validar_posgrado = 'posgrado' in campos_editables
+            validar_especializacion = 'especializacion' in campos_editables
+
+            # Si un formset NO está editable, hacer todos sus campos opcionales
+            if not validar_documentos:
+                for field in documentos_form.fields.values():
+                    field.required = False
+            if not validar_antecedentes:
+                for field in antecedentes_form.fields.values():
+                    field.required = False
+            if not validar_anexos:
+                for field in anexos_form.fields.values():
+                    field.required = False
+            if not validar_experiencia:
+                for form_exp in experiencia_formset.forms:
+                    for field in form_exp.fields.values():
+                        field.required = False
+            if not validar_basica:
+                for form_bas in basica_formset.forms:
+                    for field in form_bas.fields.values():
+                        field.required = False
+            if not validar_superior:
+                for form_sup in superior_formset.forms:
+                    for field in form_sup.fields.values():
+                        field.required = False
+            if not validar_academica:
+                for form_aca in academica_formset.forms:
+                    for field in form_aca.fields.values():
+                        field.required = False
+            if not validar_posgrado:
+                for form_pos in posgrado_formset.forms:
+                    for field in form_pos.fields.values():
+                        field.required = False
+            if not validar_especializacion:
+                for form_esp in especializacion_formset.forms:
+                    for field in form_esp.fields.values():
+                        field.required = False
+
+        # Ahora validar todos los formularios
         if form.is_valid() and documentos_form.is_valid() and antecedentes_form.is_valid() and \
            anexos_form.is_valid() and experiencia_formset.is_valid() and basica_formset.is_valid() and \
            superior_formset.is_valid() and academica_formset.is_valid() and posgrado_formset.is_valid() and \
@@ -248,28 +309,50 @@ def public_update_view(request, token):
             
             try:
                 with transaction.atomic():
+                    # GUARDAR SOLO LOS CAMPOS EDITABLES
+                    # Los campos no editables mantienen sus valores actuales de la BD
+
+                    # Guardar formulario principal (solo actualiza campos que vinieron en POST)
                     informacion_basica = form.save(commit=False)
+
                     # Actualizar estado y limpiar token para seguridad (un solo uso)
                     informacion_basica.estado = 'CORREGIDO'
                     informacion_basica.token_correccion = None
                     informacion_basica.token_expiracion = None
+
                     # Guardar comentarios del candidato sobre las correcciones
                     informacion_basica.comentarios_correccion = request.POST.get('comentarios_correccion', '')
-                    informacion_basica.save()
 
-                    documentos = documentos_form.save(commit=False)
-                    documentos.informacion_basica = informacion_basica
-                    documentos.save()
+                    # Guardar solo los campos que fueron editados
+                    # update_fields evita sobrescribir campos que no se enviaron
+                    campos_a_actualizar = ['estado', 'token_correccion', 'token_expiracion', 'comentarios_correccion']
 
-                    antecedentes_obj = antecedentes_form.save(commit=False)
-                    antecedentes_obj.informacion_basica = informacion_basica
-                    antecedentes_obj.save()
+                    # Agregar campos editables a la lista de actualización
+                    if campos_editables:
+                        for campo in campos_editables:
+                            if campo in form.fields and campo not in campos_a_actualizar:
+                                campos_a_actualizar.append(campo)
 
-                    anexos = anexos_form.save(commit=False)
-                    anexos.informacion_basica = informacion_basica
-                    anexos.save()
+                    informacion_basica.save(update_fields=campos_a_actualizar)
 
-                    experiencia_formset.save()
+                    # Guardar formsets solo si están en campos editables
+                    if 'documentos_identidad' in campos_editables:
+                        documentos = documentos_form.save(commit=False)
+                        documentos.informacion_basica = informacion_basica
+                        documentos.save()
+
+                    if 'antecedentes' in campos_editables:
+                        antecedentes_obj = antecedentes_form.save(commit=False)
+                        antecedentes_obj.informacion_basica = informacion_basica
+                        antecedentes_obj.save()
+
+                    if 'anexos_adicionales' in campos_editables:
+                        anexos = anexos_form.save(commit=False)
+                        anexos.informacion_basica = informacion_basica
+                        anexos.save()
+
+                    if 'experiencia_laboral' in campos_editables:
+                        experiencia_formset.save()
                     
                     # Recalcular experiencia (lógica idéntica a admin)
                     from datetime import datetime as dt
@@ -301,16 +384,28 @@ def public_update_view(request, token):
                                     experiencia.dias_experiencia = total_dias
                                     experiencias_modificadas.append(experiencia)
                     
-                    if experiencias_modificadas:
-                        from ..models import ExperienciaLaboral
-                        ExperienciaLaboral.objects.bulk_update(experiencias_modificadas, ['meses_experiencia', 'dias_experiencia'])
+                        if experiencias_modificadas:
+                            from ..models import ExperienciaLaboral
+                            ExperienciaLaboral.objects.bulk_update(experiencias_modificadas, ['meses_experiencia', 'dias_experiencia'])
 
-                    calcular_experiencia_total(informacion_basica)
-                    basica_formset.save()
-                    superior_formset.save()
-                    academica_formset.save()
-                    posgrado_formset.save()
-                    especializacion_formset.save()
+                        # Recalcular experiencia total solo si se modificó experiencia
+                        calcular_experiencia_total(informacion_basica)
+
+                    # Guardar otros formsets solo si están en campos editables
+                    if 'educacion_basica' in campos_editables:
+                        basica_formset.save()
+
+                    if 'educacion_superior' in campos_editables:
+                        superior_formset.save()
+
+                    if 'formacion_academica' in campos_editables:
+                        academica_formset.save()
+
+                    if 'posgrado' in campos_editables:
+                        posgrado_formset.save()
+
+                    if 'especializacion' in campos_editables:
+                        especializacion_formset.save()
 
                     # Actualizar el registro en historial de correcciones
                     from ..models import HistorialCorreccion
