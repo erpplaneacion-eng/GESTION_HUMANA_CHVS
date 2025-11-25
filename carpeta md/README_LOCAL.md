@@ -1,4 +1,4 @@
-# 💻 Guía de Desarrollo Local - Gestión Humana CHVS
+# 💻 Guía de Desarrollo Local - Gestión Humana CAVJP
 
 Esta guía te ayudará a configurar y ejecutar el proyecto en tu máquina local para desarrollo.
 

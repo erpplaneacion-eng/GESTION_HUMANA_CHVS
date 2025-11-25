@@ -1,4 +1,4 @@
-# Sistema de Gestión Humana CHVS
+# Sistema de Gestión Humana CAVJP
 
 Sistema web completo para la gestión y registro de personal desarrollado con Django. Permite a los candidatos registrarse de forma autónoma y a los administradores gestionar la información del personal, cálculos de experiencia, y exportación de datos.
 
@@ -63,8 +63,8 @@ Sistema web completo para la gestión y registro de personal desarrollado con Dj
 
 ```bash
 # 1. Clonar repositorio
-git clone https://github.com/tu-usuario/GESTION_HUMANA_CHVS.git
-cd GESTION_HUMANA_CHVS
+git clone https://github.com/tu-usuario/GESTION_HUMANA_CAVJP.git
+cd GESTION_HUMANA_CAVJP
 
 # 2. Configurar variables de entorno
 cp .env.example .env
@@ -83,8 +83,8 @@ start_local.bat
 ### 1. Clonar el Repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/GESTION_HUMANA_CHVS.git
-cd GESTION_HUMANA_CHVS
+git clone https://github.com/tu-usuario/GESTION_HUMANA_CAVJP.git
+cd GESTION_HUMANA_CAVJP
 ```
 
 ### 2. Crear Entorno Virtual
@@ -150,7 +150,7 @@ El sistema estará disponible en: `http://localhost:8000`
 ## 📁 Estructura del Proyecto
 
 ```
-GESTION_HUMANA_CHVS/
+GESTION_HUMANA_CAVJP/
 ├── gestion_humana/                # Directorio del proyecto Django
 │   ├── formapp/                   # Aplicación principal
 │   │   ├── models.py              # Modelos de datos
@@ -266,7 +266,7 @@ coverage report
    ```
    SECRET_KEY=<generar-secret-key-seguro>
    DEBUG=False
-   ALLOWED_HOSTS=gestionhumanachvs-production.up.railway.app
+   ALLOWED_HOSTS=gestionhumanacavjp-production.up.railway.app
    
    # PostgreSQL (automático con Railway PostgreSQL)
    DATABASE_URL=<auto-configurado-por-railway>
@@ -438,7 +438,7 @@ python manage.py migrate
 
 ## 👨‍💻 Contribuidores
 
-- Desarrollo: Sistema de Gestión Humana CHVS
+- Desarrollo: Sistema de Gestión Humana CAVJP
 - Despliegue: Railway.app
 - Almacenamiento: Cloudinary
 - Email: Gmail API
@@ -452,7 +452,7 @@ Para soporte técnico o consultas:
 
 ## 📄 Licencia
 
-Este proyecto es de uso interno para Gestión Humana CHVS.
+Este proyecto es de uso interno para Gestión Humana CAVJP.
 
 ## 🎯 Roadmap
 
@@ -478,4 +478,3 @@ Este proyecto es de uso interno para Gestión Humana CHVS.
 ---
 
 **Desarrollado con ❤️ usando Django**
-

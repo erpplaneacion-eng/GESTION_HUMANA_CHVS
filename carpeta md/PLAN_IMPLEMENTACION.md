@@ -2,7 +2,7 @@
 
 ## Resumen del Proyecto
 
-Este plan detalla la implementacion de los documentos y requisitos faltantes en el sistema de Gestion Humana CHVS, siguiendo las normativas colombianas para contratacion de personal.
+Este plan detalla la implementacion de los documentos y requisitos faltantes en el sistema de Gestion Humana CAVJP, siguiendo las normativas colombianas para contratacion de personal.
 
 ---
 

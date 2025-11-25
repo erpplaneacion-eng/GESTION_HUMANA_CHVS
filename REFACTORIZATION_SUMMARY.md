@@ -1,4 +1,4 @@
-# Resumen de Refactorización - Sistema Gestión Humana CHVS
+# Resumen de Refactorización - Sistema Gestión Humana CAVJP
 
 ## 📅 Fecha: Noviembre 2024
 

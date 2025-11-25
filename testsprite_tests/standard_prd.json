@@ -1,10 +1,10 @@
 {
   "meta": {
-    "project": "Sistema de Gestión Humana CHVS",
+    "project": "Sistema de Gestión Humana CAVJP",
     "date": "2025-11-19",
     "prepared_by": "Software Development Manager"
   },
-  "product_overview": "Sistema de Gestión Humana CHVS es una plataforma web para gestionar el registro, validación, y administración de candidatos para contratos públicos en la Secretaría de Bienestar Social de Cali. Incluye funcionalidades para el registro público, gestión administrativa, cálculo automático de experiencia laboral, generación y descarga de reportes en Excel y PDF, y envío de notificaciones por correo.",
+  "product_overview": "Sistema de Gestión Humana CAVJP es una plataforma web para gestionar el registro, validación, y administración de candidatos para contratos públicos en la Secretaría de Bienestar Social de Cali. Incluye funcionalidades para el registro público, gestión administrativa, cálculo automático de experiencia laboral, generación y descarga de reportes en Excel y PDF, y envío de notificaciones por correo.",
   "core_goals": [
     "Digitalizar y centralizar el proceso de registro de candidatos para contratos con la Secretaría de Bienestar Social.",
     "Automatizar el cálculo de experiencia laboral y la generación de documentos oficiales asociados (como ANEXO 11).",
@@ -84,7 +84,7 @@
           },
           "servers": [
             {
-              "url": "https://gestion-humana-chvs.railway.app",
+              "url": "https://gestion-humana-cavjp.railway.app",
               "description": "Producción"
             },
             {

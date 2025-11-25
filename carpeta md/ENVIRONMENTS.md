@@ -1,4 +1,4 @@
-# 🌍 Ambientes de Ejecución - Gestión Humana CHVS
+# 🌍 Ambientes de Ejecución - Gestión Humana CAVJP
 
 Este documento describe las diferencias entre los ambientes de desarrollo local y producción.
 
@@ -15,7 +15,7 @@ Este documento describe las diferencias entre los ambientes de desarrollo local 
 | **HTTPS** | No requerido | Obligatorio |
 | **Servidor** | Django runserver | Gunicorn |
 | **Puerto** | 8000 (local) | Asignado por Railway |
-| **URL** | localhost:8000 | gestionhumanachvs-production.up.railway.app |
+| **URL** | localhost:8000 | gestionhumanacavjp-production.up.railway.app |
 | **Variables** | Archivo .env | Variables de entorno Railway |
 | **Logs** | Consola terminal | Railway logs |
 | **Backups BD** | Manual | Automático (Railway) |
@@ -84,7 +84,7 @@ Variables de entorno en Railway:
 ```bash
 DEBUG=False
 SECRET_KEY=f!9f#&^u#06-4^8)_7ri5mui$2t0hyw5ca4k_0&omq9dmx^a)w
-ALLOWED_HOSTS=gestionhumanachvs-production.up.railway.app
+ALLOWED_HOSTS=gestionhumanacavjp-production.up.railway.app
 DATABASE_URL=postgresql://postgres:fVF...@ballast.proxy.rlwy.net:48363/railway
 CLOUDINARY_CLOUD_NAME=dk7nufqc4
 CLOUDINARY_API_KEY=469542484755534

@@ -1,4 +1,4 @@
-# ⚡ Inicio Rápido - Gestión Humana CHVS
+# ⚡ Inicio Rápido - Gestión Humana CAVJP
 
 **Para desarrolladores que quieren empezar YA**
 

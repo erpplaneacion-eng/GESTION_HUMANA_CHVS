@@ -686,10 +686,10 @@ class AnexosAdicionalesForm(forms.ModelForm):
             }),
         }
         help_texts = {
-            'descripcion_otros': 'Si pertenece a un grupo de población diferencial, adjunte el certificado y colóquelo en las observaciones.'
+            'descripcion_otros': '<strong style="color: #ff6b00; font-size: 1.1em;">📋 IMPORTANTE: Población Diferencial</strong><br>Si pertenece a un grupo de población diferencial (indígena, afrodescendiente, víctima del conflicto, persona con discapacidad, etc.), adjunte el certificado y menciónelo aquí.'
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Agregar nota aclaratoria para población diferencial en el campo de descripción
-        self.fields['descripcion_otros'].help_text = 'Si pertenece a un grupo de población diferencial, adjunte el certificado y menciónelo aquí.'
+        self.fields['descripcion_otros'].help_text = '<strong style="color: #ff6b00; font-size: 1.1em;">📋 IMPORTANTE: Población Diferencial</strong><br>Si pertenece a un grupo de población diferencial (indígena, afrodescendiente, víctima del conflicto, persona con discapacidad, etc.), adjunte el certificado y menciónelo aquí.'

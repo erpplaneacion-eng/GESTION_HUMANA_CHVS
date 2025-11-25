@@ -227,7 +227,7 @@
                             {{ documentos_form.fotocopia_cedula.label }} *
                         </label>
                         {{ documentos_form.fotocopia_cedula }}
-                        <small class="form-text text-muted">{{ documentos_form.fotocopia_cedula.help_text }}</small>
+                        <small class="form-text">{{ documentos_form.fotocopia_cedula.help_text|safe }}</small>
                         {% if documentos_form.fotocopia_cedula.errors %}
                             <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ documentos_form.fotocopia_cedula.errors }}</div>
                         {% endif %}
@@ -950,8 +950,8 @@
                             {{ anexos_form.descripcion_otros.label }}
                         </label>
                         {{ anexos_form.descripcion_otros }}
-                        <small class="form-text text-muted">
-                            <i class="fas fa-info-circle"></i> {{ anexos_form.descripcion_otros.help_text }}
+                        <small class="form-text d-block mt-2">
+                            {{ anexos_form.descripcion_otros.help_text|safe }}
                         </small>
                         {% if anexos_form.descripcion_otros.errors %}
                             <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.descripcion_otros.errors }}</div>
