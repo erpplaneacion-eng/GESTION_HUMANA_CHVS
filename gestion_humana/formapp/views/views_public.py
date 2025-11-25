@@ -3,6 +3,7 @@ Vista pública de registro de candidatos.
 Formulario multi-sección accesible sin autenticación.
 Refactorizado desde views.py para mejor organización.
 """
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
@@ -238,12 +239,19 @@ def public_update_view(request, token):
         post_data = request.POST.copy()  # Hacer copia mutable del POST
         
         # Restaurar valores desde la BD para campos que NO están editables
+        # Lista de campos internos del sistema que NO deben restaurarse
+        campos_excluir = ['campos_a_corregir', 'token_correccion', 'token_expiracion', 
+                          'comentarios_correccion', 'estado']
+        
         for field_name in InformacionBasicaForm.base_fields.keys():
-            if field_name not in campos_editables:
+            if field_name not in campos_editables and field_name not in campos_excluir:
                 current_value = getattr(applicant, field_name, None)
                 if current_value is not None:
                     if isinstance(current_value, bool):
                         post_data[field_name] = 'on' if current_value else ''
+                    elif isinstance(current_value, (list, dict)):
+                        # Para JSONField, convertir a JSON string válido
+                        post_data[field_name] = json.dumps(current_value)
                     else:
                         post_data[field_name] = str(current_value)
         
