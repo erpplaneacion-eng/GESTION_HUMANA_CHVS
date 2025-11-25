@@ -349,94 +349,82 @@ def public_update_view(request, token):
         # RESTRICCIÓN DE CAMPOS: Solo permitir editar campos seleccionados por el admin
         campos_editables = set(applicant.campos_a_corregir or [])
 
-        # Mapeo de campos a formularios para deshabilitar campos no editables
-        # Campos del formulario principal (InformacionBasica)
-        campos_info_basica = {
-            'primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido',
-            'cedula', 'genero', 'tipo_via', 'numero_via', 'numero_casa',
-            'complemento_direccion', 'barrio', 'telefono', 'correo',
-            'poblacion_diferencial', 'acepta_politica'
-        }
-
-        # Si hay campos a corregir definidos, deshabilitar todos los demás
+        # Si hay campos a corregir definidos, aplicar restricciones
         if campos_editables:
-            # Deshabilitar campos del formulario principal que NO estén en la lista
+            # LÓGICA INVERTIDA: Deshabilitar TODOS los campos y resaltar solo los EDITABLES
+
+            # 1. Procesar campos del formulario principal
             for field_name in form.fields:
-                if field_name not in campos_editables:
+                if field_name in campos_editables:
+                    # Campo EDITABLE: Resaltar en rojo con borde grueso
+                    current_class = form.fields[field_name].widget.attrs.get('class', '')
+                    form.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                    form.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5; border-width: 3px !important;'
+                    form.fields[field_name].help_text = '<span style="color: #dc3545; font-weight: bold;">✏️ CORRIJA ESTE CAMPO</span>'
+                else:
+                    # Campo BLOQUEADO: Deshabilitar y poner en gris
                     form.fields[field_name].disabled = True
                     form.fields[field_name].widget.attrs['readonly'] = True
-                    form.fields[field_name].widget.attrs['class'] = form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
-                    form.fields[field_name].help_text = '🔒 Este campo no está habilitado para corrección'
+                    current_class = form.fields[field_name].widget.attrs.get('class', '')
+                    form.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
 
-            # Deshabilitar documentos_identidad si no está en la lista
-            if 'documentos_identidad' not in campos_editables:
-                for field_name in documentos_form.fields:
-                    documentos_form.fields[field_name].disabled = True
-                    documentos_form.fields[field_name].widget.attrs['readonly'] = True
-                    documentos_form.fields[field_name].widget.attrs['class'] = documentos_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            # Función auxiliar para aplicar estilos a formularios
+            def aplicar_estilo_editable(form_fields):
+                """Aplica estilo rojo a campos editables"""
+                for field_name in form_fields:
+                    current_class = form_fields[field_name].widget.attrs.get('class', '')
+                    form_fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                    form_fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5; border-width: 3px !important;'
 
-            # Deshabilitar antecedentes si no está en la lista
-            if 'antecedentes' not in campos_editables:
-                for field_name in antecedentes_form.fields:
-                    antecedentes_form.fields[field_name].disabled = True
-                    antecedentes_form.fields[field_name].widget.attrs['readonly'] = True
-                    antecedentes_form.fields[field_name].widget.attrs['class'] = antecedentes_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            def aplicar_estilo_bloqueado(form_fields):
+                """Aplica estilo gris y deshabilita campos"""
+                for field_name in form_fields:
+                    form_fields[field_name].disabled = True
+                    form_fields[field_name].widget.attrs['readonly'] = True
+                    current_class = form_fields[field_name].widget.attrs.get('class', '')
+                    form_fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
 
-            # Deshabilitar anexos_adicionales si no está en la lista
-            if 'anexos_adicionales' not in campos_editables:
-                for field_name in anexos_form.fields:
-                    anexos_form.fields[field_name].disabled = True
-                    anexos_form.fields[field_name].widget.attrs['readonly'] = True
-                    anexos_form.fields[field_name].widget.attrs['class'] = anexos_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            # 2. Procesar documentos_identidad
+            if 'documentos_identidad' in campos_editables:
+                aplicar_estilo_editable(documentos_form.fields)
+            else:
+                aplicar_estilo_bloqueado(documentos_form.fields)
 
-            # Deshabilitar formsets si no están en la lista
-            if 'experiencia_laboral' not in campos_editables:
-                for exp_form in experiencia_formset:
-                    for field_name in exp_form.fields:
-                        if field_name != 'DELETE':  # Permitir eliminar
-                            exp_form.fields[field_name].disabled = True
-                            exp_form.fields[field_name].widget.attrs['readonly'] = True
-                            exp_form.fields[field_name].widget.attrs['class'] = exp_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            # 3. Procesar antecedentes
+            if 'antecedentes' in campos_editables:
+                aplicar_estilo_editable(antecedentes_form.fields)
+            else:
+                aplicar_estilo_bloqueado(antecedentes_form.fields)
 
-            if 'educacion_basica' not in campos_editables:
-                for basica_form in basica_formset:
-                    for field_name in basica_form.fields:
-                        if field_name != 'DELETE':
-                            basica_form.fields[field_name].disabled = True
-                            basica_form.fields[field_name].widget.attrs['readonly'] = True
-                            basica_form.fields[field_name].widget.attrs['class'] = basica_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            # 4. Procesar anexos_adicionales
+            if 'anexos_adicionales' in campos_editables:
+                aplicar_estilo_editable(anexos_form.fields)
+            else:
+                aplicar_estilo_bloqueado(anexos_form.fields)
 
-            if 'educacion_superior' not in campos_editables:
-                for superior_form in superior_formset:
-                    for field_name in superior_form.fields:
-                        if field_name != 'DELETE':
-                            superior_form.fields[field_name].disabled = True
-                            superior_form.fields[field_name].widget.attrs['readonly'] = True
-                            superior_form.fields[field_name].widget.attrs['class'] = superior_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            # 5. Procesar formsets - CRÍTICO: Iterar sobre TODAS las formas del formset
+            def aplicar_estilos_formset(formset, editable):
+                """Aplica estilos a todos los campos de todas las formas en un formset"""
+                for form_item in formset.forms:
+                    for field_name in form_item.fields:
+                        if field_name not in ['DELETE', 'id']:
+                            if editable:
+                                current_class = form_item.fields[field_name].widget.attrs.get('class', '')
+                                form_item.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                                form_item.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5; border-width: 3px !important;'
+                            else:
+                                form_item.fields[field_name].disabled = True
+                                form_item.fields[field_name].widget.attrs['readonly'] = True
+                                current_class = form_item.fields[field_name].widget.attrs.get('class', '')
+                                form_item.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
 
-            if 'formacion_academica' not in campos_editables:
-                for academica_form in academica_formset:
-                    for field_name in academica_form.fields:
-                        if field_name != 'DELETE':
-                            academica_form.fields[field_name].disabled = True
-                            academica_form.fields[field_name].widget.attrs['readonly'] = True
-                            academica_form.fields[field_name].widget.attrs['class'] = academica_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
-
-            if 'posgrado' not in campos_editables:
-                for posgrado_form in posgrado_formset:
-                    for field_name in posgrado_form.fields:
-                        if field_name != 'DELETE':
-                            posgrado_form.fields[field_name].disabled = True
-                            posgrado_form.fields[field_name].widget.attrs['readonly'] = True
-                            posgrado_form.fields[field_name].widget.attrs['class'] = posgrado_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
-
-            if 'especializacion' not in campos_editables:
-                for especializacion_form in especializacion_formset:
-                    for field_name in especializacion_form.fields:
-                        if field_name != 'DELETE':
-                            especializacion_form.fields[field_name].disabled = True
-                            especializacion_form.fields[field_name].widget.attrs['readonly'] = True
-                            especializacion_form.fields[field_name].widget.attrs['class'] = especializacion_form.fields[field_name].widget.attrs.get('class', '') + ' bg-light'
+            # Aplicar estilos a cada formset
+            aplicar_estilos_formset(experiencia_formset, 'experiencia_laboral' in campos_editables)
+            aplicar_estilos_formset(basica_formset, 'educacion_basica' in campos_editables)
+            aplicar_estilos_formset(superior_formset, 'educacion_superior' in campos_editables)
+            aplicar_estilos_formset(academica_formset, 'formacion_academica' in campos_editables)
+            aplicar_estilos_formset(posgrado_formset, 'posgrado' in campos_editables)
+            aplicar_estilos_formset(especializacion_formset, 'especializacion' in campos_editables)
 
     context = {
         'form': form,
