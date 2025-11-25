@@ -66,7 +66,7 @@
                             </div>
 
                             <div class="row">
-                                <!-- Columna 1: Información Personal -->
+                                <!-- Columna 1: Información Personal y Documentos -->
                                 <div class="col-md-4">
                                     <h6 class="text-primary"><i class="fas fa-user"></i> Información Personal</h6>
                                     <div class="form-check">
@@ -102,54 +102,149 @@
                                         <label class="form-check-label" for="campo_correo">Correo Electrónico</label>
                                     </div>
                                     <div class="form-check">
-                                        <input type="checkbox" name="campos" value="direccion" class="form-check-input" id="campo_direccion">
-                                        <label class="form-check-label" for="campo_direccion">Dirección Completa</label>
+                                        <input type="checkbox" name="campos" value="tipo_via" class="form-check-input" id="campo_tipo_via">
+                                        <label class="form-check-label" for="campo_tipo_via">Tipo de Vía</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="numero_via" class="form-check-input" id="campo_numero_via">
+                                        <label class="form-check-label" for="campo_numero_via">Número de Vía</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="numero_casa" class="form-check-input" id="campo_numero_casa">
+                                        <label class="form-check-label" for="campo_numero_casa">Número de Casa</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="complemento_direccion" class="form-check-input" id="campo_complemento">
+                                        <label class="form-check-label" for="campo_complemento">Complemento Dirección</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="barrio" class="form-check-input" id="campo_barrio">
+                                        <label class="form-check-label" for="campo_barrio">Barrio</label>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    <h6 class="text-primary mt-2"><i class="fas fa-id-card"></i> Documentos Identidad</h6>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="fotocopia_cedula" class="form-check-input" id="campo_fotocopia_cedula">
+                                        <label class="form-check-label" for="campo_fotocopia_cedula">Fotocopia Cédula</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="hoja_de_vida" class="form-check-input" id="campo_hoja_vida">
+                                        <label class="form-check-label" for="campo_hoja_vida">Hoja de Vida</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="libreta_militar" class="form-check-input" id="campo_libreta">
+                                        <label class="form-check-label" for="campo_libreta">Libreta Militar (archivo)</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="numero_libreta_militar" class="form-check-input" id="campo_num_libreta">
+                                        <label class="form-check-label" for="campo_num_libreta">Número de Libreta</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="distrito_militar" class="form-check-input" id="campo_distrito">
+                                        <label class="form-check-label" for="campo_distrito">Distrito Militar</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="clase_libreta" class="form-check-input" id="campo_clase">
+                                        <label class="form-check-label" for="campo_clase">Clase de Libreta</label>
                                     </div>
                                 </div>
 
-                                <!-- Columna 2: Documentos y Formación -->
+                                <!-- Columna 2: Formación y Experiencia -->
                                 <div class="col-md-4">
-                                    <h6 class="text-primary"><i class="fas fa-file-alt"></i> Documentos y Formación</h6>
-                                    <div class="form-check">
-                                        <input type="checkbox" name="campos" value="documentos_identidad" class="form-check-input" id="campo_documentos">
-                                        <label class="form-check-label" for="campo_documentos">Documentos de Identidad</label>
-                                    </div>
+                                    <h6 class="text-primary"><i class="fas fa-briefcase"></i> Experiencia Laboral</h6>
                                     <div class="form-check">
                                         <input type="checkbox" name="campos" value="experiencia_laboral" class="form-check-input" id="campo_experiencia">
-                                        <label class="form-check-label" for="campo_experiencia">Experiencia Laboral</label>
+                                        <label class="form-check-label" for="campo_experiencia">
+                                            <strong>Todas las Experiencias</strong>
+                                        </label>
                                     </div>
+                                    
+                                    <hr class="my-2">
+                                    <h6 class="text-primary mt-2"><i class="fas fa-school"></i> Educación</h6>
                                     <div class="form-check">
                                         <input type="checkbox" name="campos" value="educacion_basica" class="form-check-input" id="campo_basica">
-                                        <label class="form-check-label" for="campo_basica">Educación Básica</label>
+                                        <label class="form-check-label" for="campo_basica">Educación Básica (Bachiller)</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" name="campos" value="educacion_superior" class="form-check-input" id="campo_superior">
-                                        <label class="form-check-label" for="campo_superior">Educación Superior</label>
+                                        <label class="form-check-label" for="campo_superior">Técnico/Tecnólogo</label>
                                     </div>
                                     <div class="form-check">
                                         <input type="checkbox" name="campos" value="formacion_academica" class="form-check-input" id="campo_academica">
-                                        <label class="form-check-label" for="campo_academica">Formación Académica</label>
+                                        <label class="form-check-label" for="campo_academica">Formación Profesional Completa</label>
                                     </div>
                                     <div class="form-check">
-                                        <input type="checkbox" name="campos" value="posgrados" class="form-check-input" id="campo_posgrados">
-                                        <label class="form-check-label" for="campo_posgrados">Posgrados</label>
+                                        <input type="checkbox" name="campos" value="posgrado" class="form-check-input" id="campo_posgrados">
+                                        <label class="form-check-label" for="campo_posgrados">Posgrados (Maestría/Doctorado)</label>
                                     </div>
                                     <div class="form-check">
-                                        <input type="checkbox" name="campos" value="especializaciones" class="form-check-input" id="campo_especializaciones">
+                                        <input type="checkbox" name="campos" value="especializacion" class="form-check-input" id="campo_especializaciones">
                                         <label class="form-check-label" for="campo_especializaciones">Especializaciones</label>
+                                    </div>
+                                    
+                                    <hr class="my-2">
+                                    <h6 class="text-primary mt-2"><i class="fas fa-clipboard-check"></i> Certificados Antecedentes</h6>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="campos" value="antecedentes" class="form-check-input" id="campo_todos_antecedentes">
+                                        <label class="form-check-label" for="campo_todos_antecedentes">
+                                            <strong>Todos los Antecedentes</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="certificado_procuraduria" class="form-check-input" id="campo_procuraduria">
+                                        <label class="form-check-label" for="campo_procuraduria">Procuraduría</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="certificado_contraloria" class="form-check-input" id="campo_contraloria">
+                                        <label class="form-check-label" for="campo_contraloria">Contraloría</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="certificado_policia" class="form-check-input" id="campo_policia">
+                                        <label class="form-check-label" for="campo_policia">Policía</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="certificado_medidas_correctivas" class="form-check-input" id="campo_medidas">
+                                        <label class="form-check-label" for="campo_medidas">Medidas Correctivas (RNMC)</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="certificado_delitos_sexuales" class="form-check-input" id="campo_delitos">
+                                        <label class="form-check-label" for="campo_delitos">Delitos Sexuales</label>
                                     </div>
                                 </div>
 
-                                <!-- Columna 3: Antecedentes y Anexos -->
+                                <!-- Columna 3: Anexos Adicionales -->
                                 <div class="col-md-4">
-                                    <h6 class="text-primary"><i class="fas fa-folder"></i> Antecedentes y Anexos</h6>
+                                    <h6 class="text-primary"><i class="fas fa-folder"></i> Anexos Adicionales</h6>
                                     <div class="form-check">
-                                        <input type="checkbox" name="campos" value="antecedentes" class="form-check-input" id="campo_antecedentes">
-                                        <label class="form-check-label" for="campo_antecedentes">Antecedentes</label>
+                                        <input type="checkbox" name="campos" value="anexos_adicionales" class="form-check-input" id="campo_todos_anexos">
+                                        <label class="form-check-label" for="campo_todos_anexos">
+                                            <strong>Todos los Anexos</strong>
+                                        </label>
                                     </div>
-                                    <div class="form-check">
-                                        <input type="checkbox" name="campos" value="anexos_adicionales" class="form-check-input" id="campo_anexos">
-                                        <label class="form-check-label" for="campo_anexos">Anexos Adicionales</label>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="anexo_03_datos_personales" class="form-check-input" id="campo_anexo03">
+                                        <label class="form-check-label" for="campo_anexo03">ANEXO 03 - Datos Personales</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="carta_intencion" class="form-check-input" id="campo_carta">
+                                        <label class="form-check-label" for="campo_carta">Carta de Intención</label>
+                                    </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="otros_documentos" class="form-check-input" id="campo_otros">
+                                        <label class="form-check-label" for="campo_otros">Otros Documentos</label>
+                                    </div>
+                                    
+                                    <hr class="my-3">
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <i class="fas fa-info-circle"></i> <strong>Nota:</strong>
+                                            <ul class="mb-0 mt-2 small">
+                                                <li>Campos individuales: Se marca solo ese campo</li>
+                                                <li><strong>Opciones en negrita</strong>: Marcan todo el grupo</li>
+                                                <li>Usa Ctrl+clic para seleccionar múltiples</li>
+                                            </ul>
+                                        </small>
                                     </div>
                                 </div>
                             </div>

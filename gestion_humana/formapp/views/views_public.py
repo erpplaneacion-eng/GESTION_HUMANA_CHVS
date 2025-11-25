@@ -380,18 +380,27 @@ def public_update_view(request, token):
                     
                     logger.info(f'[CORRECCIÓN] Información guardada exitosamente para {applicant.cedula}. Estado: CORREGIDO')
 
-                    # Guardar formsets solo si están en campos editables
-                    if 'documentos_identidad' in campos_editables:
+                    # Guardar formsets solo si están en campos editables (completos o parciales)
+                    campos_documentos = ['fotocopia_cedula', 'hoja_de_vida', 'libreta_militar', 
+                                       'numero_libreta_militar', 'distrito_militar', 'clase_libreta']
+                    if 'documentos_identidad' in campos_editables or any(c in campos_editables for c in campos_documentos):
                         documentos = documentos_form.save(commit=False)
                         documentos.informacion_basica = informacion_basica
                         documentos.save()
 
-                    if 'antecedentes' in campos_editables:
+                    campos_antecedentes = ['certificado_procuraduria', 'fecha_procuraduria', 
+                                         'certificado_contraloria', 'fecha_contraloria',
+                                         'certificado_policia', 'fecha_policia',
+                                         'certificado_medidas_correctivas', 'fecha_medidas_correctivas',
+                                         'certificado_delitos_sexuales', 'fecha_delitos_sexuales']
+                    if 'antecedentes' in campos_editables or any(c in campos_editables for c in campos_antecedentes):
                         antecedentes_obj = antecedentes_form.save(commit=False)
                         antecedentes_obj.informacion_basica = informacion_basica
                         antecedentes_obj.save()
 
-                    if 'anexos_adicionales' in campos_editables:
+                    campos_anexos = ['anexo_03_datos_personales', 'carta_intencion', 
+                                   'otros_documentos', 'descripcion_otros']
+                    if 'anexos_adicionales' in campos_editables or any(c in campos_editables for c in campos_anexos):
                         anexos = anexos_form.save(commit=False)
                         anexos.informacion_basica = informacion_basica
                         anexos.save()
@@ -527,22 +536,83 @@ def public_update_view(request, token):
                     form_fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
                     form_fields[field_name].widget.attrs['style'] = 'pointer-events: none; cursor: not-allowed;'
 
-            # 2. Procesar documentos_identidad
+            # 2. Procesar documentos_identidad (formset completo o campos individuales)
+            campos_documentos = ['fotocopia_cedula', 'hoja_de_vida', 'libreta_militar', 
+                               'numero_libreta_militar', 'distrito_militar', 'clase_libreta']
+            
+            # Verificar si algún campo específico de documentos está en campos_editables
+            campos_doc_editables = [c for c in campos_documentos if c in campos_editables]
+            
             if 'documentos_identidad' in campos_editables:
+                # Marcar TODO el formset
                 aplicar_estilo_editable(documentos_form.fields)
+            elif campos_doc_editables:
+                # Marcar solo campos específicos
+                for field_name in documentos_form.fields:
+                    if field_name in campos_doc_editables:
+                        current_class = documentos_form.fields[field_name].widget.attrs.get('class', '')
+                        documentos_form.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                        documentos_form.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5;'
+                    else:
+                        documentos_form.fields[field_name].widget.attrs['readonly'] = 'readonly'
+                        current_class = documentos_form.fields[field_name].widget.attrs.get('class', '')
+                        documentos_form.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
+                        documentos_form.fields[field_name].widget.attrs['style'] = 'pointer-events: none;'
             else:
+                # Bloquear todo
                 aplicar_estilo_bloqueado(documentos_form.fields)
 
-            # 3. Procesar antecedentes
+            # 3. Procesar antecedentes (formset completo o campos individuales)
+            campos_antecedentes = ['certificado_procuraduria', 'fecha_procuraduria', 
+                                 'certificado_contraloria', 'fecha_contraloria',
+                                 'certificado_policia', 'fecha_policia',
+                                 'certificado_medidas_correctivas', 'fecha_medidas_correctivas',
+                                 'certificado_delitos_sexuales', 'fecha_delitos_sexuales']
+            
+            campos_ant_editables = [c for c in campos_antecedentes if c in campos_editables]
+            
             if 'antecedentes' in campos_editables:
+                # Marcar TODO el formset
                 aplicar_estilo_editable(antecedentes_form.fields)
+            elif campos_ant_editables:
+                # Marcar solo campos específicos
+                for field_name in antecedentes_form.fields:
+                    if field_name in campos_ant_editables:
+                        current_class = antecedentes_form.fields[field_name].widget.attrs.get('class', '')
+                        antecedentes_form.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                        antecedentes_form.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5;'
+                    else:
+                        antecedentes_form.fields[field_name].widget.attrs['readonly'] = 'readonly'
+                        current_class = antecedentes_form.fields[field_name].widget.attrs.get('class', '')
+                        antecedentes_form.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
+                        antecedentes_form.fields[field_name].widget.attrs['style'] = 'pointer-events: none;'
             else:
+                # Bloquear todo
                 aplicar_estilo_bloqueado(antecedentes_form.fields)
 
-            # 4. Procesar anexos_adicionales
+            # 4. Procesar anexos_adicionales (formset completo o campos individuales)
+            campos_anexos = ['anexo_03_datos_personales', 'carta_intencion', 
+                           'otros_documentos', 'descripcion_otros']
+            
+            campos_anx_editables = [c for c in campos_anexos if c in campos_editables]
+            
             if 'anexos_adicionales' in campos_editables:
+                # Marcar TODO el formset
                 aplicar_estilo_editable(anexos_form.fields)
+            elif campos_anx_editables:
+                # Marcar solo campos específicos
+                for field_name in anexos_form.fields:
+                    if field_name in campos_anx_editables:
+                        current_class = anexos_form.fields[field_name].widget.attrs.get('class', '')
+                        anexos_form.fields[field_name].widget.attrs['class'] = current_class + ' border border-danger border-3 campo-editable'
+                        anexos_form.fields[field_name].widget.attrs['style'] = 'background-color: #fff5f5;'
+                    else:
+                        anexos_form.fields[field_name].widget.attrs['readonly'] = 'readonly'
+                        current_class = anexos_form.fields[field_name].widget.attrs.get('class', '')
+                        anexos_form.fields[field_name].widget.attrs['class'] = current_class + ' bg-light campo-bloqueado'
+                        anexos_form.fields[field_name].widget.attrs['style'] = 'pointer-events: none;'
             else:
+                # Bloquear todo
                 aplicar_estilo_bloqueado(anexos_form.fields)
 
             # 5. Procesar formsets - CRÍTICO: Iterar sobre TODAS las formas del formset
