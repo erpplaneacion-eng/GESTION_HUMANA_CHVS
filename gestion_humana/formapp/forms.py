@@ -13,7 +13,7 @@ class InformacionBasicaPublicForm(forms.ModelForm):
             'primer_apellido', 'segundo_apellido', 'primer_nombre', 'segundo_nombre',
             'cedula', 'genero',
             'tipo_via', 'numero_via', 'numero_casa', 'complemento_direccion', 'barrio',
-            'telefono', 'correo'
+            'telefono', 'correo', 'acepta_politica'
         ]
         widgets = {
             'primer_apellido': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Primer Apellido'}),

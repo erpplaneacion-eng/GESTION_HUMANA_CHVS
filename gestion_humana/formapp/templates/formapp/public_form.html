@@ -998,7 +998,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-                            <button type="button" class="btn btn-primary" id="btnAceptarPolitica">
+                            <button type="button" class="btn btn-primary" id="btnAceptarPolitica" data-bs-dismiss="modal">
                                 <i class="fas fa-check"></i> Aceptar
                             </button>
                         </div>
@@ -1732,9 +1732,8 @@
             $('#id_acepta_politica').prop('checked', true);
             // Remover el borde de error si existía
             $('#id_acepta_politica').removeClass('is-invalid');
-            // Cerrar el modal
-            var modal = bootstrap.Modal.getInstance(document.getElementById('politicaModal'));
-            modal.hide();
+            // El modal se cierra automáticamente con data-bs-dismiss="modal"
+            console.log('Checkbox marcado: ', $('#id_acepta_politica').is(':checked'));
         });
     });
 </script>
