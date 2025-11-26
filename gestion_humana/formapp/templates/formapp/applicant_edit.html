@@ -204,6 +204,18 @@
                         <i class="fas fa-exclamation-triangle"></i>
                         <strong>Nota:</strong> Los campos resaltados en amarillo son exclusivos para ser completados por el personal administrativo.
                     </div>
+                    
+                    <!-- Campo Estado (Requerido) -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">{{ form.estado.label }}</label>
+                            {{ form.estado }}
+                            {% if form.estado.errors %}
+                                <div class="text-danger">{{ form.estado.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">{{ form.perfil.label }}</label>
