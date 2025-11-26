@@ -199,8 +199,9 @@ def applicant_edit_view(request, pk):
                             ['meses_experiencia', 'dias_experiencia']
                         )
                     
-                    # Calcular experiencia total automáticamente
-                    calcular_experiencia_total(informacion_basica)
+                    # Calcular experiencia total automáticamente SOLO si hubo cambios en el formset
+                    if experiencia_formset.has_changed():
+                        calcular_experiencia_total(informacion_basica)
 
                     # Guardar los demás formsets
                     basica_formset.save()
