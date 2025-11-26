@@ -307,3 +307,5 @@ El **envío de email** (~1.2s) es actualmente el cuello de botella principal. Si
 
 Por ahora, estas optimizaciones deberían mejorar significativamente la experiencia, especialmente con el modal de espera que da feedback visual al usuario.
 
+
+

@@ -225,3 +225,5 @@ if 'documentos_identidad' in campos_editables or any(c in campos_editables for c
 Los cambios están listos para usar inmediatamente. El sistema ahora es **mucho más preciso y fácil de usar** tanto para administradores como para candidatos.
 
 
+
+
