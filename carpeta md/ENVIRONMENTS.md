@@ -35,11 +35,9 @@ Este documento describe las diferencias entre los ambientes de desarrollo local 
 
 ```env
 # .env (local)
-DEBUG=True
-DATABASE_URL=sqlite:///db.sqlite3  # Por defecto
-CLOUDINARY_CLOUD_NAME=dk7nufqc4
-CLOUDINARY_API_KEY=469542484755534
-CLOUDINARY_API_SECRET=mq5qysxpTVs9ArnjnR7o-FH4L2M
+CLOUDINARY_CLOUD_NAME=tu-cloud-name
+CLOUDINARY_API_KEY=tu-api-key
+CLOUDINARY_API_SECRET=tu-api-secret
 ```
 
 ### Ventajas
