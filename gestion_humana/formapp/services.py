@@ -91,16 +91,24 @@ def calcular_experiencia_total(informacion_basica):
                 # Si fecha_terminacion es el último día trabajado:
                 total_dias += dias_intervalo + 1
 
-        # Aproximación de meses (30 días) para consistencia general
-        total_meses = int(total_dias / 30)
+        # CÁLCULO REAL (BASE CALENDARIO 365 DÍAS)
+        # Se usa 365 para evitar el desfase de 5 días por año que genera la base 360
+        anos = total_dias // 365
+        dias_sobrantes_ano = total_dias % 365
+        
+        # El remanente se aproxima a meses de 30 días
+        meses_restantes = dias_sobrantes_ano // 30
+        dias_restantes = dias_sobrantes_ano % 30
+        
+        # Totales para la base de datos
+        total_meses = (anos * 12) + meses_restantes
+        total_anos = round(total_dias / 365, 2)
 
     # Convertir a años (considerando 360 días por año laboral estándar o 12 meses)
-    total_anos = round(total_meses / 12, 2)
+    # total_anos variable updated above
 
     # Calcular años y meses para formato legible
-    anos = total_meses // 12
-    meses_restantes = total_meses % 12
-    dias_restantes = total_dias % 30 # Aproximado
+    # variables anos, meses_restantes, dias_restantes updated above
     
     if dias_restantes > 0:
         # Si sobran días que no completan un mes
