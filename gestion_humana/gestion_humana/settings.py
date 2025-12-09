@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'formapp',
+    'basedatosaquicali',
 ]
 
 MIDDLEWARE = [

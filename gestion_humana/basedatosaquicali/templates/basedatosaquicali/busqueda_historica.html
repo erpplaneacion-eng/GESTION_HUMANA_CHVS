@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Consulta Histórica de Contratistas{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <h1 class="display-5 text-primary">
+                <i class="fas fa-history"></i> Archivo Histórico (2017-2025)
+            </h1>
+            <p class="text-muted lead">Consulta de contratos anteriores y carpetas digitales</p>
+        </div>
+    </div>
+
+    <!-- Buscador -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body p-4">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-9">
+                            <label for="search-input" class="visually-hidden">Cédula</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-white text-primary border-end-0">
+                                    <i class="fas fa-id-card"></i>
+                                </span>
+                                <input type="number" name="q" id="search-input" class="form-control border-start-0 ps-0" 
+                                       placeholder="Ingrese el número de cédula..." value="{{ query|default:'' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </form>
+                    {% if error %}
+                        <div class="alert alert-warning mt-3 mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if mostrar_resultados %}
+        {% if experiencia_total or personal_url or contratos or consolidado %}
+            
+            <!-- Encabezado del Contratista -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center justify-content-between shadow-sm">
+                        <div>
+                            <h4 class="alert-heading mb-0">
+                                <i class="fas fa-user-check"></i> 
+                                {{ experiencia_total.nombre_contratista|default:personal_url.contratista|default:"Contratista Encontrado" }}
+                            </h4>
+                            <p class="mb-0">C.C. {{ query }}</p>
+                        </div>
+                        {% if personal_url %}
+                            <a href="{{ personal_url.enlace_carpeta }}" target="_blank" class="btn btn-light fw-bold text-primary">
+                                <i class="fab fa-google-drive"></i> Ver Carpeta Digital
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Experiencia -->
+            {% if experiencia_total %}
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-success h-100 shadow-sm">
+                        <div class="card-header fw-bold">Experiencia Neta Total</div>
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h2 class="card-title display-6">{{ experiencia_total.experiencia_neta_texto }}</h2>
+                            <p class="card-text opacity-75">Sin superposición de contratos</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-dark bg-light h-100 shadow-sm border-info">
+                        <div class="card-header fw-bold text-info">Días Netos</div>
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h3 class="card-title text-info">{{ experiencia_total.experiencia_neta_dias }}</h3>
+                            <p class="card-text text-muted">Días totales acumulados</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-dark bg-light h-100 shadow-sm">
+                        <div class="card-header fw-bold">Días Brutos</div>
+                        <div class="card-body text-center d-flex flex-column justify-content-center">
+                            <h3 class="card-title">{{ experiencia_total.experiencia_bruta_dias }}</h3>
+                            <p class="card-text text-muted">Suma total sin descontar traslapes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Detalle de Contratos (eXperiencia) -->
+            {% if contratos %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-file-contract"></i> Historial Detallado de Contratos</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>N°</th>
+                                <th>Contrato</th>
+                                <th>Periodo</th>
+                                <th class="text-center">Días</th>
+                                <th class="text-center">Traslape</th>
+                                <th class="text-center">Aporte Neto</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contrato in contratos %}
+                            <tr>
+                                <td>{{ contrato.numero_registro }}</td>
+                                <td class="fw-bold">{{ contrato.contrato }}</td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        {{ contrato.fecha_inicio|date:"d/m/Y" }} - {{ contrato.fecha_fin|date:"d/m/Y" }}
+                                    </span>
+                                </td>
+                                <td class="text-center">{{ contrato.dias_brutos }}</td>
+                                <td class="text-center">
+                                    {% if contrato.traslape|lower == 'sí' or contrato.traslape|lower == 'si' %}
+                                        <span class="badge bg-warning text-dark">SÍ</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">NO</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center fw-bold text-success">{{ contrato.dias_reales_contribuidos }}</td>
+                                <td>
+                                    {% if contrato.explicacion_detallada %}
+                                        <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="popover" title="Explicación" data-bs-content="{{ contrato.explicacion_detallada }}">
+                                            <i class="fas fa-info-circle"></i> Info
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Consolidado Base de Datos -->
+            {% if consolidado %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-secondary"><i class="fas fa-tasks"></i> Objetos Contractuales y Actividades</h5>
+                </div>
+                <div class="accordion accordion-flush" id="accordionConsolidado">
+                    {% for item in consolidado %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}">
+                                <span class="badge bg-primary me-2">{{ item.fecha_firma|date:"Y" }}</span>
+                                {{ item.numero_contrato_otrosi }} - {{ item.tipo_documento }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse" data-bs-parent="#accordionConsolidado">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-12 mb-2">
+                                        <strong>Objeto:</strong> 
+                                        <p class="text-muted small">{{ item.objeto_contrato }}</p>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <strong>Actividades/Modificación:</strong>
+                                        <p class="text-muted small">{{ item.actividades_especificas|default:"N/A" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        {% else %}
+            <!-- No se encontraron resultados -->
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-search fa-3x text-muted opacity-25"></i>
+                </div>
+                <h4 class="text-muted">No se encontró información histórica para la cédula {{ query }}</h4>
+                <p class="text-muted small">Verifique el número o consulte en el archivo físico si el contrato es anterior a 2017.</p>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Inicializar Popovers de Bootstrap para la info de traslapes
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+      return new bootstrap.Popover(popoverTriggerEl)
+    })
+</script>
+{% endblock %}
