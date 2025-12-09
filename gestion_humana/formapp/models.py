@@ -527,6 +527,22 @@ class Antecedentes(models.Model):
         verbose_name='Fecha de Consulta'
     )
 
+    # Registro de Deudores Alimentarios Morosos (REDAM)
+    certificado_redam = models.FileField(
+        upload_to='antecedentes/redam/',
+        verbose_name='Consulta Registro de Deudores Alimentarios Morosos (REDAM)',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Certificado REDAM. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,  # Opcional inicialmente para compatibilidad con registros viejos
+        null=True
+    )
+    fecha_redam = models.DateField(
+        verbose_name='Fecha de Consulta REDAM',
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Última Actualización')
 

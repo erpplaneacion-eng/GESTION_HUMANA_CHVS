@@ -428,6 +428,21 @@
                                 {{ antecedentes_form.fecha_delitos_sexuales }}
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Certificado REDAM</label>
+                                {{ antecedentes_form.certificado_redam }}
+                                {% if antecedentes_form.instance.certificado_redam %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ antecedentes_form.instance.certificado_redam.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Fecha REDAM</label>
+                                {{ antecedentes_form.fecha_redam }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 

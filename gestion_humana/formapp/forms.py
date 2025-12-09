@@ -597,6 +597,14 @@ class AntecedentesForm(forms.ModelForm):
                 'class': 'form-control',
                 'type': 'date'
             }),
+            'certificado_redam': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png',
+            }),
+            'fecha_redam': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
         }
         error_messages = {
             'certificado_procuraduria': {
@@ -629,6 +637,12 @@ class AntecedentesForm(forms.ModelForm):
             'fecha_delitos_sexuales': {
                 'required': 'La fecha de consulta de Delitos Sexuales es obligatoria.',
             },
+            'certificado_redam': {
+                'required': 'El certificado REDAM es obligatorio.',
+            },
+            'fecha_redam': {
+                'required': 'La fecha de consulta REDAM es obligatoria.',
+            },
         }
 
     def __init__(self, *args, **kwargs):
@@ -637,7 +651,7 @@ class AntecedentesForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             for field_name in ['certificado_procuraduria', 'certificado_contraloria',
                               'certificado_policia', 'certificado_medidas_correctivas',
-                              'certificado_delitos_sexuales']:
+                              'certificado_delitos_sexuales', 'certificado_redam']:
                 self.fields[field_name].required = False
 
     def clean(self):
@@ -646,7 +660,7 @@ class AntecedentesForm(forms.ModelForm):
         today = date.today()
         campos_fecha = [
             'fecha_procuraduria', 'fecha_contraloria', 'fecha_policia', 
-            'fecha_medidas_correctivas', 'fecha_delitos_sexuales'
+            'fecha_medidas_correctivas', 'fecha_delitos_sexuales', 'fecha_redam'
         ]
         
         for campo in campos_fecha:

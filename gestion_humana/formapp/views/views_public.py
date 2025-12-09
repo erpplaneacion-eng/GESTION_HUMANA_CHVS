@@ -350,7 +350,8 @@ def public_update_view(request, token):
                              'certificado_contraloria', 'fecha_contraloria',
                              'certificado_policia', 'fecha_policia',
                              'certificado_medidas_correctivas', 'fecha_medidas_correctivas',
-                             'certificado_delitos_sexuales', 'fecha_delitos_sexuales']
+                             'certificado_delitos_sexuales', 'fecha_delitos_sexuales',
+                             'certificado_redam', 'fecha_redam']
         campos_anexos = ['anexo_03_datos_personales', 'carta_intencion', 
                        'otros_documentos', 'descripcion_otros']
         
@@ -435,7 +436,8 @@ def public_update_view(request, token):
                                          'certificado_contraloria', 'fecha_contraloria',
                                          'certificado_policia', 'fecha_policia',
                                          'certificado_medidas_correctivas', 'fecha_medidas_correctivas',
-                                         'certificado_delitos_sexuales', 'fecha_delitos_sexuales']
+                                         'certificado_delitos_sexuales', 'fecha_delitos_sexuales',
+                                         'certificado_redam', 'fecha_redam']
                     if 'antecedentes' in campos_editables or any(c in campos_editables for c in campos_antecedentes):
                         antecedentes_obj = antecedentes_form.save(commit=False)
                         antecedentes_obj.informacion_basica = informacion_basica
@@ -630,7 +632,8 @@ def public_update_view(request, token):
                                  'certificado_contraloria', 'fecha_contraloria',
                                  'certificado_policia', 'fecha_policia',
                                  'certificado_medidas_correctivas', 'fecha_medidas_correctivas',
-                                 'certificado_delitos_sexuales', 'fecha_delitos_sexuales']
+                                 'certificado_delitos_sexuales', 'fecha_delitos_sexuales',
+                                 'certificado_redam', 'fecha_redam']
             
             campos_ant_editables = [c for c in campos_antecedentes if c in campos_editables]
             

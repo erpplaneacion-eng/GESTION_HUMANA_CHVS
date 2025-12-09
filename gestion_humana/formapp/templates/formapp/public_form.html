@@ -897,6 +897,30 @@
                         {% endif %}
                     </div>
                 </div>
+
+                <!-- Registro de Deudores Alimentarios Morosos (REDAM) -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ antecedentes_form.certificado_redam.id_for_label }}" class="form-label required-field">
+                            {{ antecedentes_form.certificado_redam.label }} *
+                        </label>
+                        {{ antecedentes_form.certificado_redam }}
+                        <small class="form-text text-muted">{{ antecedentes_form.certificado_redam.help_text }}</small>
+                        {% if antecedentes_form.certificado_redam.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ antecedentes_form.certificado_redam.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ antecedentes_form.fecha_redam.id_for_label }}" class="form-label required-field">
+                            {{ antecedentes_form.fecha_redam.label }} *
+                        </label>
+                        {{ antecedentes_form.fecha_redam }}
+                        {% if antecedentes_form.fecha_redam.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ antecedentes_form.fecha_redam.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
             <!-- SECCIÓN 8: ANEXOS ADICIONALES -->
@@ -1285,7 +1309,8 @@
                 { id: 'id_fecha_contraloria', nombre: 'Fecha de Contraloría' },
                 { id: 'id_fecha_policia', nombre: 'Fecha de Policía' },
                 { id: 'id_fecha_medidas_correctivas', nombre: 'Fecha de Medidas Correctivas' },
-                { id: 'id_fecha_delitos_sexuales', nombre: 'Fecha de Delitos Sexuales' }
+                { id: 'id_fecha_delitos_sexuales', nombre: 'Fecha de Delitos Sexuales' },
+                { id: 'id_fecha_redam', nombre: 'Fecha de REDAM' }
             ];
 
             var hoy = new Date();
@@ -1650,7 +1675,8 @@
                 { campo: 'certificado_contraloria', nombre: 'Certificado de Contraloría' },
                 { campo: 'certificado_policia', nombre: 'Certificado de Policía' },
                 { campo: 'certificado_medidas_correctivas', nombre: 'Certificado de Medidas Correctivas' },
-                { campo: 'certificado_delitos_sexuales', nombre: 'Certificado de Delitos Sexuales' }
+                { campo: 'certificado_delitos_sexuales', nombre: 'Certificado de Delitos Sexuales' },
+                { campo: 'certificado_redam', nombre: 'Certificado REDAM' }
             ];
 
             antecedentes.forEach(function(antecedente) {

@@ -211,6 +211,10 @@
                                         <input type="checkbox" name="campos" value="certificado_delitos_sexuales" class="form-check-input" id="campo_delitos">
                                         <label class="form-check-label" for="campo_delitos">Delitos Sexuales</label>
                                     </div>
+                                    <div class="form-check ms-3">
+                                        <input type="checkbox" name="campos" value="certificado_redam" class="form-check-input" id="campo_redam">
+                                        <label class="form-check-label" for="campo_redam">REDAM</label>
+                                    </div>
                                 </div>
 
                                 <!-- Columna 3: Anexos Adicionales -->
@@ -468,6 +472,21 @@
                             <span class="text-muted">No cargado</span>
                         {% endif %}
                         <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_delitos_sexuales|date:"d/m/Y"|default:"N/A" }}</small></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #e74c3c;">
+                    <div class="card-body">
+                        <h6 class="text-danger"><i class="fas fa-file-invoice-dollar"></i> REDAM</h6>
+                        {% if applicant.antecedentes.certificado_redam %}
+                            <a href="{{ applicant.antecedentes.certificado_redam.url }}" target="_blank" class="btn btn-sm btn-success">
+                                <i class="fas fa-eye"></i> Ver Certificado
+                            </a>
+                        {% else %}
+                            <span class="text-muted">No cargado</span>
+                        {% endif %}
+                        <p class="mb-0 mt-2"><small>Fecha: {{ applicant.antecedentes.fecha_redam|date:"d/m/Y"|default:"N/A" }}</small></p>
                     </div>
                 </div>
             </div>
