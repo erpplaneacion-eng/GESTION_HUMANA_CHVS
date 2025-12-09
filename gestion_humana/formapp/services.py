@@ -21,6 +21,14 @@ import pytz
 
 from .models import CalculoExperiencia
 
+# Importar modelos de experiencia histórica
+try:
+    from basedatosaquicali.models import ContratoHistorico
+    TIENE_HISTORICO = True
+except ImportError:
+    TIENE_HISTORICO = False
+    ContratoHistorico = None
+
 logger = logging.getLogger(__name__)
 
 # Zona horaria de Colombia
@@ -33,6 +41,7 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 def calcular_experiencia_total(informacion_basica):
     """
     Calcula automáticamente la experiencia total de una persona.
+    Combina experiencias del formulario + experiencias históricas de basedatosaquicali.
     Implementa algoritmo de fusión de intervalos para descontar traslapes de fechas.
 
     Args:
@@ -41,55 +50,63 @@ def calcular_experiencia_total(informacion_basica):
     Returns:
         CalculoExperiencia: Registro con el cálculo consolidado
     """
-    experiencias = informacion_basica.experiencias_laborales.all().order_by('fecha_inicial')
+    # 1. Obtener experiencias del formulario
+    experiencias_formulario = informacion_basica.experiencias_laborales.all().order_by('fecha_inicial')
 
-    if not experiencias:
+    # 2. Obtener experiencias históricas por cédula (si existe la app)
+    experiencias_historicas = []
+    if TIENE_HISTORICO and ContratoHistorico:
+        try:
+            cedula_numero = int(informacion_basica.cedula)
+            experiencias_historicas = ContratoHistorico.objects.filter(cedula=cedula_numero).order_by('fecha_inicio')
+            logger.info(f'Se encontraron {experiencias_historicas.count()} experiencias históricas para cédula {cedula_numero}')
+        except (ValueError, Exception) as e:
+            logger.warning(f'No se pudieron consultar experiencias históricas: {str(e)}')
+            experiencias_historicas = []
+
+    # 3. Construir lista de intervalos combinada
+    intervalos = []
+
+    # Agregar experiencias del formulario
+    for exp in experiencias_formulario:
+        if exp.fecha_inicial and exp.fecha_terminacion:
+            intervalos.append((exp.fecha_inicial, exp.fecha_terminacion))
+
+    # Agregar experiencias históricas
+    for exp_hist in experiencias_historicas:
+        if exp_hist.fecha_inicio and exp_hist.fecha_fin:
+            intervalos.append((exp_hist.fecha_inicio, exp_hist.fecha_fin))
+
+    # 4. Calcular total de días con fusión de intervalos
+    if not intervalos:
         total_dias = 0
         total_meses = 0
     else:
-        # Algoritmo de fusión de intervalos para eliminar traslapes
-        intervalos = []
-        for exp in experiencias:
-            if exp.fecha_inicial and exp.fecha_terminacion:
-                intervalos.append((exp.fecha_inicial, exp.fecha_terminacion))
-        
-        if not intervalos:
-            total_dias = 0
-        else:
-            # Ordenar por fecha de inicio (ya ordenado por query, pero aseguramos)
-            intervalos.sort(key=lambda x: x[0])
-            
-            merged = []
-            if intervalos:
-                curr_start, curr_end = intervalos[0]
-                
-                for i in range(1, len(intervalos)):
-                    next_start, next_end = intervalos[i]
-                    
-                    if next_start <= curr_end:  # Hay traslape
-                        # Extender el final del intervalo actual si el siguiente termina después
-                        curr_end = max(curr_end, next_end)
-                    else:
-                        # No hay traslape, guardar intervalo actual e iniciar uno nuevo
-                        merged.append((curr_start, curr_end))
-                        curr_start, curr_end = next_start, next_end
-                
+        # Ordenar por fecha de inicio
+        intervalos.sort(key=lambda x: x[0])
+
+        # Algoritmo de fusión de intervalos
+        merged = []
+        curr_start, curr_end = intervalos[0]
+
+        for i in range(1, len(intervalos)):
+            next_start, next_end = intervalos[i]
+
+            if next_start <= curr_end:  # Hay traslape
+                # Extender el final del intervalo actual si el siguiente termina después
+                curr_end = max(curr_end, next_end)
+            else:
+                # No hay traslape, guardar intervalo actual e iniciar uno nuevo
                 merged.append((curr_start, curr_end))
-            
-            # Calcular días totales sumando los intervalos fusionados
-            total_dias = 0
-            for start, end in merged:
-                # Sumar 1 porque la resta de fechas da la diferencia, pero ambos días cuentan (inclusivo)
-                # Ejemplo: 1 al 2 de enero = 2 días, pero 2-1 = 1.
-                dias_intervalo = (end - start).days
-                # Ajuste lógico para cálculos laborales: aproximación de 30 días por mes
-                # Sin embargo, para precisión usamos días calendario.
-                # Si queremos ser consistentes con el cálculo individual anterior (dias_experiencia)
-                # debemos usar la misma lógica. El modelo usa (fin-inicio).days en views o donde se guarde.
-                # Aquí usaremos days + 1 si queremos inclusivo, o days si queremos diferencia exacta.
-                # La lógica estándar laboral suele ser días calendario.
-                # Si fecha_terminacion es el último día trabajado:
-                total_dias += dias_intervalo + 1
+                curr_start, curr_end = next_start, next_end
+
+        merged.append((curr_start, curr_end))
+
+        # Calcular días totales sumando los intervalos fusionados
+        total_dias = 0
+        for start, end in merged:
+            dias_intervalo = (end - start).days
+            total_dias += dias_intervalo + 1
 
         # CÁLCULO REAL (BASE CALENDARIO 365 DÍAS)
         # Se usa 365 para evitar el desfase de 5 días por año que genera la base 360
@@ -313,6 +330,96 @@ def enviar_correo_notificacion_admin(informacion_basica, comentarios_candidato='
     except Exception as e:
         logger.error(f'Error enviando notificación al admin: {str(e)}')
         return False
+
+
+def obtener_experiencias_historicas(cedula):
+    """
+    Obtiene las experiencias históricas de un candidato por su cédula.
+
+    Args:
+        cedula: Número de cédula (str o int)
+
+    Returns:
+        QuerySet de ContratoHistorico o lista vacía si no hay datos históricos
+    """
+    if not TIENE_HISTORICO or not ContratoHistorico:
+        return []
+
+    try:
+        cedula_numero = int(cedula) if isinstance(cedula, str) else cedula
+        return ContratoHistorico.objects.filter(cedula=cedula_numero).order_by('fecha_inicio')
+    except (ValueError, Exception) as e:
+        logger.warning(f'Error consultando experiencias históricas: {str(e)}')
+        return []
+
+
+def obtener_resumen_experiencia_historica(cedula):
+    """
+    Obtiene un resumen de la experiencia histórica total de un candidato.
+
+    Args:
+        cedula: Número de cédula (str o int)
+
+    Returns:
+        dict con: {
+            'total_contratos': int,
+            'total_dias': int,
+            'experiencia_texto': str,
+            'tiene_experiencia': bool
+        }
+    """
+    experiencias = obtener_experiencias_historicas(cedula)
+
+    if not experiencias:
+        return {
+            'total_contratos': 0,
+            'total_dias': 0,
+            'experiencia_texto': 'Sin experiencia histórica',
+            'tiene_experiencia': False
+        }
+
+    # Calcular total de días con fusión de intervalos
+    intervalos = []
+    for exp in experiencias:
+        if exp.fecha_inicio and exp.fecha_fin:
+            intervalos.append((exp.fecha_inicio, exp.fecha_fin))
+
+    if not intervalos:
+        total_dias = 0
+    else:
+        intervalos.sort(key=lambda x: x[0])
+        merged = []
+        curr_start, curr_end = intervalos[0]
+
+        for i in range(1, len(intervalos)):
+            next_start, next_end = intervalos[i]
+            if next_start <= curr_end:
+                curr_end = max(curr_end, next_end)
+            else:
+                merged.append((curr_start, curr_end))
+                curr_start, curr_end = next_start, next_end
+
+        merged.append((curr_start, curr_end))
+
+        total_dias = sum((end - start).days + 1 for start, end in merged)
+
+    # Calcular años, meses y días
+    anos = total_dias // 365
+    dias_sobrantes = total_dias % 365
+    meses = dias_sobrantes // 30
+    dias = dias_sobrantes % 30
+
+    if dias > 0:
+        experiencia_texto = f"{anos} años, {meses} meses y {dias} días"
+    else:
+        experiencia_texto = f"{anos} años y {meses} meses"
+
+    return {
+        'total_contratos': len(experiencias),
+        'total_dias': total_dias,
+        'experiencia_texto': experiencia_texto,
+        'tiene_experiencia': True
+    }
 
 
 def enviar_correo_async(informacion_basica):

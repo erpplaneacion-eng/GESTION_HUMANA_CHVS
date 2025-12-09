@@ -600,6 +600,54 @@
         {% endif %}
     </div>
 
+    <!-- Experiencia Histórica (Base de Datos Caquetá) -->
+    {% if experiencias_historicas %}
+    <div class="detail-section">
+        <h3>
+            <i class="fas fa-database"></i> Experiencia Histórica (Contratos 2017-2025)
+        </h3>
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> <strong>Resumen:</strong> {{ resumen_historico.total_contratos }} contrato(s) histórico(s) |
+            <strong>Experiencia total:</strong> {{ resumen_historico.experiencia_texto }}
+        </div>
+        <div class="row">
+            {% for experiencia_hist in experiencias_historicas %}
+            <div class="col-md-6 mb-3">
+                <div class="card h-100" style="border-left: 4px solid #f39c12; background-color: #fffaf0;">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #f39c12;">
+                            <i class="fas fa-file-contract"></i> {{ experiencia_hist.contrato }}
+                        </h5>
+                        <p class="mb-2">
+                            <span class="badge bg-warning text-dark">Histórico</span>
+                            {% if experiencia_hist.traslape == 'SÍ' %}
+                                <span class="badge bg-secondary">Con Traslape</span>
+                            {% endif %}
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-calendar-alt"></i>
+                            <strong>Período:</strong> {{ experiencia_hist.fecha_inicio|date:"d/m/Y" }} - {{ experiencia_hist.fecha_fin|date:"d/m/Y" }}
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-clock"></i>
+                            <strong>Días brutos:</strong> {{ experiencia_hist.dias_brutos }} días
+                            <br>
+                            <strong>Días reales:</strong> {{ experiencia_hist.dias_reales_contribuidos }} días
+                        </p>
+                        {% if experiencia_hist.explicacion_detallada %}
+                        <p class="mb-2">
+                            <strong>Observación:</strong><br>
+                            <small>{{ experiencia_hist.explicacion_detallada }}</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Educación Básica (Bachiller) -->
     <div class="detail-section">
         <h3>
@@ -851,8 +899,60 @@
     {% if applicant.calculo_experiencia %}
     <div class="detail-section">
         <h3>
-            <i class="fas fa-calculator"></i> Cálculo de Experiencia Total
+            <i class="fas fa-calculator"></i> Cálculo de Experiencia Total Combinada
         </h3>
+
+        <!-- Desglose de Fuentes -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card" style="border-left: 4px solid #3498db;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-file-alt"></i> Experiencias del Formulario
+                        </h6>
+                        <h4 class="mb-0" style="color: #3498db;">
+                            {{ applicant.experiencias_laborales.count }} contrato(s)
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="border-left: 4px solid #f39c12;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-database"></i> Experiencias Históricas
+                        </h6>
+                        <h4 class="mb-0" style="color: #f39c12;">
+                            {% if resumen_historico.tiene_experiencia %}
+                                {{ resumen_historico.total_contratos }} contrato(s)
+                            {% else %}
+                                0 contratos
+                            {% endif %}
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="border-left: 4px solid #27ae60; background-color: #f0fff4;">
+                    <div class="card-body">
+                        <h6 class="text-muted mb-2">
+                            <i class="fas fa-plus-circle"></i> Total Combinado (sin traslapes)
+                        </h6>
+                        <h4 class="mb-0" style="color: #27ae60;">
+                            <strong>{{ applicant.calculo_experiencia.anos_y_meses_experiencia }}</strong>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>Nota:</strong> El total combinado elimina automáticamente los traslapes de fechas entre ambas fuentes para calcular la experiencia neta real.
+        </div>
+
+        <!-- Métricas Detalladas -->
+        <h5 class="mt-4 mb-3"><i class="fas fa-chart-bar"></i> Métricas Detalladas</h5>
         <div class="row">
             <div class="col-md-3">
                 <div class="card text-center" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">

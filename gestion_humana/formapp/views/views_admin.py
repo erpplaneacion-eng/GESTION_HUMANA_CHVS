@@ -31,7 +31,12 @@ from ..forms import (
     AntecedentesForm,
     AnexosAdicionalesForm,
 )
-from ..services import calcular_experiencia_total, enviar_correo_solicitud_correccion
+from ..services import (
+    calcular_experiencia_total,
+    enviar_correo_solicitud_correccion,
+    obtener_experiencias_historicas,
+    obtener_resumen_experiencia_historica
+)
 
 import logging
 import traceback
@@ -78,6 +83,18 @@ class ApplicantDetailView(LoginRequiredMixin, DetailView):
     model = InformacionBasica
     template_name = 'formapp/applicant_detail.html'
     context_object_name = 'applicant'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Obtener experiencias históricas del candidato
+        experiencias_historicas = obtener_experiencias_historicas(self.object.cedula)
+        resumen_historico = obtener_resumen_experiencia_historica(self.object.cedula)
+
+        context['experiencias_historicas'] = experiencias_historicas
+        context['resumen_historico'] = resumen_historico
+
+        return context
 
 @login_required
 def applicant_edit_view(request, pk):

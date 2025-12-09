@@ -1,5 +1,6 @@
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from .services import obtener_experiencias_historicas, obtener_resumen_experiencia_historica
 
 def create_excel_for_person(applicant):
     """Crea un archivo Excel con toda la información de una persona"""
@@ -106,6 +107,59 @@ def create_excel_for_person(applicant):
 
     for col in range(1, 9):
         ws2.column_dimensions[chr(64 + col)].width = 20
+
+    # Hoja 2.5: Experiencia Histórica (Base de Datos Caquetá)
+    experiencias_historicas = obtener_experiencias_historicas(applicant.cedula)
+    if experiencias_historicas:
+        resumen_historico = obtener_resumen_experiencia_historica(applicant.cedula)
+
+        ws_hist = wb.create_sheet("Experiencia Histórica")
+        ws_hist['A1'] = f"EXPERIENCIA HISTÓRICA (CONTRATOS 2017-2025) - {applicant.nombre_completo}"
+        ws_hist['A1'].font = title_font
+        ws_hist.merge_cells('A1:H1')
+
+        # Resumen
+        ws_hist['A3'] = "Resumen de Experiencia Histórica"
+        ws_hist['A3'].font = Font(bold=True, size=11)
+        ws_hist['A3'].fill = PatternFill(start_color="FFF4E6", end_color="FFF4E6", fill_type="solid")
+        ws_hist.merge_cells('A3:B3')
+
+        ws_hist['A4'] = "Total Contratos:"
+        ws_hist['B4'] = resumen_historico['total_contratos']
+        ws_hist['A5'] = "Experiencia Total:"
+        ws_hist['B5'] = resumen_historico['experiencia_texto']
+
+        for row_num in [4, 5]:
+            ws_hist[f'A{row_num}'].font = Font(bold=True)
+            ws_hist[f'A{row_num}'].border = border
+            ws_hist[f'B{row_num}'].border = border
+
+        # Encabezados
+        headers_hist = ["N°", "Contrato", "Fecha Inicio", "Fecha Fin",
+                       "Días Brutos", "Días Reales", "Traslape", "Observación"]
+        for col, header in enumerate(headers_hist, start=1):
+            cell = ws_hist.cell(row=7, column=col)
+            cell.value = header
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            cell.border = border
+
+        # Datos
+        row = 8
+        for idx, exp_hist in enumerate(experiencias_historicas, start=1):
+            ws_hist.cell(row=row, column=1, value=idx).border = border
+            ws_hist.cell(row=row, column=2, value=exp_hist.contrato).border = border
+            ws_hist.cell(row=row, column=3, value=exp_hist.fecha_inicio.strftime('%Y-%m-%d')).border = border
+            ws_hist.cell(row=row, column=4, value=exp_hist.fecha_fin.strftime('%Y-%m-%d')).border = border
+            ws_hist.cell(row=row, column=5, value=exp_hist.dias_brutos).border = border
+            ws_hist.cell(row=row, column=6, value=exp_hist.dias_reales_contribuidos).border = border
+            ws_hist.cell(row=row, column=7, value=exp_hist.traslape).border = border
+            ws_hist.cell(row=row, column=8, value=exp_hist.explicacion_detallada or "").border = border
+            row += 1
+
+        for col in range(1, 9):
+            ws_hist.column_dimensions[chr(64 + col)].width = 18
 
     # Hoja 2.1: Educación Básica (Bachiller)
     ws_basica = wb.create_sheet("Bachiller")
