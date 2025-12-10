@@ -1297,10 +1297,11 @@
 
             // Validar formato de correo
             var correo = $('#id_correo').val();
-            if (correo && correo.indexOf('@') === -1) {
+            var emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            if (correo && !emailRegex.test(correo)) {
                 isValid = false;
                 $('#id_correo').addClass('is-invalid');
-                errorMessages.push('El correo electrónico debe contener @.');
+                errorMessages.push('Por favor ingrese un correo electrónico válido (ej: usuario@dominio.com).');
             }
 
             // Validar fechas de antecedentes (obligatorias y vigencia 30 días)
