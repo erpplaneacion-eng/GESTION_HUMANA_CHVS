@@ -139,6 +139,7 @@ def download_individual_zip(request, pk):
                     (ant.certificado_policia, "Policia"),
                     (ant.certificado_medidas_correctivas, "Medidas_Correctivas"),
                     (ant.certificado_delitos_sexuales, "Delitos_Sexuales"),
+                    (ant.certificado_redam, "REDAM"),
                 ]
                 for archivo, nombre in antecedentes_files:
                     if archivo:
@@ -173,6 +174,53 @@ def download_individual_zip(request, pk):
                     zip_file.writestr(f"Documentos_Academicos/{idx}_{profesion_safe}_Certificado_Vigencia{ext}", file_content)
             except Exception as e:
                 logger.error(f"Error al agregar documentos académicos {idx} de {applicant.nombre_completo}: {e}")
+
+        # 6.1. Agregar Educación Básica
+        for idx, edu in enumerate(applicant.educacion_basica.all(), start=1):
+            if edu.acta_grado_diploma:
+                try:
+                    with edu.acta_grado_diploma.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(edu.acta_grado_diploma, file_content)
+                    zip_file.writestr(f"Educacion_Basica/{idx}_Diploma_Bachiller{ext}", file_content)
+                except Exception as e:
+                    logger.error(f"Error al agregar educación básica de {applicant.nombre_completo}: {e}")
+
+        # 6.2. Agregar Educación Superior
+        for idx, edu in enumerate(applicant.educacion_superior.all(), start=1):
+            if edu.documento_soporte:
+                try:
+                    with edu.documento_soporte.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(edu.documento_soporte, file_content)
+                    nivel_safe = edu.nivel.replace(' ', '_')
+                    zip_file.writestr(f"Educacion_Superior/{idx}_{nivel_safe}_Diploma{ext}", file_content)
+                except Exception as e:
+                    logger.error(f"Error al agregar educación superior de {applicant.nombre_completo}: {e}")
+
+        # 6.3. Agregar Posgrados
+        for idx, edu in enumerate(applicant.posgrados.all(), start=1):
+            if edu.acta_grado_diploma:
+                try:
+                    with edu.acta_grado_diploma.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(edu.acta_grado_diploma, file_content)
+                    nombre_safe = edu.nombre_posgrado.replace(' ', '_')[:30]
+                    zip_file.writestr(f"Posgrados/{idx}_{nombre_safe}_Diploma{ext}", file_content)
+                except Exception as e:
+                    logger.error(f"Error al agregar posgrado de {applicant.nombre_completo}: {e}")
+
+        # 6.4. Agregar Especializaciones
+        for idx, edu in enumerate(applicant.especializaciones.all(), start=1):
+            if edu.acta_grado_diploma:
+                try:
+                    with edu.acta_grado_diploma.open('rb') as f:
+                        file_content = f.read()
+                    ext = get_file_extension(edu.acta_grado_diploma, file_content)
+                    nombre_safe = edu.nombre_especializacion.replace(' ', '_')[:30]
+                    zip_file.writestr(f"Especializaciones/{idx}_{nombre_safe}_Diploma{ext}", file_content)
+                except Exception as e:
+                    logger.error(f"Error al agregar especialización de {applicant.nombre_completo}: {e}")
 
         # 7. Agregar anexos adicionales
         try:
@@ -320,6 +368,7 @@ def download_all_zip(request):
                 add_file_to_zip(antec.certificado_policia, f"Personal/{filename_safe}/Antecedentes/Policia")
                 add_file_to_zip(antec.certificado_medidas_correctivas, f"Personal/{filename_safe}/Antecedentes/Medidas_Correctivas")
                 add_file_to_zip(antec.certificado_delitos_sexuales, f"Personal/{filename_safe}/Antecedentes/Delitos_Sexuales")
+                add_file_to_zip(antec.certificado_redam, f"Personal/{filename_safe}/Antecedentes/REDAM")
 
             # 5. Agregar documentos académicos
             for idx, academica in enumerate(applicant.formacion_academica.all(), start=1):
@@ -327,6 +376,25 @@ def download_all_zip(request):
                 add_file_to_zip(academica.fotocopia_titulo, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Titulo")
                 add_file_to_zip(academica.fotocopia_tarjeta_profesional, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Tarjeta_Profesional")
                 add_file_to_zip(academica.certificado_vigencia_tarjeta, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Vigencia_Tarjeta")
+
+            # 5.1. Agregar Educación Básica
+            for idx, edu in enumerate(applicant.educacion_basica.all(), start=1):
+                add_file_to_zip(edu.acta_grado_diploma, f"Personal/{filename_safe}/Educacion_Basica/{idx}_Diploma_Bachiller")
+
+            # 5.2. Agregar Educación Superior
+            for idx, edu in enumerate(applicant.educacion_superior.all(), start=1):
+                nivel_safe = edu.nivel.replace(' ', '_')
+                add_file_to_zip(edu.documento_soporte, f"Personal/{filename_safe}/Educacion_Superior/{idx}_{nivel_safe}_Diploma")
+
+            # 5.3. Agregar Posgrados
+            for idx, edu in enumerate(applicant.posgrados.all(), start=1):
+                nombre_safe = edu.nombre_posgrado.replace(' ', '_')[:30]
+                add_file_to_zip(edu.acta_grado_diploma, f"Personal/{filename_safe}/Posgrados/{idx}_{nombre_safe}_Diploma")
+
+            # 5.4. Agregar Especializaciones
+            for idx, edu in enumerate(applicant.especializaciones.all(), start=1):
+                nombre_safe = edu.nombre_especializacion.replace(' ', '_')[:30]
+                add_file_to_zip(edu.acta_grado_diploma, f"Personal/{filename_safe}/Especializaciones/{idx}_{nombre_safe}_Diploma")
 
             # 6. Agregar anexos adicionales
             if hasattr(applicant, 'anexos_adicionales') and applicant.anexos_adicionales:
