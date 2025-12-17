@@ -1,6 +1,181 @@
 import io
 from datetime import datetime
 
+def generar_certificado_historico_pdf(contrato_historico):
+    """
+    Genera un certificado PDF para un contrato histórico usando la plantilla oficial
+    """
+    from reportlab.pdfgen import canvas
+    from reportlab.lib.pagesizes import letter
+    from reportlab.lib.units import inch
+    from reportlab.lib.utils import simpleSplit
+    from PyPDF2 import PdfReader, PdfWriter
+    import os
+    from django.conf import settings
+
+    # Ruta a la plantilla
+    BASE_DIR = settings.BASE_DIR.parent
+    plantilla_path = os.path.join(BASE_DIR, 'archivos word', 'plantilla_certificacion.pdf')
+
+    # Crear buffer para el contenido
+    contenido_buffer = io.BytesIO()
+    c = canvas.Canvas(contenido_buffer, pagesize=letter)
+    width, height = letter
+
+    # Márgenes y posiciones
+    y_position = height - 2.3*inch
+    margin_left = 1*inch
+    margin_right = width - 1*inch
+    text_width = margin_right - margin_left
+
+    def draw_centered_text(text, y, font="Helvetica-Bold", size=11):
+        c.setFont(font, size)
+        text_w = c.stringWidth(text, font, size)
+        c.drawString((width - text_w) / 2, y, text)
+
+    def draw_paragraph(text, y_start, line_height=14):
+        """Dibuja un párrafo con word wrap automático"""
+        c.setFont("Helvetica", 10)
+        lines = simpleSplit(text, "Helvetica", 10, text_width)
+        y = y_start
+        for line in lines:
+            c.drawString(margin_left, y, line)
+            y -= line_height
+        return y
+
+    # ENCABEZADO - Título dinámico desde contratante_nit
+    # El contratante_nit puede ser largo, así que lo mostramos en una línea
+    draw_centered_text(contrato_historico.contratante_nit, y_position, "Helvetica-Bold", 11)
+    y_position -= 35
+
+    # CERTIFICA QUE:
+    draw_centered_text("CERTIFICA QUE:", y_position, "Helvetica-Bold", 11)
+    y_position -= 35
+
+    # Formatear cédula
+    cedula_formateada = f"{contrato_historico.cedula:,}".replace(",", ".")
+
+    # PÁRRAFO PRINCIPAL - construir todo el texto junto
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(margin_left, y_position, contrato_historico.nombre_contratista.upper())
+    y_position -= 14
+
+    # Construir el párrafo completo (sin incluir contratante_nit porque ya está en el título)
+    texto_completo = (
+        f"quien se identifica con la cédula de ciudadanía No. {cedula_formateada} de CALI "
+        f"prestó sus servicios contractuales como PROFESIONAL para el área de {contrato_historico.area.upper()}, "
+        f"para el desarrollo del proyecto denominado \"{contrato_historico.objeto_contrato}\"."
+    )
+
+    # Dibujar párrafo con wrap
+    c.setFont("Helvetica", 10)
+    lines = simpleSplit(texto_completo, "Helvetica", 10, text_width)
+    for line in lines:
+        c.drawString(margin_left, y_position, line)
+        y_position -= 14
+
+    y_position -= 10
+
+    # ACTIVIDADES (si existen)
+    if contrato_historico.actividades_especificas:
+        y_position -= 5
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(margin_left, y_position, "ACTIVIDADES:")
+        y_position -= 16
+
+        c.setFont("Helvetica", 10)
+        actividades_lista = contrato_historico.actividades_especificas.strip().split('\n')
+
+        for idx, actividad in enumerate(actividades_lista, start=1):
+            if actividad.strip():
+                # Agregar número y punto
+                texto_actividad = f"{idx}. {actividad.strip()}"
+
+                # Word wrap para actividades largas
+                lineas_actividad = simpleSplit(texto_actividad, "Helvetica", 10, text_width - 0.2*inch)
+
+                for i, linea in enumerate(lineas_actividad):
+                    # Primera línea con indentación pequeña, resto con más indentación
+                    indent = margin_left if i == 0 else margin_left + 0.2*inch
+                    c.drawString(indent, y_position, linea)
+                    y_position -= 13
+
+                y_position -= 2  # Espacio entre actividades
+
+        y_position -= 5
+
+    # FECHAS DEL CONTRATO
+    fecha_inicio_formateada = contrato_historico.fecha_firma.strftime('%d/%m/%Y')
+    fecha_fin_formateada = contrato_historico.fecha_final.strftime('%d/%m/%Y')
+
+    y_position -= 10
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(margin_left, y_position, "FECHA DE SUSCRIPCIÓN DEL CONTRATO: ")
+    c.setFont("Helvetica", 10)
+    c.drawString(margin_left + 260, y_position, f"{fecha_inicio_formateada},")
+
+    y_position -= 14
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(margin_left, y_position, "FECHA DE TERMINACIÓN DEL CONTRATO: ")
+    c.setFont("Helvetica", 10)
+    c.drawString(margin_left + 260, y_position, f"{fecha_fin_formateada}.")
+
+    # Fecha de expedición del certificado
+    fecha_actual = datetime.now()
+    dia = fecha_actual.day
+    mes_nombres = {
+        1: 'enero', 2: 'febrero', 3: 'marzo', 4: 'abril', 5: 'mayo', 6: 'junio',
+        7: 'julio', 8: 'agosto', 9: 'septiembre', 10: 'octubre', 11: 'noviembre', 12: 'diciembre'
+    }
+    mes = mes_nombres[fecha_actual.month]
+    anio = fecha_actual.year
+
+    y_position -= 25
+    c.setFont("Helvetica", 10)
+    texto_constancia = f"Para constancia de lo anterior se firma en Santiago de Cali, a los {dia} días del mes de {mes} de {anio}."
+
+    # Word wrap para la constancia
+    lineas_constancia = simpleSplit(texto_constancia, "Helvetica", 10, text_width)
+    for linea in lineas_constancia:
+        c.drawString(margin_left, y_position, linea)
+        y_position -= 14
+
+    # Firma (posición fija en parte baja)
+    y_firma = 2.5*inch
+    draw_centered_text("__________________________________________", y_firma)
+    y_firma -= 16
+    draw_centered_text("PBRO. CESAR AUGUSTO FERNANDEZ TAMAYO", y_firma, "Helvetica-Bold", 10)
+    y_firma -= 14
+    draw_centered_text("Gerente General del proyecto", y_firma, "Helvetica", 10)
+
+    # Pie de página
+    y_firma -= 30
+    c.setFont("Helvetica", 8)
+    draw_centered_text("Proyectó y elaboró: Mary Silenia Calvache Gómez – Contratista", y_firma, "Helvetica", 8)
+    y_firma -= 11
+    draw_centered_text("Sebastián Arias Hernández – Líder Jurídico", y_firma, "Helvetica", 8)
+
+    # Finalizar canvas
+    c.save()
+
+    # Fusionar con la plantilla
+    contenido_buffer.seek(0)
+    plantilla_reader = PdfReader(plantilla_path)
+    contenido_reader = PdfReader(contenido_buffer)
+
+    writer = PdfWriter()
+    plantilla_page = plantilla_reader.pages[0]
+    contenido_page = contenido_reader.pages[0]
+    plantilla_page.merge_page(contenido_page)
+    writer.add_page(plantilla_page)
+
+    output_buffer = io.BytesIO()
+    writer.write(output_buffer)
+    output_buffer.seek(0)
+
+    return output_buffer
+
+
 def generar_anexo11_pdf(applicant):
     """
     Genera un PDF en formato ANEXO 11 con la información del candidato

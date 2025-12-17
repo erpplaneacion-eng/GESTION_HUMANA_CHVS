@@ -21,4 +21,5 @@ tzdata==2025.2
 whitenoise==6.11.0
 pandas
 python-dateutil
+PyPDF2==3.0.1
 
