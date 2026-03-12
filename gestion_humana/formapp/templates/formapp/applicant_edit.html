@@ -452,6 +452,61 @@
                         <h4><i class="fas fa-paperclip"></i> Anexos Adicionales</h4>
                     </div>
                     <div class="section-body">
+                        <!-- Documentos obligatorios -->
+                        <h6 class="text-danger mb-3"><i class="fas fa-asterisk me-1"></i> Documentos Obligatorios</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Certificado EPS</label>
+                                {{ anexos_form.certificado_eps }}
+                                {% if anexos_form.instance.certificado_eps %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.certificado_eps.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Certificado Pensión</label>
+                                {{ anexos_form.certificado_pension }}
+                                {% if anexos_form.instance.certificado_pension %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.certificado_pension.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Examen Ocupacional</label>
+                                {{ anexos_form.examen_ocupacional }}
+                                {% if anexos_form.instance.examen_ocupacional %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.examen_ocupacional.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Certificado Bancario</label>
+                                {{ anexos_form.certificado_bancario }}
+                                {% if anexos_form.instance.certificado_bancario %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.certificado_bancario.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">RUT</label>
+                                {{ anexos_form.rut }}
+                                {% if anexos_form.instance.rut %}
+                                    <small class="text-muted d-block mt-1">
+                                        <a href="{{ anexos_form.instance.rut.url }}" target="_blank">Ver actual</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr class="my-3">
+                        <!-- Documentos opcionales -->
+                        <h6 class="text-muted mb-3"><i class="fas fa-folder-open me-1"></i> Documentos Opcionales</h6>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">ANEXO 03 - Datos Personales</label>

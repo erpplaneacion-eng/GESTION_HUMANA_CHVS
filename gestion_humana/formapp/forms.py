@@ -710,6 +710,26 @@ class AnexosAdicionalesForm(forms.ModelForm):
                 'rows': 2,
                 'placeholder': 'Describa el contenido del documento adicional'
             }),
+            'certificado_eps': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
+            }),
+            'certificado_pension': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
+            }),
+            'examen_ocupacional': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
+            }),
+            'certificado_bancario': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
+            }),
+            'rut': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
+            }),
         }
         help_texts = {
             'descripcion_otros': '<strong style="color: #ff6b00; font-size: 1.1em;">📋 IMPORTANTE: Población Diferencial</strong><br>Si pertenece a un grupo de población diferencial (indígena, afrodescendiente, víctima del conflicto, persona con discapacidad, etc.), adjunte el certificado y menciónelo aquí.'
@@ -719,3 +739,19 @@ class AnexosAdicionalesForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Agregar nota aclaratoria para población diferencial en el campo de descripción
         self.fields['descripcion_otros'].help_text = '<strong style="color: #ff6b00; font-size: 1.1em;">📋 IMPORTANTE: Población Diferencial</strong><br>Si pertenece a un grupo de población diferencial (indígena, afrodescendiente, víctima del conflicto, persona con discapacidad, etc.), adjunte el certificado y menciónelo aquí.'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        # Campos obligatorios solo para registros nuevos
+        if not self.instance.pk:
+            campos_requeridos = {
+                'certificado_eps': 'Certificado EPS',
+                'certificado_pension': 'Certificado Pensión',
+                'examen_ocupacional': 'Examen Ocupacional',
+                'certificado_bancario': 'Certificado Bancario',
+                'rut': 'RUT',
+            }
+            for campo, nombre in campos_requeridos.items():
+                if not cleaned_data.get(campo):
+                    self.add_error(campo, f'El {nombre} es obligatorio.')
+        return cleaned_data

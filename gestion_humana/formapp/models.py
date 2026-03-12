@@ -610,6 +610,53 @@ class AnexosAdicionales(models.Model):
         null=True
     )
 
+    # Documentos requeridos adicionales
+    certificado_eps = models.FileField(
+        upload_to='anexos/eps/',
+        verbose_name='Certificado EPS',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Certificado de afiliación a EPS. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+    certificado_pension = models.FileField(
+        upload_to='anexos/pension/',
+        verbose_name='Certificado Pensión',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Certificado de afiliación al fondo de pensiones. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+    examen_ocupacional = models.FileField(
+        upload_to='anexos/examen_ocupacional/',
+        verbose_name='Examen Ocupacional',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Resultado del examen médico ocupacional. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+    certificado_bancario = models.FileField(
+        upload_to='anexos/bancario/',
+        verbose_name='Certificado Bancario',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Certificado de cuenta bancaria. Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+    rut = models.FileField(
+        upload_to='anexos/rut/',
+        verbose_name='RUT',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Registro Único Tributario (RUT). Formatos: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de Creación')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='Última Actualización')
 

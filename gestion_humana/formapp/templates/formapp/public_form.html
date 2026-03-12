@@ -969,9 +969,69 @@
                 </h2>
                 <p class="text-muted mb-4">
                     <i class="fas fa-paperclip"></i>
-                    Documentos opcionales adicionales para completar su expediente
+                    Documentos requeridos y opcionales para completar su expediente
                 </p>
 
+                <!-- Documentos obligatorios -->
+                <h6 class="text-danger mb-3"><i class="fas fa-asterisk me-1"></i> Documentos Obligatorios</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ anexos_form.certificado_eps.id_for_label }}" class="form-label fw-bold">
+                            {{ anexos_form.certificado_eps.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ anexos_form.certificado_eps }}
+                        <small class="form-text text-muted">{{ anexos_form.certificado_eps.help_text }}</small>
+                        {% if anexos_form.certificado_eps.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.certificado_eps.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ anexos_form.certificado_pension.id_for_label }}" class="form-label fw-bold">
+                            {{ anexos_form.certificado_pension.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ anexos_form.certificado_pension }}
+                        <small class="form-text text-muted">{{ anexos_form.certificado_pension.help_text }}</small>
+                        {% if anexos_form.certificado_pension.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.certificado_pension.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ anexos_form.examen_ocupacional.id_for_label }}" class="form-label fw-bold">
+                            {{ anexos_form.examen_ocupacional.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ anexos_form.examen_ocupacional }}
+                        <small class="form-text text-muted">{{ anexos_form.examen_ocupacional.help_text }}</small>
+                        {% if anexos_form.examen_ocupacional.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.examen_ocupacional.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ anexos_form.certificado_bancario.id_for_label }}" class="form-label fw-bold">
+                            {{ anexos_form.certificado_bancario.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ anexos_form.certificado_bancario }}
+                        <small class="form-text text-muted">{{ anexos_form.certificado_bancario.help_text }}</small>
+                        {% if anexos_form.certificado_bancario.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.certificado_bancario.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label for="{{ anexos_form.rut.id_for_label }}" class="form-label fw-bold">
+                            {{ anexos_form.rut.label }} <span class="text-danger">*</span>
+                        </label>
+                        {{ anexos_form.rut }}
+                        <small class="form-text text-muted">{{ anexos_form.rut.help_text }}</small>
+                        {% if anexos_form.rut.errors %}
+                            <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ anexos_form.rut.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr class="my-4">
+                <!-- Documentos opcionales -->
+                <h6 class="text-muted mb-3"><i class="fas fa-folder-open me-1"></i> Documentos Opcionales</h6>
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label for="{{ anexos_form.anexo_03_datos_personales.id_for_label }}" class="form-label">

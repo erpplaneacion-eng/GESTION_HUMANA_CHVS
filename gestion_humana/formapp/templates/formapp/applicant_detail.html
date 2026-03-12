@@ -500,6 +500,75 @@
         <h3>
             <i class="fas fa-paperclip"></i> Anexos Adicionales
         </h3>
+        <!-- Documentos obligatorios -->
+        <p class="text-danger fw-bold mb-2"><i class="fas fa-asterisk me-1"></i> Documentos Obligatorios</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-hospital"></i> Certificado EPS:</span>
+                    {% if applicant.anexos_adicionales.certificado_eps %}
+                        <a href="{{ applicant.anexos_adicionales.certificado_eps.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-danger">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-shield-alt"></i> Certificado Pensión:</span>
+                    {% if applicant.anexos_adicionales.certificado_pension %}
+                        <a href="{{ applicant.anexos_adicionales.certificado_pension.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-danger">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-stethoscope"></i> Examen Ocupacional:</span>
+                    {% if applicant.anexos_adicionales.examen_ocupacional %}
+                        <a href="{{ applicant.anexos_adicionales.examen_ocupacional.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-danger">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-university"></i> Certificado Bancario:</span>
+                    {% if applicant.anexos_adicionales.certificado_bancario %}
+                        <a href="{{ applicant.anexos_adicionales.certificado_bancario.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-danger">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-row">
+                    <span class="info-label"><i class="fas fa-receipt"></i> RUT:</span>
+                    {% if applicant.anexos_adicionales.rut %}
+                        <a href="{{ applicant.anexos_adicionales.rut.url }}" target="_blank" class="btn btn-sm btn-success">
+                            <i class="fas fa-eye"></i> Ver
+                        </a>
+                    {% else %}
+                        <span class="info-value text-danger">No cargado</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentos opcionales -->
+        <p class="text-muted fw-bold mt-3 mb-2"><i class="fas fa-folder-open me-1"></i> Documentos Opcionales</p>
         <div class="row">
             <div class="col-md-4">
                 <div class="info-row">
