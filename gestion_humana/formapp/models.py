@@ -318,13 +318,24 @@ class EducacionSuperior(models.Model):
         ('Tecnico', 'Técnico'),
         ('Tecnologo', 'Tecnólogo'),
     ]
-    
+
+    TIENE_TARJETA_CHOICES = [
+        ('No Aplica', 'No Aplica'),
+        ('Si', 'Sí tiene Tarjeta Profesional'),
+    ]
+
     informacion_basica = models.ForeignKey(InformacionBasica, on_delete=models.CASCADE, related_name='educacion_superior')
     nivel = models.CharField(max_length=20, choices=NIVEL_CHOICES, verbose_name='Nivel de Formación')
     institucion = models.CharField(max_length=200, verbose_name='Institución Educativa')
     titulo = models.CharField(max_length=200, verbose_name='Título Obtenido')
     fecha_grado = models.DateField(verbose_name='Fecha de Grado')
-    tarjeta_profesional = models.CharField(max_length=50, verbose_name='N° Tarjeta Profesional (Opcional)', blank=True, null=True)
+    tiene_tarjeta_profesional = models.CharField(
+        max_length=20,
+        choices=TIENE_TARJETA_CHOICES,
+        verbose_name='¿Tiene Tarjeta Profesional?',
+        default='No Aplica'
+    )
+    tarjeta_profesional = models.CharField(max_length=50, verbose_name='N° Tarjeta Profesional', blank=True, null=True)
 
     tarjeta_profesional_archivo = models.FileField(
         upload_to='educacion_superior/tarjetas/',

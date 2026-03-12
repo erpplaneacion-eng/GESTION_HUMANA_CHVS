@@ -419,7 +419,12 @@ class EducacionSuperiorForm(forms.ModelForm):
             'institucion': forms.TextInput(attrs={'class': 'form-control'}),
             'titulo': forms.TextInput(attrs={'class': 'form-control'}),
             'fecha_grado': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'tarjeta_profesional': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
+            'tiene_tarjeta_profesional': forms.Select(attrs={'class': 'form-control'}),
+            'tarjeta_profesional': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'N° de tarjeta profesional'}),
+            'tarjeta_profesional_archivo': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
+            }),
             'documento_soporte': forms.FileInput(attrs={
                 'class': 'form-control',
                 'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',

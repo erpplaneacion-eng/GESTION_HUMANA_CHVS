@@ -717,27 +717,34 @@
                                             {{ form_sup.fecha_grado }}
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">N° Tarjeta Profesional</label>
-                                            {{ form_sup.tarjeta_profesional }}
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">Tarjeta Profesional (Archivo)</label>
-                                            {{ form_sup.tarjeta_profesional_archivo }}
-                                            {% if form_sup.instance.tarjeta_profesional_archivo %}
-                                                <div class="mt-2">
-                                                    <small class="text-muted">
-                                                        Archivo actual: <a href="{{ form_sup.instance.tarjeta_profesional_archivo.url }}" target="_blank">Ver documento</a>
-                                                    </small>
-                                                </div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-4 mb-3">
                                             <label class="form-label">Documento Soporte</label>
                                             {{ form_sup.documento_soporte }}
                                             {% if form_sup.instance.documento_soporte %}
                                                 <div class="mt-2">
                                                     <small class="text-muted">
                                                         Archivo actual: <a href="{{ form_sup.instance.documento_soporte.url }}" target="_blank">{{ form_sup.instance.documento_soporte.name }}</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">¿Tiene Tarjeta Profesional?</label>
+                                            {{ form_sup.tiene_tarjeta_profesional }}
+                                        </div>
+                                    </div>
+                                    <!-- Campos condicionales de tarjeta profesional -->
+                                    <div class="row edit-superior-tarjeta-campos" {% if form_sup.instance.tiene_tarjeta_profesional != 'Si' %}style="display:none;"{% endif %}>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">N° Tarjeta Profesional</label>
+                                            {{ form_sup.tarjeta_profesional }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Tarjeta Profesional (Archivo)</label>
+                                            {{ form_sup.tarjeta_profesional_archivo }}
+                                            {% if form_sup.instance.tarjeta_profesional_archivo %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_sup.instance.tarjeta_profesional_archivo.url }}" target="_blank">Ver documento</a>
                                                     </small>
                                                 </div>
                                             {% endif %}
@@ -1013,6 +1020,21 @@
 </div>
 
 <script>
+// Toggle tarjeta profesional en Técnico/Tecnólogo (panel de edición)
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('select[id*="tiene_tarjeta_profesional"]').forEach(function(select) {
+        function toggle() {
+            var form = select.closest('.formset-form');
+            if (!form) return;
+            var campos = form.querySelector('.edit-superior-tarjeta-campos');
+            if (!campos) return;
+            campos.style.display = (select.value === 'Si') ? '' : 'none';
+        }
+        select.addEventListener('change', toggle);
+        toggle();
+    });
+});
+
 // Manejar campos "Otro" para selects administrativos
 document.addEventListener('DOMContentLoaded', function() {
     // Función para mostrar/ocultar campos "otro"

@@ -555,12 +555,25 @@
                                                     {{ form.fecha_grado }}
                                                 </div>
                                                 <div class="col-md-4 mb-2">
+                                                    <label class="form-label">{{ form.documento_soporte.label }}</label>
+                                                    {{ form.documento_soporte }}
+                                                    <small class="text-muted">PDF, JPG, PNG (Max 10MB)</small>
+                                                </div>
+                                                <div class="col-md-4 mb-2">
+                                                    <label class="form-label">{{ form.tiene_tarjeta_profesional.label }}</label>
+                                                    {{ form.tiene_tarjeta_profesional }}
+                                                </div>
+                                            </div>
+                                            <!-- Campos condicionales: visibles solo si "Sí tiene Tarjeta Profesional" -->
+                                            <div class="row superior-tarjeta-campos" style="display:none;">
+                                                <div class="col-md-6 mb-2">
                                                     <label class="form-label">{{ form.tarjeta_profesional.label }}</label>
                                                     {{ form.tarjeta_profesional }}
                                                 </div>
-                                                <div class="col-md-4 mb-2">
-                                                    <label class="form-label">{{ form.documento_soporte.label }}</label>
-                                                    {{ form.documento_soporte }}
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">{{ form.tarjeta_profesional_archivo.label }}</label>
+                                                    {{ form.tarjeta_profesional_archivo }}
+                                                    <small class="text-muted">{{ form.tarjeta_profesional_archivo.help_text }}</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -1289,30 +1302,42 @@
 
         // Mostrar/ocultar campo de número de tarjeta y documentos según selección (para Pregrado)
         $(document).on('change', 'select[id*="tarjeta_profesional"]', function() {
-            var group = $(this).closest('.academica-group, .superior-group'); // Aplica también a técnico/tecnólogo
+            var group = $(this).closest('.academica-group');
             if(group.length === 0) return;
 
             var val = $(this).val();
-            // Buscar campos relacionados. Nota: La estructura HTML varía ligeramente entre Pregrado y Técnico
-            // Para Pregrado (academica-group)
-            if(group.hasClass('academica-group')) {
-                var numeroField = group.find('input[id*="numero_tarjeta_resolucion"]').closest('.col-md-4');
-                var fechaField = group.find('input[id*="fecha_expedicion"]').closest('.col-md-4');
-                var campoTarjetaDoc = group.find('.campo-tarjeta-doc');
-                var campoVigenciaDoc = group.find('.campo-vigencia-doc');
+            var numeroField = group.find('input[id*="numero_tarjeta_resolucion"]').closest('.col-md-4');
+            var fechaField = group.find('input[id*="fecha_expedicion"]').closest('.col-md-4');
+            var campoTarjetaDoc = group.find('.campo-tarjeta-doc');
+            var campoVigenciaDoc = group.find('.campo-vigencia-doc');
 
-                if (val === 'No Aplica') {
-                    numeroField.hide(); fechaField.hide(); campoTarjetaDoc.hide(); campoVigenciaDoc.hide();
-                    numeroField.find('input').removeAttr('required');
-                    fechaField.find('input').removeAttr('required');
-                } else {
-                    numeroField.show(); fechaField.show(); campoTarjetaDoc.show(); campoVigenciaDoc.show();
-                }
+            if (val === 'No Aplica') {
+                numeroField.hide(); fechaField.hide(); campoTarjetaDoc.hide(); campoVigenciaDoc.hide();
+                numeroField.find('input').removeAttr('required');
+                fechaField.find('input').removeAttr('required');
+            } else {
+                numeroField.show(); fechaField.show(); campoTarjetaDoc.show(); campoVigenciaDoc.show();
+            }
+        });
+
+        // Mostrar/ocultar campos de tarjeta para Técnico/Tecnólogo
+        $(document).on('change', 'select[id*="tiene_tarjeta_profesional"]', function() {
+            var group = $(this).closest('.superior-group');
+            if(group.length === 0) return;
+            var camposTarjeta = group.find('.superior-tarjeta-campos');
+            if ($(this).val() === 'Si') {
+                camposTarjeta.show();
+            } else {
+                camposTarjeta.hide();
+                camposTarjeta.find('input').val('');
             }
         });
 
         // Inicializar visibilidad de campos de tarjeta
         $('select[id*="tarjeta_profesional"]').each(function() {
+            $(this).trigger('change');
+        });
+        $('select[id*="tiene_tarjeta_profesional"]').each(function() {
             $(this).trigger('change');
         });
 
