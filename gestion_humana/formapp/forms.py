@@ -160,7 +160,7 @@ class ExperienciaLaboralForm(forms.ModelForm):
         widgets = {
             'certificado_laboral': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'meses_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
             'dias_experiencia': forms.NumberInput(attrs={'class': 'form-control', 'min': '0', 'readonly': 'readonly'}),
@@ -297,15 +297,15 @@ class InformacionAcademicaForm(forms.ModelForm):
             # FASE 2: Documentos académicos
             'fotocopia_titulo': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fotocopia_tarjeta_profesional': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'certificado_vigencia_tarjeta': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_vigencia_tarjeta': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
@@ -326,7 +326,7 @@ class PosgradoForm(forms.ModelForm):
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'acta_grado_diploma': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
         }
     
@@ -359,7 +359,7 @@ class EspecializacionForm(forms.ModelForm):
             'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'acta_grado_diploma': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
         }
         
@@ -394,7 +394,7 @@ class EducacionBasicaForm(forms.ModelForm):
             'titulo': forms.TextInput(attrs={'class': 'form-control'}),
             'acta_grado_diploma': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
         }
         
@@ -422,7 +422,7 @@ class EducacionSuperiorForm(forms.ModelForm):
             'tarjeta_profesional': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Opcional'}),
             'documento_soporte': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
         }
     
@@ -449,7 +449,9 @@ EducacionBasicaFormSet = inlineformset_factory(
     EducacionBasica,
     form=EducacionBasicaForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    max_num=5,
+    validate_max=True
 )
 
 EducacionSuperiorFormSet = inlineformset_factory(
@@ -457,7 +459,9 @@ EducacionSuperiorFormSet = inlineformset_factory(
     EducacionSuperior,
     form=EducacionSuperiorForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    max_num=10,
+    validate_max=True
 )
 
 ExperienciaLaboralFormSet = inlineformset_factory(
@@ -465,7 +469,9 @@ ExperienciaLaboralFormSet = inlineformset_factory(
     ExperienciaLaboral,
     form=ExperienciaLaboralForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    max_num=30,
+    validate_max=True
 )
 
 InformacionAcademicaFormSet = inlineformset_factory(
@@ -473,7 +479,9 @@ InformacionAcademicaFormSet = inlineformset_factory(
     InformacionAcademica,
     form=InformacionAcademicaForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    max_num=20,
+    validate_max=True
 )
 
 PosgradoFormSet = inlineformset_factory(
@@ -481,7 +489,9 @@ PosgradoFormSet = inlineformset_factory(
     Posgrado,
     form=PosgradoForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    max_num=10,
+    validate_max=True
 )
 
 EspecializacionFormSet = inlineformset_factory(
@@ -489,7 +499,9 @@ EspecializacionFormSet = inlineformset_factory(
     Especializacion,
     form=EspecializacionForm,
     extra=1,
-    can_delete=True
+    can_delete=True,
+    max_num=10,
+    validate_max=True
 )
 
 
@@ -501,15 +513,15 @@ class DocumentosIdentidadForm(forms.ModelForm):
         widgets = {
             'fotocopia_cedula': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'hoja_de_vida': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'libreta_militar': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'numero_libreta_militar': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -559,7 +571,7 @@ class AntecedentesForm(forms.ModelForm):
         widgets = {
             'certificado_procuraduria': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_procuraduria': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -567,7 +579,7 @@ class AntecedentesForm(forms.ModelForm):
             }),
             'certificado_contraloria': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_contraloria': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -575,7 +587,7 @@ class AntecedentesForm(forms.ModelForm):
             }),
             'certificado_policia': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_policia': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -583,7 +595,7 @@ class AntecedentesForm(forms.ModelForm):
             }),
             'certificado_medidas_correctivas': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_medidas_correctivas': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -591,7 +603,7 @@ class AntecedentesForm(forms.ModelForm):
             }),
             'certificado_delitos_sexuales': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_delitos_sexuales': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -599,7 +611,7 @@ class AntecedentesForm(forms.ModelForm):
             }),
             'certificado_redam': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'fecha_redam': forms.DateInput(attrs={
                 'class': 'form-control',
@@ -683,15 +695,15 @@ class AnexosAdicionalesForm(forms.ModelForm):
         widgets = {
             'anexo_03_datos_personales': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'carta_intencion': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'otros_documentos': forms.FileInput(attrs={
                 'class': 'form-control',
-                'accept': '.pdf,.jpg,.jpeg,.png',
+                'accept': '.pdf,.jpg,.jpeg,.png,.heic,.heif',
             }),
             'descripcion_otros': forms.Textarea(attrs={
                 'class': 'form-control',

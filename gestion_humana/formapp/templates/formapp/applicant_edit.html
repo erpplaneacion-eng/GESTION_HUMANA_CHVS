@@ -662,8 +662,19 @@
                                             {{ form_sup.fecha_grado }}
                                         </div>
                                         <div class="col-md-4 mb-3">
-                                            <label class="form-label">Tarjeta Profesional</label>
+                                            <label class="form-label">N° Tarjeta Profesional</label>
                                             {{ form_sup.tarjeta_profesional }}
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label">Tarjeta Profesional (Archivo)</label>
+                                            {{ form_sup.tarjeta_profesional_archivo }}
+                                            {% if form_sup.instance.tarjeta_profesional_archivo %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        Archivo actual: <a href="{{ form_sup.instance.tarjeta_profesional_archivo.url }}" target="_blank">Ver documento</a>
+                                                    </small>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <label class="form-label">Documento Soporte</label>

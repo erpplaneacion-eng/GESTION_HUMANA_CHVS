@@ -101,18 +101,12 @@ def validate_file_extension(value):
 
         ext = os.path.splitext(name)[1].lower()
 
-        # FILTRO 2: Si es un archivo ya subido a Cloudinary (URL sin extensión)
-        # Cloudinary a veces devuelve URLs como: /media/certificados/archivo_xyz123
-        # En este caso, confiar que la validación ya se hizo al subir
+        # Si no hay extensión, rechazar. Los archivos existentes ya se filtraron
+        # arriba mediante _committed/url.
         if not ext:
-            # Si tiene URL de Cloudinary o parece ser un archivo ya subido, permitir
-            if 'cloudinary' in name.lower() or '/' in name or len(name) > 50:
-                return  # Es un archivo ya subido a Cloudinary, omitir validación
-
-            # Si no tiene extensión y no parece ser de Cloudinary, rechazar
             raise ValidationError(
                 'El archivo no tiene extensión válida. '
-                'Por favor, asegúrate de subir un archivo con extensión .pdf, .jpg, .jpeg o .png'
+                'Por favor, asegúrate de subir un archivo con extensión .pdf, .jpg, .jpeg, .png, .heic o .heif'
             )
 
         valid_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.heic', '.heif']
@@ -123,8 +117,7 @@ def validate_file_extension(value):
                 f'Extensión detectada: {ext}'
             )
     except (AttributeError, TypeError, ValueError):
-        # Si hay algún error al acceder al nombre o procesarlo, no validar (probablemente es un objeto vacío)
-        return
+        raise ValidationError('No fue posible validar la extensión del archivo.')
 
 def validate_file_mime(value):
     """
@@ -168,10 +161,6 @@ def validate_file_mime(value):
         # Ya se rechazó en validate_file_extension, no validar MIME
         return
 
-    # Si es un archivo ya subido a Cloudinary (URL sin extensión), omitir validación MIME
-    if name and ('cloudinary' in name.lower() or len(name) > 50):
-        return
-
     # Si magic no está disponible, solo validar por magic bytes básicos
     if magic is None:
         return _validate_file_magic_bytes(value)
@@ -205,15 +194,16 @@ def validate_file_mime(value):
         if mime not in allowed_mimes:
             raise ValidationError(
                 f'Tipo de archivo no válido. '
-                f'Se esperaba: PDF, JPG o PNG. '
+                f'Se esperaba: PDF, JPG, JPEG, PNG, HEIC o HEIF. '
                 f'Se detectó: {mime}. '
                 f'Por favor, asegúrese de que el archivo no haya sido renombrado y sea realmente un documento válido.'
             )
 
-    except (AttributeError, TypeError, ValueError, IOError) as e:
-        # Si hay algún error al leer el archivo, no validar (probablemente es un objeto vacío)
-        # Nota: En producción esto podría ser más estricto
-        return
+    except (AttributeError, TypeError, ValueError, IOError):
+        raise ValidationError(
+            'No fue posible validar el contenido del archivo. '
+            'Por favor, sube nuevamente el archivo en formato válido.'
+        )
 
 def _validate_file_magic_bytes(value):
     """
@@ -250,5 +240,7 @@ def _validate_file_magic_bytes(value):
             )
 
     except (AttributeError, TypeError, ValueError, IOError):
-        # Si hay error al leer, permitir que pase (será validado por extensión)
-        return
+        raise ValidationError(
+            'No fue posible validar el contenido del archivo. '
+            'Por favor, sube nuevamente el archivo.'
+        )

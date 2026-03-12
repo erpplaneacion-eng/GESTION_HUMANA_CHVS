@@ -324,8 +324,18 @@ class EducacionSuperior(models.Model):
     institucion = models.CharField(max_length=200, verbose_name='Institución Educativa')
     titulo = models.CharField(max_length=200, verbose_name='Título Obtenido')
     fecha_grado = models.DateField(verbose_name='Fecha de Grado')
-    tarjeta_profesional = models.CharField(max_length=50, verbose_name='Tarjeta Profesional (Opcional)', blank=True, null=True)
-    
+    tarjeta_profesional = models.CharField(max_length=50, verbose_name='N° Tarjeta Profesional (Opcional)', blank=True, null=True)
+
+    tarjeta_profesional_archivo = models.FileField(
+        upload_to='educacion_superior/tarjetas/',
+        verbose_name='Tarjeta Profesional (Archivo)',
+        validators=[validate_file_size, validate_file_extension, validate_file_mime],
+        help_text='Si aplica: PDF, JPG, PNG. Máx: 10 MB',
+        max_length=200,
+        blank=True,
+        null=True
+    )
+
     documento_soporte = models.FileField(
         upload_to='educacion_superior/',
         verbose_name='Diploma o Acta de Grado',

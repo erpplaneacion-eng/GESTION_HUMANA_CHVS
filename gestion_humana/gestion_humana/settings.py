@@ -194,6 +194,12 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Límites de carga para proteger el servidor durante envíos masivos.
+# Ajustados para permitir formularios con múltiples archivos sin saturar memoria.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 150 * 1024 * 1024  # 150 MB por request
+FILE_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024    # >2 MB se escribe a disco temporal
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

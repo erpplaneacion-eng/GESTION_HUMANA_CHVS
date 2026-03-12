@@ -940,8 +940,8 @@
                 <!-- Registro de Deudores Alimentarios Morosos (REDAM) -->
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="{{ antecedentes_form.certificado_redam.id_for_label }}" class="form-label required-field">
-                            {{ antecedentes_form.certificado_redam.label }} *
+                        <label for="{{ antecedentes_form.certificado_redam.id_for_label }}" class="form-label">
+                            {{ antecedentes_form.certificado_redam.label }}
                         </label>
                         {{ antecedentes_form.certificado_redam }}
                         <small class="form-text text-muted">{{ antecedentes_form.certificado_redam.help_text }}</small>
@@ -951,8 +951,8 @@
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <label for="{{ antecedentes_form.fecha_redam.id_for_label }}" class="form-label required-field">
-                            {{ antecedentes_form.fecha_redam.label }} *
+                        <label for="{{ antecedentes_form.fecha_redam.id_for_label }}" class="form-label">
+                            {{ antecedentes_form.fecha_redam.label }}
                         </label>
                         {{ antecedentes_form.fecha_redam }}
                         {% if antecedentes_form.fecha_redam.errors %}
@@ -1709,14 +1709,13 @@
                 }
             });
 
-            // Validar certificados de antecedentes (todos obligatorios)
+            // Validar certificados de antecedentes obligatorios
             var antecedentes = [
                 { campo: 'certificado_procuraduria', nombre: 'Certificado de Procuraduría' },
                 { campo: 'certificado_contraloria', nombre: 'Certificado de Contraloría' },
                 { campo: 'certificado_policia', nombre: 'Certificado de Policía' },
                 { campo: 'certificado_medidas_correctivas', nombre: 'Certificado de Medidas Correctivas' },
-                { campo: 'certificado_delitos_sexuales', nombre: 'Certificado de Delitos Sexuales' },
-                { campo: 'certificado_redam', nombre: 'Certificado REDAM' }
+                { campo: 'certificado_delitos_sexuales', nombre: 'Certificado de Delitos Sexuales' }
             ];
 
             antecedentes.forEach(function(antecedente) {
@@ -1768,7 +1767,7 @@
             var file = this.files[0];
             if (file) {
                 var maxSize = 10 * 1024 * 1024; // 10 MB
-                var validExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+                var validExtensions = ['pdf', 'jpg', 'jpeg', 'png', 'heic', 'heif'];
                 var extension = file.name.split('.').pop().toLowerCase();
                 
                 if (file.size > maxSize) {
@@ -1778,7 +1777,7 @@
                 }
                 
                 if ($.inArray(extension, validExtensions) == -1) {
-                    alert('Tipo de archivo no válido. Solo se permiten: PDF, JPG, PNG.');
+                    alert('Tipo de archivo no válido. Solo se permiten: PDF, JPG, JPEG, PNG, HEIC y HEIF.');
                     $(this).val(''); // Limpiar input
                     return;
                 }

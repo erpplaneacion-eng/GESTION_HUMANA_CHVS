@@ -19,7 +19,8 @@
       "Bash(venv/Scripts/python.exe:*)",
       "Bash(venv/Scripts/pip.exe install:*)",
       "mcp__TestSprite__testsprite_generate_code_summary",
-      "mcp__TestSprite__testsprite_bootstrap_tests"
+      "mcp__TestSprite__testsprite_bootstrap_tests",
+      "Bash(cd /mnt/c/Users/User/OneDrive/Desktop/CAVIJUP/GESTION_HUMANA_CHVS/gestion_humana && source venv_wsl/bin/activate && python3 manage.py makemigrations formapp --name educacionsuperior_tarjeta_archivo 2>&1)"
     ],
     "deny": [],
     "ask": []
