@@ -78,6 +78,12 @@ def calcular_experiencia_total(informacion_basica):
             intervalos.append((exp_hist.fecha_inicio, exp_hist.fecha_fin))
 
     # 4. Calcular total de días con fusión de intervalos
+    # Inicializar variables para evitar referencias sin asignación
+    anos = 0
+    meses_restantes = 0
+    dias_restantes = 0
+    total_anos = 0.0
+
     if not intervalos:
         total_dias = 0
         total_meses = 0
