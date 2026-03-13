@@ -316,8 +316,8 @@
                 </div>
 
                 <div class="alert alert-info mb-3" role="alert">
-                    <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Todos los campos marcados con <span class="text-danger">*</span> son obligatorios.
-                    Si hay un error de validación, deberá volver a adjuntar el archivo del certificado laboral.
+                    <i class="fas fa-info-circle"></i> <strong>Importante:</strong> Esta sección es opcional.
+                    Si decide registrar una experiencia, debe completar todos sus campos y adjuntar el certificado laboral.
                 </div>
 
                 <div id="experiencia-container">
@@ -349,7 +349,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.cargo.label }} *</label>
+                                    <label class="form-label">{{ form.cargo.label }}</label>
                                     {{ form.cargo }}
                                     {% if form.cargo.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.cargo.errors }}</div>
@@ -357,7 +357,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3" style="display: none;">
-                                    <label class="form-label required-field">{{ form.cargo_anexo_11.label }} *</label>
+                                    <label class="form-label">{{ form.cargo_anexo_11.label }}</label>
                                     {{ form.cargo_anexo_11 }}
                                     {% if form.cargo_anexo_11.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.cargo_anexo_11.errors }}</div>
@@ -367,7 +367,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.fecha_inicial.label }} *</label>
+                                    <label class="form-label">{{ form.fecha_inicial.label }}</label>
                                     {{ form.fecha_inicial }}
                                     {% if form.fecha_inicial.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_inicial.errors }}</div>
@@ -375,7 +375,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.fecha_terminacion.label }} *</label>
+                                    <label class="form-label">{{ form.fecha_terminacion.label }}</label>
                                     {{ form.fecha_terminacion }}
                                     {% if form.fecha_terminacion.errors %}
                                         <div class="text-danger"><i class="fas fa-exclamation-triangle"></i> {{ form.fecha_terminacion.errors }}</div>
@@ -385,7 +385,7 @@
 
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.meses_experiencia.label }} *</label>
+                                    <label class="form-label">{{ form.meses_experiencia.label }}</label>
                                     {{ form.meses_experiencia }}
                                     <small class="form-text text-muted">Meses completos de experiencia</small>
                                     {% if form.meses_experiencia.errors %}
@@ -394,7 +394,7 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label required-field">{{ form.dias_experiencia.label }} *</label>
+                                    <label class="form-label">{{ form.dias_experiencia.label }}</label>
                                     {{ form.dias_experiencia }}
                                     <small class="form-text text-muted">Total de días calendario</small>
                                     {% if form.dias_experiencia.errors %}
@@ -405,7 +405,7 @@
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label required-field">{{ form.objeto_contractual.label }} *</label>
+                                    <label class="form-label">{{ form.objeto_contractual.label }}</label>
                                     {{ form.objeto_contractual }}
                                     {% if form.objeto_contractual.help_text %}
                                         <small class="form-text text-warning d-block mt-1">
@@ -420,7 +420,7 @@
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label required-field">{{ form.funciones.label }} *</label>
+                                    <label class="form-label">{{ form.funciones.label }}</label>
                                     {{ form.funciones }}
                                     {% if form.funciones.help_text %}
                                         <small class="form-text text-warning d-block mt-1">
@@ -435,7 +435,7 @@
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
-                                    <label class="form-label required-field">{{ form.certificado_laboral.label }} *</label>
+                                    <label class="form-label">{{ form.certificado_laboral.label }}</label>
                                     {{ form.certificado_laboral }}
                                     <small class="form-text text-muted">Formatos permitidos: PDF, JPG, PNG. Tamaño máximo: 10 MB</small>
                                     {% if form.certificado_laboral.errors %}
@@ -1522,15 +1522,42 @@
                 hojaDeVida.removeClass('is-invalid');
             }
 
-            // Validar campos obligatorios de Experiencia Laboral
+            // Validar Experiencia Laboral solo si el usuario empezó a llenarla
             $('.experiencia-group:visible').each(function(index) {
                 var deleteCheckbox = $(this).find('input[name$="-DELETE"]');
                 // Solo validar si el formulario no está marcado para eliminar
                 if (!deleteCheckbox.prop('checked')) {
                     var expNum = index + 1;
+                    var cargo = $(this).find('input[id*="cargo"]').not('[id*="cargo_anexo"]');
+                    var fechaInicial = $(this).find('input[id*="fecha_inicial"]');
+                    var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
+                    var objetoContractual = $(this).find('textarea[id*="objeto_contractual"]');
+                    var funciones = $(this).find('textarea[id*="funciones"]');
+                    var fileInput = $(this).find('input[type="file"][id*="certificado_laboral"]');
+                    var hasExistingFile = $(this).find('a[href*="certificado"]').length > 0;
+
+                    // Si no hay datos en la experiencia, no se valida (sección opcional)
+                    var tieneDatosExperiencia = (
+                        (cargo.length > 0 && cargo.val().trim()) ||
+                        (fechaInicial.length > 0 && fechaInicial.val()) ||
+                        (fechaTerminacion.length > 0 && fechaTerminacion.val()) ||
+                        (objetoContractual.length > 0 && objetoContractual.val().trim()) ||
+                        (funciones.length > 0 && funciones.val().trim()) ||
+                        (fileInput.length > 0 && fileInput.val()) ||
+                        hasExistingFile
+                    );
+
+                    if (!tieneDatosExperiencia) {
+                        cargo.removeClass('is-invalid');
+                        fechaInicial.removeClass('is-invalid');
+                        fechaTerminacion.removeClass('is-invalid');
+                        objetoContractual.removeClass('is-invalid');
+                        funciones.removeClass('is-invalid');
+                        fileInput.removeClass('is-invalid');
+                        return;
+                    }
 
                     // Validar cargo
-                    var cargo = $(this).find('input[id*="cargo"]').not('[id*="cargo_anexo"]');
                     if (cargo.length > 0 && !cargo.val().trim()) {
                         isValid = false;
                         cargo.addClass('is-invalid');
@@ -1540,7 +1567,6 @@
                     }
 
                     // Validar fecha inicial
-                    var fechaInicial = $(this).find('input[id*="fecha_inicial"]');
                     if (fechaInicial.length > 0 && !fechaInicial.val()) {
                         isValid = false;
                         fechaInicial.addClass('is-invalid');
@@ -1550,7 +1576,6 @@
                     }
 
                     // Validar fecha terminación
-                    var fechaTerminacion = $(this).find('input[id*="fecha_terminacion"]');
                     if (fechaTerminacion.length > 0 && !fechaTerminacion.val()) {
                         isValid = false;
                         fechaTerminacion.addClass('is-invalid');
@@ -1560,7 +1585,6 @@
                     }
 
                     // Validar objeto contractual
-                    var objetoContractual = $(this).find('textarea[id*="objeto_contractual"]');
                     if (objetoContractual.length > 0 && !objetoContractual.val().trim()) {
                         isValid = false;
                         objetoContractual.addClass('is-invalid');
@@ -1570,7 +1594,6 @@
                     }
 
                     // Validar funciones
-                    var funciones = $(this).find('textarea[id*="funciones"]');
                     if (funciones.length > 0 && !funciones.val().trim()) {
                         isValid = false;
                         funciones.addClass('is-invalid');
@@ -1580,9 +1603,6 @@
                     }
 
                     // Validar certificado laboral
-                    var fileInput = $(this).find('input[type="file"][id*="certificado_laboral"]');
-                    var hasExistingFile = $(this).find('a[href*="certificado"]').length > 0;
-
                     if (fileInput.length > 0 && !fileInput.val() && !hasExistingFile) {
                         isValid = false;
                         fileInput.addClass('is-invalid');
