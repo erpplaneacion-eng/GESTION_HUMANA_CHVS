@@ -11,7 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # Manual
 cd gestion_humana
-source venv/bin/activate        # Linux/WSL
+source venv_wsl/bin/activate   # WSL/Linux
+# En Windows: venv\Scripts\activate
 python manage.py runserver
 ```
 
@@ -27,9 +28,6 @@ python manage.py migrate
 cd gestion_humana
 
 # Todos los tests
-python manage.py test
-
-# Solo la app formapp
 python manage.py test formapp
 
 # Un módulo específico
@@ -69,12 +67,27 @@ python manage.py recalcular_experiencias --cedula 1234567890 --verbose
    - Se cruza con `formapp` por cédula para enriquecer el cálculo de experiencia
    - Modelos: `ContratoHistorico`, `ConsolidadoBaseDatos`, `ExperienciaTotal`, `PersonalUrl`
 
-### Flujo de experiencia laboral
-El cálculo de experiencia total combina dos fuentes:
-- Experiencias ingresadas por el candidato en `formapp` (modelo `ExperienciaLaboral`)
-- Contratos históricos en `basedatosaquicali` (modelo `ContratoHistorico`)
+### Modelos principales de `formapp`
+Todos los modelos secundarios tienen FK a `InformacionBasica` (el candidato):
+- `ExperienciaLaboral` — experiencias declaradas por el candidato
+- `InformacionAcademica` — título profesional universitario
+- `EducacionBasica` — bachillerato
+- `EducacionSuperior` — técnico / tecnólogo (incluye campo `tiene_tarjeta_profesional`)
+- `Posgrado` / `Especializacion` — estudios de posgrado
+- `DocumentosIdentidad` — OneToOne: cédula, hoja de vida, libreta militar
+- `Antecedentes` — OneToOne: Procuraduría, Contraloría, Policía, RNMC, REDAM, delitos sexuales
+- `AnexosAdicionales` — OneToOne: EPS, pensión, RUT, examen ocupacional, etc.
+- `CalculoExperiencia` — OneToOne: resultado consolidado del cálculo de experiencia
+- `HistorialCorreccion` — registro de solicitudes de corrección del admin y respuestas del candidato
 
-El modelo `CalculoExperiencia` almacena el resultado consolidado. El servicio `formapp/services.py` contiene la lógica de cálculo; el comando `recalcular_experiencias` lo re-ejecuta en batch.
+### Flujo de experiencia laboral
+`services.calcular_experiencia_total()` combina:
+- `ExperienciaLaboral` (declaradas por el candidato)
+- `ContratoHistorico` (históricos en `basedatosaquicali`, buscados por cédula numérica)
+
+Usa un **algoritmo de fusión de intervalos** para eliminar traslapes. La base de cálculo es 365 días/año y 30 días/mes. El resultado se guarda en `CalculoExperiencia`.
+
+> **Importante:** `InformacionBasica.cedula` es `CharField`; `ContratoHistorico.cedula` es `BigIntegerField`. La conversión `int(cedula)` ocurre en `services.py` al hacer el cruce.
 
 ### Vistas organizadas en módulos
 `formapp/views/` está dividido en:
@@ -87,12 +100,25 @@ El modelo `CalculoExperiencia` almacena el resultado consolidado. El servicio `f
 - `report_generators_pdf.py` — Certificados PDF con ReportLab
 - `report_generators_excel.py` — Exportación Excel con openpyxl
 
+### Validaciones de archivos
+Los `FileField` usan tres validadores en `formapp/validators.py`:
+- `validate_file_size` — máximo 10 MB
+- `validate_file_extension` — solo PDF, JPG, PNG
+- `validate_file_mime` — verifica el tipo MIME real del archivo
+
+### Envío de correos
+`services.py` usa Gmail API (OAuth2) con `token.json` local o variable de entorno `GMAIL_TOKEN_JSON`. Las funciones de envío son:
+- `enviar_correo_confirmacion()` — al registrarse el candidato
+- `enviar_correo_solicitud_correccion()` — genera token 48h y envía enlace al candidato
+- `enviar_correo_notificacion_admin()` — cuando el candidato completa una corrección
+- `enviar_correo_async()` — wrapper que llama a confirmación en un thread daemon
+
 ### Entornos: desarrollo vs producción
 | Aspecto | Desarrollo | Producción (Railway) |
 |---|---|---|
 | Base de datos | SQLite (`db.sqlite3`) | PostgreSQL (via `DATABASE_URL`) |
 | Archivos media | Local (`/media/`) | Cloudinary |
-| Email | Puede ser console o Gmail API | Gmail API |
+| Email | Gmail API con `token.json` local | Gmail API con `GMAIL_TOKEN_JSON` env var |
 | DEBUG | True | False |
 
 La configuración en `settings.py` detecta automáticamente el entorno por la presencia de `DATABASE_URL`.
@@ -100,7 +126,18 @@ La configuración en `settings.py` detecta automáticamente el entorno por la pr
 ### Estados del candidato (`InformacionBasica.estado`)
 `RECIBIDO` → `EN_REVISION` → `PENDIENTE_CORRECCION` → `CORREGIDO` → `VERIFICADO` / `RECHAZADO`
 
-El campo `token_correccion` (UUID) se usa para que el candidato acceda a su formulario de actualización sin login, via `/formapp/actualizar-datos/<uuid:token>/`.
+El campo `token_correccion` (UUID) expira en 48 horas y permite al candidato acceder a su formulario sin login via `/formapp/actualizar-datos/<uuid:token>/`.
+
+### Suite de tests
+Los tests están en `formapp/tests/`:
+- `test_models.py` — modelos principales
+- `test_models_documents.py` — modelos de documentos
+- `test_forms.py` — validaciones de formularios
+- `test_views.py` — vistas admin y públicas
+- `test_correction_flow.py` — flujo completo de corrección con token
+- `test_experiencias_historicas.py` — cálculo de experiencia con datos históricos
+- `test_validators.py` — validadores de archivos
+- `test_nuevos_campos.py` — campos agregados recientemente
 
 ## Variables de entorno requeridas (`.env`)
 ```
@@ -109,7 +146,6 @@ DATABASE_URL=          # Solo en producción; ausente = SQLite
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
-GMAIL_CLIENT_ID=
-GMAIL_CLIENT_SECRET=
-GMAIL_REFRESH_TOKEN=
+GMAIL_TOKEN_JSON=      # JSON completo del token OAuth2 de Gmail (producción)
+ADMIN_EMAIL=           # Email receptor de notificaciones admin
 ```

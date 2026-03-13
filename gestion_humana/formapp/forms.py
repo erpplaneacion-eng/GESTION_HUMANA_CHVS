@@ -169,7 +169,7 @@ class ExperienciaLaboralForm(forms.ModelForm):
             'objeto_contractual': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Describa el objeto contractual'}),
             'funciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Describa las funciones realizadas'}),
             'fecha_inicial': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'fecha_terminacion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date', 'max': '2026-03-18'}),
         }
         error_messages = {
             'fecha_inicial': {
@@ -270,11 +270,13 @@ class ExperienciaLaboralForm(forms.ModelForm):
         fecha_terminacion = cleaned_data.get('fecha_terminacion')
         today = date.today()
 
+        fecha_max_terminacion = date(2026, 3, 18)
+
         if fecha_inicial and fecha_inicial > today:
             raise forms.ValidationError('La fecha inicial no puede ser una fecha futura.')
-            
-        if fecha_terminacion and fecha_terminacion > today:
-            raise forms.ValidationError('La fecha de terminación no puede ser una fecha futura.')
+
+        if fecha_terminacion and fecha_terminacion > fecha_max_terminacion:
+            raise forms.ValidationError('La fecha de terminación no puede ser posterior al 18 de marzo de 2026.')
 
         # Validar que la fecha inicial sea menor que la fecha de terminación
         if fecha_inicial and fecha_terminacion:
