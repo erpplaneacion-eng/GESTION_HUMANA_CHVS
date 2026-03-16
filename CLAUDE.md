@@ -99,12 +99,18 @@ Usa un **algoritmo de fusión de intervalos** para eliminar traslapes. La base d
 ### Generación de reportes
 - `report_generators_pdf.py` — Certificados PDF con ReportLab
 - `report_generators_excel.py` — Exportación Excel con openpyxl
+- `report_generators.py` — wrapper de compatibilidad que re-exporta las dos funciones anteriores; no contiene lógica propia
+
+### Formularios (`forms.py`)
+- `InformacionBasicaPublicForm` — campos visibles al candidato en registro público
+- `InformacionBasicaAdminForm` — campos adicionales editables por admin
+- Formsets via `inlineformset_factory` para `ExperienciaLaboral`, `InformacionAcademica`, `Posgrado`, `Especializacion`, `DocumentosIdentidad`, `Antecedentes`, `AnexosAdicionales`
 
 ### Validaciones de archivos
 Los `FileField` usan tres validadores en `formapp/validators.py`:
 - `validate_file_size` — máximo 10 MB
 - `validate_file_extension` — solo PDF, JPG, PNG
-- `validate_file_mime` — verifica el tipo MIME real del archivo
+- `validate_file_mime` — verifica el tipo MIME real del archivo (requiere `python-magic`; en producción Railway, `nixpacks.toml` instala `libmagic1`)
 
 ### Envío de correos
 `services.py` usa Gmail API (OAuth2) con `token.json` local o variable de entorno `GMAIL_TOKEN_JSON`. Las funciones de envío son:
@@ -122,6 +128,11 @@ Los `FileField` usan tres validadores en `formapp/validators.py`:
 | DEBUG | True | False |
 
 La configuración en `settings.py` detecta automáticamente el entorno por la presencia de `DATABASE_URL`.
+
+El comando de inicio en producción (definido en `railway.json`):
+```
+cd gestion_humana && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn --bind 0.0.0.0:$PORT --log-file - gestion_humana.wsgi:application
+```
 
 ### Estados del candidato (`InformacionBasica.estado`)
 `RECIBIDO` → `EN_REVISION` → `PENDIENTE_CORRECCION` → `CORREGIDO` → `VERIFICADO` / `RECHAZADO`
