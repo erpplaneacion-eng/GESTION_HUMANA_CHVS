@@ -4,12 +4,14 @@ Refactorizado desde views.py para mejor organización.
 """
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
+from django.http import HttpResponse, FileResponse
 from datetime import datetime
 import zipfile
 import io
 import os
 import logging
+import tempfile
+import requests
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -53,6 +55,41 @@ def get_file_extension(file_field, file_content=None):
             ext = '.pdf' # Default
             
     return ext
+
+
+def read_file_content_safe(file_field, connect_timeout=5, read_timeout=20):
+    """
+    Lee contenido de archivos locales o remotos (Cloudinary) con timeout para evitar
+    bloqueos largos durante la creación de ZIPs masivos.
+    """
+    if not file_field:
+        return None
+
+    try:
+        file_url = getattr(file_field, 'url', None)
+    except Exception:
+        file_url = None
+
+    # Si es URL remota, usar requests con timeout explícito.
+    if isinstance(file_url, str) and file_url.startswith(('http://', 'https://')):
+        try:
+            response = requests.get(file_url, timeout=(connect_timeout, read_timeout))
+            response.raise_for_status()
+            return response.content
+        except requests.RequestException as e:
+            logger.error(
+                f"Timeout/error descargando archivo remoto "
+                f"{getattr(file_field, 'name', 'sin_nombre')}: {e}"
+            )
+            return None
+
+    # Fallback para almacenamiento local.
+    try:
+        with file_field.open('rb') as f:
+            return f.read()
+    except Exception as e:
+        logger.error(f"Error leyendo archivo {getattr(file_field, 'name', 'sin_nombre')}: {e}")
+        return None
 
 @login_required
 def download_individual_zip(request, pk):
@@ -257,10 +294,21 @@ def download_individual_zip(request, pk):
 @login_required
 def download_all_zip(request):
     """Descarga un ZIP con toda la información de TODO el personal"""
-    applicants = InformacionBasica.objects.all()
+    applicants = (
+        InformacionBasica.objects
+        .select_related('documentos_identidad', 'antecedentes', 'anexos_adicionales')
+        .prefetch_related(
+            'formacion_academica',
+            'educacion_basica',
+            'educacion_superior',
+            'posgrados',
+            'especializaciones',
+            'experiencias_laborales',
+        )
+    )
 
-    # Crear archivo ZIP en memoria
-    zip_buffer = io.BytesIO()
+    # Crear archivo ZIP temporal para evitar exceso de RAM.
+    zip_buffer = tempfile.SpooledTemporaryFile(max_size=20 * 1024 * 1024, mode='w+b')
 
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
         # 1. Crear Excel consolidado con TODO el personal
@@ -346,8 +394,9 @@ def download_all_zip(request):
             def add_file_to_zip(file_field, zip_path):
                 if file_field:
                     try:
-                        with file_field.open('rb') as f:
-                            file_content = f.read()
+                        file_content = read_file_content_safe(file_field)
+                        if not file_content:
+                            return
                         ext = get_file_extension(file_field, file_content)
                         zip_file.writestr(f"{zip_path}{ext}", file_content)
                     except Exception as e:
@@ -412,7 +461,11 @@ def download_all_zip(request):
     # Preparar respuesta
     zip_buffer.seek(0)
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="Personal_Completo_{timestamp}.zip"'
+    response = FileResponse(
+        zip_buffer,
+        content_type='application/zip',
+        as_attachment=True,
+        filename=f"Personal_Completo_{timestamp}.zip",
+    )
 
     return response
