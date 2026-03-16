@@ -8,6 +8,7 @@ Logged in as chvs (erp.planeacion@vallesolidario.com)
 > Select an environment production
 > Select a service <esc to skip> Postgres_gestion_humana
 
+
 Project gestion humana linked successfully! 🎉
 (venv) PS C:\Users\User\OneDrive\Desktop\CAVIJUP\GESTION_HUMANA_CHVS> railway run python manage.py cargar_historico
 python: can't open file 'C:\\Users\\User\\OneDrive\\Desktop\\CAVIJUP\\GESTION_HUMANA_CHVS\\manage.py': [Errno 2] No such file or directory
