@@ -12,6 +12,7 @@ import os
 import logging
 import tempfile
 import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
@@ -367,20 +368,23 @@ def download_all_zip(request):
         excel_buffer.seek(0)
         zip_file.writestr("Personal_Completo.xlsx", excel_buffer.getvalue())
 
-        # 2. Agregar Excel individual de cada persona
+        # --- Fase 1 + 2: Excel/PDF individual por persona (CPU local) y recolección de tareas HTTP ---
+        file_tasks = []  # lista de (field, zip_path_sin_extension)
+
         for applicant in applicants:
+            filename_safe = applicant.nombre_completo.replace(' ', '_')
+
+            # 2. Excel individual
             wb_individual = create_excel_for_person(applicant)
             excel_individual_buffer = io.BytesIO()
             wb_individual.save(excel_individual_buffer)
             excel_individual_buffer.seek(0)
-
-            filename_safe = applicant.nombre_completo.replace(' ', '_')
             zip_file.writestr(
                 f"Personal/{filename_safe}/{filename_safe}_Informacion.xlsx",
                 excel_individual_buffer.getvalue()
             )
 
-            # 2.1. Agregar PDF ANEXO 11 de cada persona
+            # 2.1. PDF ANEXO 11 individual
             try:
                 pdf_buffer_individual = generar_anexo11_pdf(applicant)
                 zip_file.writestr(
@@ -390,73 +394,93 @@ def download_all_zip(request):
             except Exception as e:
                 logger.error(f"Error al generar PDF ANEXO 11 para {applicant.nombre_completo}: {str(e)}")
 
-            # Función auxiliar para agregar archivo al ZIP
-            def add_file_to_zip(file_field, zip_path):
-                if file_field:
-                    try:
-                        file_content = read_file_content_safe(file_field)
-                        if not file_content:
-                            return
-                        ext = get_file_extension(file_field, file_content)
-                        zip_file.writestr(f"{zip_path}{ext}", file_content)
-                    except Exception as e:
-                        logger.error(f"Error al agregar archivo {zip_path}: {e}")
+            # Recolectar tareas de descarga HTTP (documentos en Cloudinary)
+            def _collect(field, path):
+                if field:
+                    file_tasks.append((field, path))
 
-            # 3. Agregar documentos de identidad
+            # 3. Documentos de identidad
             if hasattr(applicant, 'documentos_identidad') and applicant.documentos_identidad:
                 docs_id = applicant.documentos_identidad
-                add_file_to_zip(docs_id.fotocopia_cedula, f"Personal/{filename_safe}/Documentos_Identidad/Cedula")
-                add_file_to_zip(docs_id.hoja_de_vida, f"Personal/{filename_safe}/Documentos_Identidad/Hoja_de_Vida")
-                add_file_to_zip(docs_id.libreta_militar, f"Personal/{filename_safe}/Documentos_Identidad/Libreta_Militar")
+                _collect(docs_id.fotocopia_cedula,  f"Personal/{filename_safe}/Documentos_Identidad/Cedula")
+                _collect(docs_id.hoja_de_vida,      f"Personal/{filename_safe}/Documentos_Identidad/Hoja_de_Vida")
+                _collect(docs_id.libreta_militar,   f"Personal/{filename_safe}/Documentos_Identidad/Libreta_Militar")
 
-            # 4. Agregar antecedentes
+            # 4. Antecedentes
             if hasattr(applicant, 'antecedentes') and applicant.antecedentes:
                 antec = applicant.antecedentes
-                add_file_to_zip(antec.certificado_procuraduria, f"Personal/{filename_safe}/Antecedentes/Procuraduria")
-                add_file_to_zip(antec.certificado_contraloria, f"Personal/{filename_safe}/Antecedentes/Contraloria")
-                add_file_to_zip(antec.certificado_policia, f"Personal/{filename_safe}/Antecedentes/Policia")
-                add_file_to_zip(antec.certificado_medidas_correctivas, f"Personal/{filename_safe}/Antecedentes/Medidas_Correctivas")
-                add_file_to_zip(antec.certificado_delitos_sexuales, f"Personal/{filename_safe}/Antecedentes/Delitos_Sexuales")
-                add_file_to_zip(antec.certificado_redam, f"Personal/{filename_safe}/Antecedentes/REDAM")
+                _collect(antec.certificado_procuraduria,       f"Personal/{filename_safe}/Antecedentes/Procuraduria")
+                _collect(antec.certificado_contraloria,        f"Personal/{filename_safe}/Antecedentes/Contraloria")
+                _collect(antec.certificado_policia,            f"Personal/{filename_safe}/Antecedentes/Policia")
+                _collect(antec.certificado_medidas_correctivas,f"Personal/{filename_safe}/Antecedentes/Medidas_Correctivas")
+                _collect(antec.certificado_delitos_sexuales,   f"Personal/{filename_safe}/Antecedentes/Delitos_Sexuales")
+                _collect(antec.certificado_redam,              f"Personal/{filename_safe}/Antecedentes/REDAM")
 
-            # 5. Agregar documentos académicos
+            # 5. Documentos académicos
             for idx, academica in enumerate(applicant.formacion_academica.all(), start=1):
                 profesion_safe = academica.profesion.replace(' ', '_').replace('/', '-')[:30]
-                add_file_to_zip(academica.fotocopia_titulo, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Titulo")
-                add_file_to_zip(academica.fotocopia_tarjeta_profesional, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Tarjeta_Profesional")
-                add_file_to_zip(academica.certificado_vigencia_tarjeta, f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Vigencia_Tarjeta")
+                _collect(academica.fotocopia_titulo,               f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Titulo")
+                _collect(academica.fotocopia_tarjeta_profesional,  f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Tarjeta_Profesional")
+                _collect(academica.certificado_vigencia_tarjeta,   f"Personal/{filename_safe}/Documentos_Academicos/{idx}_{profesion_safe}_Vigencia_Tarjeta")
 
-            # 5.1. Agregar Educación Básica
+            # 5.1. Educación Básica
             for idx, edu in enumerate(applicant.educacion_basica.all(), start=1):
-                add_file_to_zip(edu.acta_grado_diploma, f"Personal/{filename_safe}/Educacion_Basica/{idx}_Diploma_Bachiller")
+                _collect(edu.acta_grado_diploma, f"Personal/{filename_safe}/Educacion_Basica/{idx}_Diploma_Bachiller")
 
-            # 5.2. Agregar Educación Superior
+            # 5.2. Educación Superior
             for idx, edu in enumerate(applicant.educacion_superior.all(), start=1):
                 nivel_safe = edu.nivel.replace(' ', '_')
-                add_file_to_zip(edu.documento_soporte, f"Personal/{filename_safe}/Educacion_Superior/{idx}_{nivel_safe}_Diploma")
+                _collect(edu.documento_soporte, f"Personal/{filename_safe}/Educacion_Superior/{idx}_{nivel_safe}_Diploma")
 
-            # 5.3. Agregar Posgrados
+            # 5.3. Posgrados
             for idx, edu in enumerate(applicant.posgrados.all(), start=1):
                 nombre_safe = edu.nombre_posgrado.replace(' ', '_')[:30]
-                add_file_to_zip(edu.acta_grado_diploma, f"Personal/{filename_safe}/Posgrados/{idx}_{nombre_safe}_Diploma")
+                _collect(edu.acta_grado_diploma, f"Personal/{filename_safe}/Posgrados/{idx}_{nombre_safe}_Diploma")
 
-            # 5.4. Agregar Especializaciones
+            # 5.4. Especializaciones
             for idx, edu in enumerate(applicant.especializaciones.all(), start=1):
                 nombre_safe = edu.nombre_especializacion.replace(' ', '_')[:30]
-                add_file_to_zip(edu.acta_grado_diploma, f"Personal/{filename_safe}/Especializaciones/{idx}_{nombre_safe}_Diploma")
+                _collect(edu.acta_grado_diploma, f"Personal/{filename_safe}/Especializaciones/{idx}_{nombre_safe}_Diploma")
 
-            # 6. Agregar anexos adicionales
+            # 6. Anexos adicionales
             if hasattr(applicant, 'anexos_adicionales') and applicant.anexos_adicionales:
                 anexos = applicant.anexos_adicionales
-                add_file_to_zip(anexos.anexo_03_datos_personales, f"Personal/{filename_safe}/Anexos/Anexo_03_Datos_Personales")
-                add_file_to_zip(anexos.carta_intencion, f"Personal/{filename_safe}/Anexos/Carta_Intencion")
-                add_file_to_zip(anexos.otros_documentos, f"Personal/{filename_safe}/Anexos/Otros_Documentos")
+                _collect(anexos.anexo_03_datos_personales, f"Personal/{filename_safe}/Anexos/Anexo_03_Datos_Personales")
+                _collect(anexos.carta_intencion,           f"Personal/{filename_safe}/Anexos/Carta_Intencion")
+                _collect(anexos.otros_documentos,          f"Personal/{filename_safe}/Anexos/Otros_Documentos")
 
-            # 7. Agregar certificados laborales
+            # 7. Certificados laborales
             for idx, experiencia in enumerate(applicant.experiencias_laborales.all(), start=1):
                 if experiencia.certificado_laboral:
                     cargo_safe = experiencia.cargo.replace(' ', '_').replace('/', '-')[:30]
-                    add_file_to_zip(experiencia.certificado_laboral, f"Personal/{filename_safe}/Certificados_Laborales/{idx}_{cargo_safe}")
+                    _collect(experiencia.certificado_laboral, f"Personal/{filename_safe}/Certificados_Laborales/{idx}_{cargo_safe}")
+
+        # --- Fase 3: descargar en paralelo (10 workers) ---
+        logger.info(f"Descargando {len(file_tasks)} archivos de Cloudinary en paralelo…")
+
+        def _fetch_one(task):
+            field, zip_path = task
+            content = read_file_content_safe(field, connect_timeout=10, read_timeout=60)
+            return zip_path, content, field
+
+        downloaded = {}  # zip_path -> (content, field)
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = {executor.submit(_fetch_one, task): task for task in file_tasks}
+            for future in as_completed(futures):
+                try:
+                    zip_path, content, field = future.result()
+                    if content:
+                        downloaded[zip_path] = (content, field)
+                except Exception as e:
+                    logger.error(f"Error en descarga paralela: {e}")
+
+        # --- Fase 4: escribir archivos descargados al ZIP ---
+        for zip_path, (content, field) in downloaded.items():
+            try:
+                ext = get_file_extension(field, content)
+                zip_file.writestr(f"{zip_path}{ext}", content)
+            except Exception as e:
+                logger.error(f"Error al escribir {zip_path} al ZIP: {e}")
 
     # Preparar respuesta
     zip_buffer.seek(0)
