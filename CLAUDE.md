@@ -49,6 +49,10 @@ python manage.py recalcular_experiencias
 
 # Recalcular para una cédula específica (con detalle)
 python manage.py recalcular_experiencias --cedula 1234567890 --verbose
+
+# Cargar datos históricos de contratos desde Excel (basedatosaquicali)
+# Requiere el archivo link.xlsx en el directorio de trabajo
+python manage.py cargar_historico
 ```
 
 ## Arquitectura general
@@ -89,12 +93,22 @@ Usa un **algoritmo de fusión de intervalos** para eliminar traslapes. La base d
 
 > **Importante:** `InformacionBasica.cedula` es `CharField`; `ContratoHistorico.cedula` es `BigIntegerField`. La conversión `int(cedula)` ocurre en `services.py` al hacer el cruce.
 
+### Rutas URL clave
+- `/formapp/` — formulario público de registro de candidatos
+- `/formapp/actualizar-datos/<uuid:token>/` — formulario de corrección por token (sin login)
+- `/formapp/admin/applicants/` — lista de candidatos (requiere login)
+- `/formapp/admin/applicants/<pk>/` — detalle, edición, eliminación, solicitar corrección
+- `/formapp/admin/download-all/` — descarga ZIP masivo de todos los candidatos
+- `/formapp/admin/applicants/<pk>/download/` — ZIP individual
+- `/historico/buscar/` — búsqueda en base de datos histórica de contratos
+- `/admin/` — Django admin
+
 ### Vistas organizadas en módulos
 `formapp/views/` está dividido en:
 - `views_public.py` — formulario de registro público y actualización por token
 - `views_admin.py` — lista, detalle, edición y eliminación de candidatos (login requerido)
-- `views_reports.py` — descarga de ZIPs individuales, ZIP masivo, exportación Excel
-- `views_public_FIXED.py` — versión legacy (no usar para nuevas funcionalidades)
+- `views_reports.py` — descarga de ZIPs individuales, ZIP masivo con descarga paralela (ThreadPoolExecutor)
+- `views_public_FIXED.py` — archivo legacy, **no modificar ni usar**
 
 ### Generación de reportes
 - `report_generators_pdf.py` — Certificados PDF con ReportLab
@@ -128,6 +142,8 @@ Los `FileField` usan tres validadores en `formapp/validators.py`:
 | DEBUG | True | False |
 
 La configuración en `settings.py` detecta automáticamente el entorno por la presencia de `DATABASE_URL`.
+
+La versión de Python es **3.13.0** (definida en `runtime.txt`). WhiteNoise sirve los archivos estáticos en producción. El dominio Railway (`anacavjp.up.railway.app`) está hardcodeado en `CSRF_TRUSTED_ORIGINS` dentro de `settings.py`.
 
 El comando de inicio en producción (definido en `railway.json`):
 ```
